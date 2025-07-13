@@ -1,0 +1,2020 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/5.2.1/reveal.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/5.2.1/theme/black.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/monokai.min.css">
+</head>
+<body>
+    <div class="reveal">
+        <div class="slides">
+            <!-- Part 1: The Confrontation -->
+            <section data-transition="fade">
+                <h1 class="r-fit-text">You have been lied to.</h1>
+            </section>
+            <section data-transition="zoom">
+                <img src="./static/langchain_doc.png" class="r-stretch">
+            </section>
+            <section data-transition="fade">
+                <img src="./static/lanchain_diagram.png" class="r-stretch">
+            </section>
+            <section data-transition="convex">
+                <img src="./static/langchain_dependency_error.jpeg" class="r-stretch">
+            </section>
+            <section data-transition="zoom">
+                <h2 class="r-fit-text">Does it really need to be this <mark>complicated?</mark></h2>
+            </section>
+
+            <!-- Part 2/3: Lie/Provocation/Reveal -->
+            <section data-transition="fade">
+                 <h2 class="r-fit-text">What if we stripped <mark>everything</mark> away?</h2>
+            </section>
+            <section data-transition="slide-in">
+                <h2 class="r-fit-text">Your LLM Framework Only Needs</h2>
+                <h1 class="r-fit-text fragment"><mark>100 LINES</mark></h1>
+            </section>
+
+            <!-- Part 4: The Solution & The Proof -->
+            <section data-transition="fade-out">
+                <img src="./static/pocketflow_github.png" class="r-stretch">
+                <p>https://github.com/The-Pocket/PocketFlow</p>
+            </section>
+            <section>
+                 <pre style="font-size: 0.6em"><code class="language-python" data-trim data-line-numbers="|26-34|36-37|39-51|96-100" style="max-height: 95vh;">
+import asyncio, warnings, copy, time
+
+class BaseNode:
+    def __init__(self): self.params,self.successors={},{}
+    def set_params(self,params): self.params=params
+    def next(self,node,action="default"):
+        if action in self.successors: warnings.warn(f"Overwriting successor for action '{action}'")
+        self.successors[action]=node; return node
+    def prep(self,shared): pass
+    def exec(self,prep_res): pass
+    def post(self,shared,prep_res,exec_res): pass
+    def _exec(self,prep_res): return self.exec(prep_res)
+    def _run(self,shared): p=self.prep(shared); e=self._exec(p); return self.post(shared,p,e)
+    def run(self,shared): 
+        if self.successors: warnings.warn("Node won't run successors. Use Flow.")  
+        return self._run(shared)
+    def __rshift__(self,other): return self.next(other)
+    def __sub__(self,action):
+        if isinstance(action,str): return _ConditionalTransition(self,action)
+        raise TypeError("Action must be a string")
+
+class _ConditionalTransition:
+    def __init__(self,src,action): self.src,self.action=src,action
+    def __rshift__(self,tgt): return self.src.next(tgt,self.action)
+
+class Node(BaseNode):
+    def __init__(self,max_retries=1,wait=0): super().__init__(); self.max_retries,self.wait=max_retries,wait
+    def exec_fallback(self,prep_res,exc): raise exc
+    def _exec(self,prep_res):
+        for self.cur_retry in range(self.max_retries):
+            try: return self.exec(prep_res)
+            except Exception as e:
+                if self.cur_retry==self.max_retries-1: return self.exec_fallback(prep_res,e)
+                if self.wait>0: time.sleep(self.wait)
+
+class BatchNode(Node):
+    def _exec(self,items): return [super(BatchNode,self)._exec(i) for i in (items or [])]
+
+class Flow(BaseNode):
+    def __init__(self,start=None): super().__init__(); self.start_node=start
+    def start(self,start): self.start_node=start; return start
+    def get_next_node(self,curr,action):
+        nxt=curr.successors.get(action or "default")
+        if not nxt and curr.successors: warnings.warn(f"Flow ends: '{action}' not found in {list(curr.successors)}")
+        return nxt
+    def _orch(self,shared,params=None):
+        curr,p,last_action =copy.copy(self.start_node),(params or {**self.params}),None
+        while curr: curr.set_params(p); last_action=curr._run(shared); curr=copy.copy(self.get_next_node(curr,last_action))
+        return last_action
+    def _run(self,shared): p=self.prep(shared); o=self._orch(shared); return self.post(shared,p,o)
+    def post(self,shared,prep_res,exec_res): return exec_res
+
+class BatchFlow(Flow):
+    def _run(self,shared):
+        pr=self.prep(shared) or []
+        for bp in pr: self._orch(shared,{**self.params,**bp})
+        return self.post(shared,pr,None)
+
+class AsyncNode(Node):
+    async def prep_async(self,shared): pass
+    async def exec_async(self,prep_res): pass
+    async def exec_fallback_async(self,prep_res,exc): raise exc
+    async def post_async(self,shared,prep_res,exec_res): pass
+    async def _exec(self,prep_res): 
+        for i in range(self.max_retries):
+            try: return await self.exec_async(prep_res)
+            except Exception as e:
+                if i==self.max_retries-1: return await self.exec_fallback_async(prep_res,e)
+                if self.wait>0: await asyncio.sleep(self.wait)
+    async def run_async(self,shared): 
+        if self.successors: warnings.warn("Node won't run successors. Use AsyncFlow.")  
+        return await self._run_async(shared)
+    async def _run_async(self,shared): p=await self.prep_async(shared); e=await self._exec(p); return await self.post_async(shared,p,e)
+    def _run(self,shared): raise RuntimeError("Use run_async.")
+
+class AsyncBatchNode(AsyncNode,BatchNode):
+    async def _exec(self,items): return [await super(AsyncBatchNode,self)._exec(i) for i in items]
+
+class AsyncParallelBatchNode(AsyncNode,BatchNode):
+    async def _exec(self,items): return await asyncio.gather(*(super(AsyncParallelBatchNode,self)._exec(i) for i in items))
+
+class AsyncFlow(Flow,AsyncNode):
+    async def _orch_async(self,shared,params=None):
+        curr,p,last_action =copy.copy(self.start_node),(params or {**self.params}),None
+        while curr: curr.set_params(p); last_action=await curr._run_async(shared) if isinstance(curr,AsyncNode) else curr._run(shared); curr=copy.copy(self.get_next_node(curr,last_action))
+        return last_action
+    async def _run_async(self,shared): p=await self.prep_async(shared); o=await self._orch_async(shared); return await self.post_async(shared,p,o)
+    async def post_async(self,shared,prep_res,exec_res): return exec_res
+
+class AsyncBatchFlow(AsyncFlow,BatchFlow):
+    async def _run_async(self,shared):
+        pr=await self.prep_async(shared) or []
+        for bp in pr: await self._orch_async(shared,{**self.params,**bp})
+        return await self.post_async(shared,pr,None)
+
+class AsyncParallelBatchFlow(AsyncFlow,BatchFlow):
+    async def _run_async(self,shared): 
+        pr=await self.prep_async(shared) or []
+        await asyncio.gather(*(self._orch_async(shared,{**self.params,**bp}) for bp in pr))
+        return await self.post_async(shared,pr,None)
+                 </code></pre>
+            </section>
+            
+            <!-- Part 5: Social Proof & Philosophy -->
+            <section data-transition="slide-up">
+                <img src="./static/star-history-pocketflow.png" class="r-stretch">
+            </section>
+            <section data-transition="zoom-in">
+                <table>
+                    <thead>
+                        <tr>
+                            <th></th>
+                            <th><strong>Abstraction</strong></th>
+                            <th><strong>App Wrappers</strong></th>
+                            <th><strong>Vendor Wrappers</strong></th>
+                            <th><strong>Lines</strong></th>
+                            <th><strong>Size</strong></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr style="font-size: 0.8em; opacity: 0.7;">
+                            <td>LangChain</td>
+                            <td style="text-align: center;">Agent, Chain</td>
+                            <td style="text-align: center;">Many <br><sup><sub>(e.g., QA, Summarization)</sub></sup></td>
+                            <td style="text-align: center;">Many <br><sup><sub>(e.g., OpenAI, Pinecone, etc.)</sub></sup></td>
+                            <td style="text-align: center;">405K</td>
+                            <td style="text-align: center;">+166MB</td>
+                        </tr>
+                        <tr style="font-size: 0.8em; opacity: 0.7;">
+                            <td>CrewAI</td>
+                            <td style="text-align: center;">Agent, Chain</td>
+                            <td style="text-align: center;">Many <br><sup><sub>(e.g., FileReadTool, SerperDevTool)</sub></sup></td>
+                            <td style="text-align: center;">Many <br><sup><sub>(e.g., OpenAI, Anthropic, Pinecone, etc.)</sub></sup></td>
+                            <td style="text-align: center;">18K</td>
+                            <td style="text-align: center;">+173MB</td>
+                        </tr>
+                        <tr style="font-size: 0.8em; opacity: 0.7;">
+                            <td>SmolAgent</td>
+                            <td style="text-align: center;">Agent</td>
+                            <td style="text-align: center;">Some <br><sup><sub>(e.g., CodeAgent, VisitWebTool)</sub></sup></td>
+                            <td style="text-align: center;">Some <br><sup><sub>(e.g., DuckDuckGo, Hugging Face, etc.)</sub></sup></td>
+                            <td style="text-align: center;">8K</td>
+                            <td style="text-align: center;">+198MB</td>
+                        </tr>
+                        <tr style="font-size: 0.8em; opacity: 0.7;">
+                            <td>LangGraph</td>
+                            <td style="text-align: center;">Agent, Graph</td>
+                            <td style="text-align: center;">Some <br><sup><sub>(e.g., Semantic Search)</sub></sup></td>
+                            <td style="text-align: center;">Some <br><sup><sub>(e.g., PostgresStore, SqliteSaver, etc.) </sub></sup></td>
+                            <td style="text-align: center;">37K</td>
+                            <td style="text-align: center;">+51MB</td>
+                        </tr>
+                        <tr style="font-size: 0.8em; opacity: 0.7;">
+                            <td>AutoGen</td>
+                            <td style="text-align: center;">Agent</td>
+                            <td style="text-align: center;">Some <br><sup><sub>(e.g., Tool Agent, Chat Agent)</sub></sup></td>
+                            <td style="text-align: center;">Many <sup><sub>[Optional]<br> (e.g., OpenAI, Pinecone, etc.)</sub></sup></td>
+                            <td style="text-align: center;">7K <br><sup><sub>(core-only)</sub></sup></td>
+                            <td style="text-align: center;">+26MB <br><sup><sub>(core-only)</sub></sup></td>
+                        </tr>
+                        <tr style="background-color: #4CAF50; font-size: 1.1em; font-weight: bold; box-shadow: 0 2px 4px rgba(0,0,0,0.3);">
+                            <td><strong>PocketFlow</strong></td>
+                            <td style="text-align: center;"><strong>Graph</strong></td>
+                            <td style="text-align: center;"><strong>None</strong></td>
+                            <td style="text-align: center;"><strong>None</strong></td>
+                            <td style="text-align: center;"><strong>100</strong></td>
+                            <td style="text-align: center;"><strong>+56KB</strong></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </section>
+            <section data-transition="zoom-in fade-out">
+                <img src="./static/meme.jpg" class="r-stretch">
+            </section>
+
+            <!-- Part 6: The "Trailer" -->
+            <section data-transition="fade-in-then-out">
+                <img src="./static/abstraction.png" class="r-stretch" style="background: #fff; padding: 10px; border-radius: 5px;">
+            </section>
+            <section data-transition="fade-in-then-out">
+                <img src="./static/design.png" class="r-stretch" style="background: #fff; padding: 10px; border-radius: 5px;">
+            </section>
+
+            <!-- Part 7: The Promise of this Video -->
+            <section data-transition="fade-in" data-background-color="#000">
+                <h1 class="r-fit-text" style="font-weight: bold;">TEAR DOWN THE BLACK BOXES</h1>
+            </section>
+
+            <section data-transition="slide-up" data-background-color="#1a1a1a">
+                <h1 class="r-fit-text" style="color: white;">NOT ANOTHER TUTORIAL</h1>
+                <h1 class="fragment r-fit-text" style="color: #4CAF50; text-shadow: 2px 2px 4px rgba(0,0,0,0.8);">A MASTERCLASS IN FIRST PRINCIPLES</h1>
+            </section>
+
+            <section data-transition="zoom-in" data-background-color="#2c2c2c">
+                <p style="font-size: 2.5em;">You will learn how agents <mark style="background-color: #ff6b6b; color: white;">ACTUALLY</mark> work.</p>
+                <p class="fragment fade-in" style="font-size: 2.5em;">You will learn how RAG is <mark style="background-color: #ff6b6b; color: white;">REALLY</mark> built.</p>
+                <p class="fragment fade-in" style="font-size: 2.5em;">You will learn from <mark style="background-color: #4CAF50; color: white;">THE GROUND UP</mark>.</p>
+            </section>
+
+            <section data-transition="fade" data-background-color="#333">
+                <p class="r-fit-text">If you know a little bit of Python.</p>
+                <h2 class="r-fit-text">You're ready.</h2>
+            </section>
+
+            <section data-transition="zoom-in" data-background-color="#000">
+                <h1 class="r-fit-text" style="color: #4CAF50; text-shadow: 3px 3px 6px rgba(0,0,0,0.9); font-size: 4em;">THESE 100 LINES.</h1>
+            </section>
+
+            <!-- Part 8: How does it work? - The Node Explanation -->
+            <section data-transition="fade" data-background-color="#1a1a1a">
+                <h1>How does it work?</h1>
+                <h1 class="fragment fade-in" style="color: #4CAF50">3 Core Ideas:</h1>
+                <h2 style="font-size: 2em; margin-top: 30px;">
+                    <span class="fragment fade-in">
+                        <span>The Node</span>
+                        <span> <span style="color: #666; margin: 0 30px;">•</span> The Shared Store</span>
+                        <span> <span style="color: #666; margin: 0 30px;">•</span> The Flow</span>
+                    </span>
+                </h2>
+            </section>
+
+            <section data-transition="slide-up" data-background-color="#2c2c2c">
+                <h1 class="r-fit-text" style="color: #4CAF50;">1. The Node: The Worker</h1>
+                <h1 class="fragment fade-in" style="text-align: center;">3 Steps:</h1>
+                <h1 style="font-size: 1.8em; text-align: center;">
+                    <span class="fragment fade-in">
+                        <span><code style="color: #4CAF50;"><mark style="background-color: #4CAF50; color: white;">prep</mark>rocessing</code></span>
+                        <span> <span style="color: #666; margin: 0 30px;">•</span> <code style="color: #4CAF50;"><mark style="background-color: #4CAF50; color: white;">exec</mark>ution</code></span>
+                        <span> <span style="color: #666; margin: 0 30px;">•</span> <code style="color: #4CAF50;"><mark style="background-color: #4CAF50; color: white;">post</mark>processing</code></span>
+                    </span>
+                </h1>
+            </section>
+
+            <section data-auto-animate data-background-color="#1a1a1a">
+                <h1 style="color: #4CAF50">Step 1: prep</h1>
+                <div style="text-align: center;">
+                    <pre style="font-size: 1em;"><code class="language-python" data-trim data-line-numbers="2,6">
+class BaseNode:
+    def prep(self, shared): pass
+    def exec(self, prep_res): pass
+    def post(self, shared, prep_res, exec_res): pass
+    def _run(self,shared): 
+        p=self.prep(shared); e=self._exec(p); 
+        return self.post(shared,p,e)
+                    </code></pre>
+                    <p style="margin-top: 50px; font-size: 2em;">
+                        <code style="color: #4CAF50;">prep</code>: <strong style="color: #ff6b6b;">Reads from shared store</strong> to get ready.
+                    </p>
+                </div>
+            </section>
+
+            <section data-auto-animate data-background-color="#1a1a1a">
+                <h1 style="color: #4CAF50">Step 2: exec</h1>
+                <div style="text-align: center;">
+                    <pre style="font-size: 1em;"><code class="language-python" data-trim data-line-numbers="3,6">
+class BaseNode:
+    def prep(self, shared): pass
+    def exec(self, prep_res): pass
+    def post(self, shared, prep_res, exec_res): pass
+    def _run(self,shared): 
+        p=self.prep(shared); e=self._exec(p); 
+        return self.post(shared,p,e)
+                    </code></pre>
+                    <p style="margin-top: 50px; font-size: 2em;">
+                        <code style="color: #4CAF50;">exec</code>: <strong style="color: #ff6b6b;">Performs the core task</strong> in isolation.
+                    </p>
+                </div>
+            </section>
+
+            <section data-auto-animate data-background-color="#1a1a1a">
+                <h1 style="color: #4CAF50;">Step 3: post</h1>
+                <div style="text-align: center;">
+                    <pre style="font-size: 1em;"><code class="language-python" data-trim data-line-numbers="4,7">
+class BaseNode:
+    def prep(self, shared): pass
+    def exec(self, prep_res): pass
+    def post(self, shared, prep_res, exec_res): pass
+    def _run(self,shared): 
+        p=self.prep(shared); e=self._exec(p); 
+        return self.post(shared,p,e)
+                    </code></pre>
+                    <p style="margin-top: 50px; font-size: 2em;">
+                        <code style="color: #4CAF50;">post</code>: <strong style="color: #ff6b6b;">Writes results back</strong> and <strong style="color: #ff6b6b;">returns an 'action' string</strong> for the next Node.
+                    </p>
+                </div>
+            </section>
+
+            <section data-transition="zoom-in" data-background-color="#2c2c2c">
+                <img src="./static/node_illustration.png" class="r-stretch" style="background: #fff; padding: 20px; border-radius: 10px;">
+            </section>
+            
+            <section data-auto-animate data-background-color="#1a1a1a">
+                <h1 style="color: #4CAF50">Node: Built-in Fault Tolerance</h1>
+                <div style="text-align: center;">
+                    <pre style="font-size: 1em;"><code class="language-python" data-trim data-line-numbers="|2-4|5-11|12-14"  style="max-height: 95vh;">
+class Node(BaseNode):
+    def __init__(self, max_retries=1, wait=0):
+        super().__init__()
+        self.max_retries, self.wait = max_retries, wait
+    def _exec(self, prep_res):
+        for self.cur_retry in range(self.max_retries):
+            try: return self.exec(prep_res)
+            except Exception as e:
+                if self.cur_retry == self.max_retries - 1: 
+                    return self.exec_fallback(prep_res, e)
+                if self.wait > 0: time.sleep(self.wait)
+    def exec_fallback(self, prep_res, exc): raise exc
+                    </code></pre>
+                </div>
+            </section>
+
+            <section data-auto-animate data-background-color="#1a1a1a">
+                <div style="text-align: center;">
+                    <pre style="font-size: 0.9em;"><code class="language-python" data-trim data-line-numbers="3-4|6-13|15-17|19-23"  style="max-height: 95vh;">
+# A node that calls an LLM to summarize a file
+class SummarizeFile(Node):
+    def prep(self, shared):
+        return shared.get("file_content")
+    
+    def exec(self, file_content):
+        # This would make a real API call to an LLM
+        return call_llm(f"Summarize this: {file_content}")
+
+    def exec_fallback(self, file_content, error):
+        # If the LLM call fails after all retries...
+        print(f"LLM call failed with error: {error}")
+        return "Sorry, summarizing the file failed."
+
+    def post(self, shared, prep_res, exec_res):
+        shared["summary"] = exec_res
+        return "next"
+
+# Instantiate the node with retry logic
+summarizer = SummarizeFile(
+    max_retries=3,
+    wait=5
+)
+                    </code></pre>
+                </div>
+            </section>
+
+            <section data-transition="zoom-in" data-background-color="#000">
+                <h1 class="r-fit-text" style="color: #4CAF50; text-shadow: 3px 3px 6px rgba(0,0,0,0.9);">Node = A single, reliable worker.</h1>
+            </section>
+
+            <!-- Part 9: The Shared Store -->
+            <section data-auto-animate data-background-color="#1a1a1a">
+                <h1 style="color: #4CAF50">3 Core Ideas:</h1>
+                <h2 style="font-size: 2em; margin-top: 30px;">
+                    <span style="opacity: 0.5;">The Node</span>
+                    <span style="color: #666; margin: 0 30px; opacity: 0.5;">•</span>
+                    <span style="color: #4CAF50;">The Shared Store</span>
+                    <span style="color: #666; margin: 0 30px; opacity: 0.5;">•</span>
+                    <span style="opacity: 0.5;">The Flow</span>
+                </h2>
+            </section>
+
+            <section data-transition="fade" data-background-color="#2c2c2c">
+                <div class="r-fit-text">{ }</div>
+            </section>
+
+            <section data-transition="fade" data-background-color="#1a1a1a">
+                <div style="text-align: center;">
+                    <pre style="font-size: 1.5em;"><code class="language-python" style="max-height: 95vh;" data-trim>
+# The Shared Store is just a dictionary.
+shared = {}
+
+# Node A writes to it.
+shared["result_from_A"] = 42
+
+# Node B reads from it.
+data_for_b = shared["result_from_A"]
+                    </code></pre>
+                </div>
+            </section>
+
+            <section data-transition="zoom-in" data-background-color="#2c2c2c">
+                <img src="./static/node_illustration.png" class="r-stretch" style="background: #fff; padding: 20px; border-radius: 10px;">
+            </section>
+
+            <section data-auto-animate data-background-color="#1a1a1a">
+                <h1 style="color: #4CAF50">Shared Store in Action</h1>
+                <div style="text-align: center;">
+                    <pre style="font-size: 0.9em;"><code class="language-python" style="max-height: 95vh;" data-trim data-line-numbers="4">
+class LoadData(Node):
+    # This node's only job is to add data to the shared store.
+    def post(self, shared, prep_res, exec_res):
+        shared["data"] = "Some important text content"
+                    </code></pre>
+                </div>
+            </section>
+
+            <section data-auto-animate data-background-color="#1a1a1a">
+                <h1 style="color: #4CAF50">Shared Store in Action</h1>
+                <div style="text-align: center;">
+                    <pre style="font-size: 0.9em;"><code class="language-python" style="max-height: 95vh;" data-trim data-line-numbers="4|12">
+class Summarize(Node):
+    def prep(self, shared):
+        # Reads the data that the previous node wrote.
+        return shared["data"]
+
+    def exec(self, prep_res):
+        # Does its work on the prepared data.
+        return call_llm(f"Summarize: {prep_res}")
+
+    def post(self, shared, prep_res, exec_res):
+        # Writes its own result back to the shared store.
+        shared["summary"] = exec_res
+                    </code></pre>
+                </div>
+            </section>
+
+            <!-- Part 10: The Flow -->
+            <section data-auto-animate data-background-color="#1a1a1a">
+                <h1 style="color: #4CAF50">3 Core Ideas:</h1>
+                <h2 style="font-size: 2em; margin-top: 30px;">
+                    <span style="opacity: 0.5;">The Node</span>
+                    <span style="color: #666; margin: 0 30px; opacity: 0.5;">•</span>
+                    <span style="opacity: 0.5;">The Shared Store</span>
+                    <span style="color: #666; margin: 0 30px; opacity: 0.5;">•</span>
+                    <span style="color: #4CAF50;">The Flow</span>
+                </h2>
+            </section>
+
+            <section data-auto-animate data-background-color="#1a1a1a">
+                <h1 style="color: #4CAF50">Defining the Flow</h1>
+
+                <div class="mermaid" style="zoom: 4;">
+                    %%{init: {'theme': 'dark'}}%%
+                    graph LR
+                        A[Node A] --> B[Node B]
+                </div>
+
+                <pre style="font-size: 1em;"><code class="language-python" style="max-height: 95vh;" data-trim>
+# A simple, default transition
+node_a >> node_b
+                </code></pre>
+            </section>
+
+            <section data-auto-animate data-background-color="#1a1a1a">
+                <h1 style="color: #4CAF50">Defining the Flow</h1>
+
+                <div class="mermaid" style="zoom: 4;">
+                    %%{init: {'theme': 'dark'}}%%
+                    graph TD
+                        A[Review Node] -->|approved| B[Payment Node]
+                        A -->|rejected| C[Finish Node]
+                </div>
+
+                <pre style="font-size: 1em;"><code class="language-python" style="max-height: 95vh;" data-trim>
+# Named transitions for branching logic
+review_node - "approved" >> payment_node
+review_node - "rejected" >> finish_node
+                </code></pre>
+                
+            </section>
+
+            <section data-auto-animate data-background-color="#1a1a1a">
+                <h1 style="color: #4CAF50">How It Works: The Address Book</h1>
+                <div style="text-align: center;">
+                    <pre style="font-size: 1em;"><code class="language-python" data-trim data-line-numbers="|2-3|5-8" style="max-height: 95vh;">
+class BaseNode:
+    def __init__(self):
+        self.params, self.successors = {}, {}
+
+    def next(self, node, action="default"):
+        # Adds an entry to the node's "address book"
+        self.successors[action] = node
+        return node
+                    </code></pre>
+                </div>
+            </section>
+
+            <section data-transition="zoom-in" data-background-color="#1a1a1a">
+                <h1 style="color: #4CAF50">How It Works: The Orchestrator</h1>
+                <div style="text-align: center;">
+                    <pre style="font-size: 1em;"><code class="language-python" data-trim data-line-numbers="|2-6|8-10|1" style="max-height: 95vh;">
+class Flow(BaseNode):
+    def _orch(self, shared, params=None):
+        # Runs a node, gets the action, finds the next node, repeats
+        while curr:
+            last_action = curr._run(shared)
+            curr = self.get_next_node(curr, last_action)
+    
+    def get_next_node(self, curr, action):
+        # Looks up the action in the current node's successors
+        return curr.successors.get(action or "default")
+                    </code></pre>
+                </div>
+            </section>
+
+            <section data-transition="zoom-in" data-background-color="#2c2c2c">
+                <h1 style="color: #4CAF50; margin-bottom: 50px;">A Flow is a Node</h1>
+                <div class="mermaid" style="zoom: 3;">
+                    %%{init: {'theme': 'dark'}}%%
+                    graph LR
+                        subgraph Flow
+                            A[Node A] --> B[Node B]
+                        end
+                        Flow --> C[Node C]
+                </div>
+                <h2 class="fragment">This allows for powerful, <mark>nested</mark> workflows.</h2>
+            </section>
+
+            <!-- Part 1: Where is the LLM? -->
+            <section data-transition="zoom-in">
+                <h1 class="r-fit-text">Where is the LLM?</h1>
+            </section>
+
+            <section>
+                <h2 class="r-fit-text" data-fragment-index="1">No OpenAI. No Anthropic. No Google.</h2>
+                <h1 class="r-fit-text fragment" data-fragment-index="2" style="color: #4CAF50;">No Vendor Lock-in.</h1>
+            </section>
+
+            <section>
+                <div class="mermaid" style="zoom: 4;">
+                    %%{init: {'theme': 'dark'}}%%
+                    graph LR
+                        subgraph B[LLM Framework]
+                            A[LLM API]
+                        end
+                        C[You] --> B
+                </div>
+            </section>
+            <section data-transition="zoom-in">
+                <img src="./static/langchain_dependency_error.jpeg" class="r-stretch">
+                <h2 style="color: #ff6b6b;" class="r-fit-text">Maintenance Nightmare</h2>
+            </section>
+
+            <section>
+                <pre style="font-size: 0.8em;"><code class="language-python" data-trim style="max-height: 95vh;">
+from openai import OpenAI
+import os
+
+def call_llm(messages):
+    client = OpenAI(api_key=os.environ.get("OPENAI_API_KEY"))
+
+    response = client.chat.completions.create(
+        model="gpt-4o",
+        messages=messages
+    )
+
+    return response.choices[0].message.content
+                </code></pre>
+                <h2 style="color:#4CAF50;" class="r-fit-text">Write the function yourself!</h2>
+            </section>
+
+            <section data-transition="fade">
+                <h1 class="r-fit-text">Let's Build a Chatbot.</h1>
+            </section>
+
+            <!-- Part 2: The Chatbot Architecture -->
+            <section data-transition="zoom-in">
+                <div class="mermaid" style="zoom: 5;">
+                    %%{init: {'theme': 'dark'}}%%
+                    graph LR
+                        chat[ChatNode] -- "continue" --> chat
+                </div>
+                <h2 class="r-fit-text">A chatbot is just a <mark>self-loop</mark>.</h2>
+            </section>
+
+            <!-- Part 3: Building the ChatNode, Step-by-Step -->
+            <!-- Part 4: The Flow and The Walkthrough -->
+            <section>
+                <pre style="font-size: 0.8em;"><code class="language-python" data-trim data-line-numbers="|3-6|8-13|15-18|20-26|28-32" style="max-height: 95vh;">
+class ChatNode(Node):
+    def prep(self, shared):
+        # Initialize messages if this is the first run
+        if "messages" not in shared:
+            shared["messages"] = []
+            print("Welcome to the chat!")
+        
+        # Get user input
+        user_input = input("\nYou: ")
+        # Add user message to history
+        shared["messages"].append({"role": "user", "content": user_input})
+        # Return all messages for the LLM
+        return shared["messages"]
+
+    def exec(self, messages):
+        # Call LLM with the entire conversation history
+        response = call_llm(messages)
+        return response
+
+    def post(self, shared, prep_res, exec_res):
+        # Print the assistant's response
+        print(f"\nAssistant: {exec_res}")
+        # Add assistant message to history
+        shared["messages"].append({"role": "assistant", "content": exec_res})
+        # Loop back to continue the conversation
+        return "continue"
+
+# Create the flow with self-loop
+chat_node = ChatNode()
+chat_node - "continue" >> chat_node
+
+flow = Flow(start=chat_node)
+
+# Start the chat
+if __name__ == "__main__":
+    shared = {}
+    flow.run(shared)
+                </code></pre>
+            </section>
+
+            <section data-transition="none">
+                <h1>Conversation Walkthrough</h1>
+                <div style="display: flex; align-items: center;">
+                    <div style="flex: 0 0 50%; max-width: 50%;">
+                        <div class="mermaid" style="zoom: 3;">
+                            %%{init: {'theme': 'dark'}}%%
+                            graph TD
+                                prep["prep()"] --> exec["exec()"] --> post["post()"]
+                        </div>
+                    </div>
+                    <div style="flex: 0 0 50%; max-width: 50%;">
+                        <pre style="font-size: 0.8em;"><code class="language-python" data-trim style="max-height: 95vh; white-space: pre-wrap; word-wrap: break-word; overflow-wrap: break-word;">
+# 1. Initial State
+shared = {}
+                        </code></pre>
+                    </div>
+                </div>
+            </section>
+
+            <section data-transition="none">
+                <h1>Conversation Walkthrough</h1>
+                <div style="display: flex; align-items: center;">
+                    <div style="flex: 0 0 50%; max-width: 50%;">
+                        <div class="mermaid" style="zoom: 3;">
+                            %%{init: {'theme': 'dark'}}%%
+                            graph TD
+                                style prep fill:#4CAF50,stroke:#333
+                                prep["prep()"] --> exec["exec()"] --> post["post()"]
+                        </div>
+                    </div>
+                    <div style="flex: 0 0 50%; max-width: 50%;">
+                        <pre style="font-size: 0.8em;"><code class="language-python" data-trim style="max-height: 95vh; white-space: pre-wrap; word-wrap: break-word; overflow-wrap: break-word;">
+# 2. After prep()
+shared = {
+    "messages": [
+        {"role": "user", "content": "Hello, who are you?"}
+    ]
+}
+                        </code></pre>
+                    </div>
+                </div>
+            </section>
+
+            <section data-transition="none">
+                <h1>Conversation Walkthrough</h1>
+                <div style="display: flex; align-items: center;">
+                    <div style="flex: 0 0 50%; max-width: 50%;">
+                        <div class="mermaid" style="zoom: 3;">
+                            %%{init: {'theme': 'dark'}}%%
+                            graph TD
+                                style exec fill:#4CAF50,stroke:#333
+                                prep["prep()"] --> exec["exec()"] --> post["post()"]
+                        </div>
+                    </div>
+                    <div style="flex: 0 0 50%; max-width: 50%;">
+                        <pre style="font-size: 0.8em;"><code class="language-python" data-trim style="max-height: 95vh; white-space: pre-wrap; word-wrap: break-word; overflow-wrap: break-word;">
+# 3. During exec()
+# No change to shared store
+shared = {
+    "messages": [
+        {"role": "user", "content": "Hello, who are you?"}
+    ]
+}
+                        </code></pre>
+                    </div>
+                </div>
+            </section>
+
+            <section data-transition="none">
+                <h1>Conversation Walkthrough</h1>
+                <div style="display: flex; align-items: center;">
+                    <div style="flex: 0 0 50%; max-width: 50%;">
+                        <div class="mermaid" style="zoom: 3;">
+                             %%{init: {'theme': 'dark'}}%%
+                            graph TD
+                                style post fill:#4CAF50,stroke:#333
+                                prep["prep()"] --> exec["exec()"] --> post["post()"]
+                        </div>
+                    </div>
+                    <div style="flex: 0 0 50%; max-width: 50%;">
+                        <pre style="font-size: 0.8em;"><code class="language-python" data-trim style="max-height: 95vh; white-space: pre-wrap; word-wrap: break-word; overflow-wrap: break-word;">
+# 4. After post()
+shared = {
+    "messages": [
+        {"role": "user", "content": "Hello, who are you?"},
+        {"role": "assistant", "content": "I am a helpful AI assistant."}
+    ]
+}
+                        </code></pre>
+                    </div>
+                </div>
+            </section>
+            
+            <section>
+                <h1 class="r-fit-text" style="color: #4CAF50;">Chatbot = 1 Node + 1 Loop + 1 Dictionary.</h1>
+            </section>
+
+            <!-- Part 1: The Problem - Unstructured Chaos -->
+            <section data-transition="fade">
+                <h1>The Next Challenge</h1>
+                <h1 style="color: #ff6b6b;">Structured Output</h1>
+            </section>
+
+            <section>
+                <div style="display: flex; align-items: center; gap: 20px;">
+                    <div style="flex: 1;">
+                        <h2>What you WANT</h2>
+                        <pre style="font-size: 0.8em;"><code class="language-yaml" data-trim>
+name: Jane Doe
+email: jane@example.com
+                        </code></pre>
+                    </div>
+                    <div style="flex: 1;">
+                        <h2>What you GET</h2>
+                        <pre style="font-size: 0.8em;"><code class="language-python" data-trim>
+"Certainly! The name mentioned in the
+document is Jane Doe, and you can find
+her email at jane@example.com."
+                        </code></pre>
+                    </div>
+                </div>
+            </section>
+
+            <section data-transition="fade-in-then-out">
+                <h1 style="color: #ff6b6b;">Brittle</h1>
+                <h1 class="fragment" style="color: #ff6b6b;">Unreliable</h1>
+                <h1 class="fragment" style="color: #ff6b6b;">Frustrating</h1>
+            </section>
+
+            <!-- Part 2: The Solution & The Pro Tip -->
+            <section data-transition="fade">
+                <h1>Solution: Just Ask</h1>
+            </section>
+
+            <section data-transition="slide-up">
+                <h1 class="r-fit-text">Pro Tip: Speak <mark>YAML</mark>, Not JSON</h1>
+            </section>
+
+            <section>
+                <div style="display: flex; align-items: center; gap: 20px;">
+                    <div style="flex: 1; text-align: center;">
+                        <h2>JSON - Fragile</h2>
+                        <pre  style="font-size: 0.8em;"><code class="language-json" data-trim style="max-height: 95vh; white-space: pre-wrap; word-wrap: break-word; overflow-wrap: break-word;"> 
+{
+  "dialogue": "Alice said: \"Hello Bob.\\nHow are you?\""
+}
+                        </code></pre>
+                        <p>escaping</p>
+                    </div>
+                    <div style="flex: 1; text-align: center;">
+                        <h2>YAML - Robust</h2>
+                        <pre style="font-size: 0.8em;"><code class="language-yaml" data-trim style="max-height: 95vh; white-space: pre-wrap; word-wrap: break-word; overflow-wrap: break-word;">
+dialogue: |
+  Alice said: "Hello Bob.
+  How are you?"
+                        </code></pre>
+                        <p>no escaping</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Part 3: Building the Resume Parser -->
+            <section data-transition="fade">
+                <h1 class="r-fit-text">Building the Resume Parser</h1>
+            </section>
+            
+            <section>
+                <pre style="font-size: 0.8em;"><code class="language-python" data-trim data-line-numbers="|7-30|31-39" style="max-height: 95vh; white-space: pre-wrap; overflow-wrap: break-word; overflow: auto;">
+class ResumeParserNode(Node):
+    def prep(self, shared):
+        # The resume text is expected to be in the shared store
+        return shared["resume_text"]
+
+    def exec(self, resume_text):
+        prompt = f"""Analyze the resume below. Output ONLY the requested
+information in YAML format.
+
+**Resume:**
+```
+{resume_text}
+```
+
+**YAML Output Requirements:**
+- Extract `name` (string).
+- Extract `email` (string).
+- Extract `experience` (list of objects).
+
+**Example Format:**
+```yaml
+name: Jane Doe
+email: jane@example.com
+experience:
+  - title: Manager
+    company: Corp A
+```
+
+Generate the YAML output now:
+"""
+        response = call_llm(prompt)
+        # A simple way to extract the YAML block from the response
+        yaml_str = response.split("```yaml")[1].split("```")[0].strip()
+        structured_result = yaml.safe_load(yaml_str)
+
+        # Assertions to enforce the output structure
+        assert "name" in structured_result, "Name is required"
+        assert "email" in structured_result, "Email is required"
+        return structured_result
+
+    def post(self, shared, prep_res, exec_res):
+        shared["structured_data"] = exec_res
+                </code></pre>
+            </section>
+
+            <section>
+                <div style="display: flex; align-items: center; gap: 20px;">
+                    <div style="flex: 1;">
+                        <h2>Before</h2>
+                        <pre style="font-size: 0.7em;"><code class="language-text" data-trim style="white-space: pre-wrap; overflow-wrap: break-word;">
+!! JOHN SMTIH !!
+contact: 123-456-7890.
+email me at johnsmtih1983@gnail.com
+
+Work Experience:
+- at ABC Corportaion i was the SALES MANAGER
+- XYZ Industries, position: ASST. MANAGER
+                        </code></pre>
+                    </div>
+                    <div style="flex: 1;">
+                        <h2>After</h2>
+                        <pre style="font-size: 0.7em;"><code class="language-python" data-trim style="white-space: pre-wrap; overflow-wrap: break-word;">
+# The clean, structured data
+{
+  "name": "JOHN SMTIH",
+  "email": "johnsmtih1983@gnail.com",
+  "experience": [
+    {"title": "SALES MANAGER", "company": "ABC Corportaion"},
+    {"title": "ASST. MANAGER", "company": "XYZ Industries"}
+  ]
+}
+                        </code></pre>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Part X: The Problem of Volume -->
+            <section data-transition="fade">
+                <h1 class="r-fit-text">The Next Challenge: Processing in Bulk</h1>
+            </section>
+            <section data-transition="none">
+                <div style="display: flex; justify-content: space-around; align-items: flex-start; text-align: center;">
+                    <div style="flex: 1;">
+                        <p style="font-size: 5em;">📄</p>
+                        <p style="font-size: 1.5em;">1 Resume</p>
+                    </div>
+                    <div style="flex: 1;">
+                        <p style="font-size: 5em;">🗃️</p>
+                        <p style="font-size: 1.5em;">1000 Resumes?</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Part X: Introducing the BatchNode -->
+            <section data-auto-animate data-background-color="#1a1a1a" data-transition="none">
+                <h2>Solution: The <code style="color: #4CAF50;">BatchNode</code></h2>
+                <div style="display: flex; align-items: center; justify-content: center;">
+                    <div style="flex: 1">
+                        <h3>Standard Node</h3>
+                        <pre style="font-size: 0.6em;"><code class="language-python" data-trim data-line-numbers="" style="max-height: 95vh; white-space: pre-wrap; word-wrap: break-word; overflow-wrap: break-word;">
+class Node:
+    # Returns one item to process
+    def prep(self, shared):
+        return one_item
+
+    # Processes one item
+    def exec(self, one_item):
+        return one_result
+
+    # Receives one result
+    def post(self, shared, prep_res, exec_res):
+        pass
+                        </code></pre>
+                    </div>
+                    <div style="flex: 1">
+                        <h3>BatchNode</h3>
+                        <pre style="font-size: 0.6em;"><code class="language-python" data-trim data-line-numbers="" style="max-height: 95vh; white-space: pre-wrap; word-wrap: break-word; overflow-wrap: break-word;">
+class BatchNode(Node):
+    # Returns a LIST of items
+    def prep(self, shared):
+        return [item1, item2, item3]
+
+    # Processes ONE item at a time
+    def exec(self, one_item_from_list):
+        return one_result
+
+    # Receives a LIST of all results
+    def post(self, shared, prep_res, exec_res_list):
+        pass
+                        </code></pre>
+                    </div>
+                </div>
+            </section>
+
+            <section data-auto-animate data-background-color="#1a1a1a">
+                <h2>Solution: The <code style="color: #4CAF50;">BatchNode</code></h2>
+                <div style="display: flex; align-items: center; justify-content: center;">
+                    <div style="flex: 1;">
+                        <h3>Standard Node</h3>
+                        <pre style="font-size: 0.6em;"><code class="language-python" data-trim data-line-numbers="3-4" style="max-height: 95vh; white-space: pre-wrap; word-wrap: break-word; overflow-wrap: break-word;">
+class Node:
+    # Returns one item to process
+    def prep(self, shared):
+        return one_item
+
+    # Processes one item
+    def exec(self, one_item):
+        return one_result
+
+    # Receives one result
+    def post(self, shared, prep_res, exec_res):
+        pass
+                        </code></pre>
+                    </div>
+                    <div style="flex: 1;">
+                        <h3>BatchNode</h3>
+                        <pre style="font-size: 0.6em;"><code class="language-python" data-trim data-line-numbers="3-4" style="max-height: 95vh; white-space: pre-wrap; word-wrap: break-word; overflow-wrap: break-word;">
+class BatchNode(Node):
+    # Returns a LIST of items
+    def prep(self, shared):
+        return [item1, item2, item3]
+
+    # Processes ONE item at a time
+    def exec(self, one_item_from_list):
+        return one_result
+
+    # Receives a LIST of all results
+    def post(self, shared, prep_res, exec_res_list):
+        pass
+                        </code></pre>
+                    </div>
+                </div>
+            </section>
+            
+            <section data-auto-animate data-background-color="#1a1a1a">
+                <h2>Solution: The <code style="color: #4CAF50;">BatchNode</code></h2>
+                <div style="display: flex; align-items: center; justify-content: center;">
+                    <div style="flex: 1;">
+                        <h3>Standard Node</h3>
+                        <pre style="font-size: 0.6em;"><code class="language-python" data-trim data-line-numbers="7-8" style="max-height: 95vh; white-space: pre-wrap; word-wrap: break-word; overflow-wrap: break-word;">
+class Node:
+    # Returns one item to process
+    def prep(self, shared):
+        return one_item
+
+    # Processes one item
+    def exec(self, one_item):
+        return one_result
+
+    # Receives one result
+    def post(self, shared, prep_res, exec_res):
+        pass
+                        </code></pre>
+                    </div>
+                    <div style="flex: 1;">
+                        <h3>BatchNode</h3>
+                        <pre style="font-size: 0.6em;"><code class="language-python" data-trim data-line-numbers="7-8" style="max-height: 95vh; white-space: pre-wrap; word-wrap: break-word; overflow-wrap: break-word;">
+class BatchNode(Node):
+    # Returns a LIST of items
+    def prep(self, shared):
+        return [item1, item2, item3]
+
+    # Processes ONE item at a time
+    def exec(self, one_item_from_list):
+        return one_result
+
+    # Receives a LIST of all results
+    def post(self, shared, prep_res, exec_res_list):
+        pass
+                        </code></pre>
+                    </div>
+                </div>
+            </section>
+
+            <section data-auto-animate data-background-color="#1a1a1a">
+                <h2>Solution: The <code style="color: #4CAF50;">BatchNode</code></h2>
+                <div style="display: flex; align-items: center; justify-content: center;">
+                    <div style="flex: 1;">
+                        <h3>Standard Node</h3>
+                        <pre style="font-size: 0.6em;"><code class="language-python" data-trim data-line-numbers="11-12" style="max-height: 95vh; white-space: pre-wrap; word-wrap: break-word; overflow-wrap: break-word;">
+class Node:
+    # Returns one item to process
+    def prep(self, shared):
+        return one_item
+
+    # Processes one item
+    def exec(self, one_item):
+        return one_result
+
+    # Receives one result
+    def post(self, shared, prep_res, exec_res):
+        pass
+                        </code></pre>
+                    </div>
+                    <div style="flex: 1;">
+                        <h3>BatchNode</h3>
+                        <pre style="font-size: 0.6em;"><code class="language-python" data-trim data-line-numbers="11-12" style="max-height: 95vh; white-space: pre-wrap; word-wrap: break-word; overflow-wrap: break-word;">
+class BatchNode(Node):
+    # Returns a LIST of items
+    def prep(self, shared):
+        return [item1, item2, item3]
+
+    # Processes ONE item at a time
+    def exec(self, one_item_from_list):
+        return one_result
+
+    # Receives a LIST of all results
+    def post(self, shared, prep_res, exec_res_list):
+        pass
+                        </code></pre>
+                    </div>
+                </div>
+            </section>
+            
+            <!-- Part X: The "Magic" Implementation -->
+            <section data-transition="fade">
+                <h2>The Implementation: Dumb Simple</h2>
+                <pre style="font-size: 1em;"><code class="language-python" data-trim style="max-height: 95vh; white-space: pre-wrap; word-wrap: break-word; overflow-wrap: break-word;">
+class BatchNode(Node):
+    # This is the entire implementation.
+    def _exec(self, items):
+        # It's just a simple for loop.
+        return [super(BatchNode, self)._exec(i) for i in (items or [])]
+                </code></pre>
+            </section>
+
+            <!-- Part X: The Batch Resume Parser Example -->
+            <section data-auto-animate data-background-color="#1a1a1a">
+                <pre style="font-size: 0.8em"><code class="language-python" data-trim data-line-numbers="|2-4|6-30|31-39|41-44" style="max-height: 95vh;">
+class BatchResumeParserNode(BatchNode):
+    def prep(self, shared):
+        # Assumes a list of resumes is already in the shared store.
+        return shared.get("resumes", [])
+
+    def exec(self, resume_text):
+        prompt = f"""Analyze the resume below. Output ONLY the requested
+information in YAML format.
+
+**Resume:**
+```
+{resume_text}
+```
+
+**YAML Output Requirements:**
+- Extract `name` (string).
+- Extract `email` (string).
+- Extract `experience` (list of objects).
+
+**Example Format:**
+```yaml
+name: Jane Doe
+email: jane@example.com
+experience:
+  - title: Manager
+    company: Corp A
+```
+
+Generate the YAML output now:
+"""
+        response = call_llm(prompt)
+        # A simple way to extract the YAML block from the response
+        yaml_str = response.split("```yaml")[1].split("```")[0].strip()
+        structured_result = yaml.safe_load(yaml_str)
+
+        # Assertions to enforce the output structure
+        assert "name" in structured_result, "Name is required"
+        assert "email" in structured_result, "Email is required"
+        return structured_result
+
+    def post(self, shared, prep_res, all_results_list):
+        # This runs only ONCE, after all items are processed.
+        # It receives a list of all individual results.
+        shared["all_parsed_resumes"] = all_results_list
+                </code></pre>
+            </section>
+            
+            <section data-transition="fade">
+                 <h2>Batch Node Walkthrough</h2>
+                <div class="mermaid" style="zoom: 2;">
+                    %%{init: {'theme': 'dark'}}%%
+                    graph TD
+                        A["prep():<br/>returns [resume1, resume2, resume3]"] --> exec_loop
+                        subgraph exec_loop ["_exec() loop"]
+                            C["exec(resume1)"] --> E["exec(resume2)"] --> G["exec(resume3)"]
+                        end
+                        exec_loop --> H["post():<br/>receives [result1, result2, result3]"]
+                </div>
+            </section>
+            
+            <!-- Part X: The Cliffhanger -->
+            <section data-transition="fade">
+                <h1 class="r-fit-text">But... how is this any faster?</h1>
+            </section>
+            
+            <section data-transition="fade">
+                <h1>It isn't.</h1>
+                <div class="mermaid"  style="zoom: 2;">
+                    %%{init: {'theme': 'dark'}}%%
+                    graph TD
+                        subgraph exec_loop ["_exec() loop"]
+                            C["exec(resume1)"] --> E["exec(resume2)"] --> G["exec(resume3)"]
+                        end
+                </div>
+                <p>Total Time = Sum of All Tasks</p>
+            </section>
+            
+            <section data-transition="fade">
+                <h1 class="r-fit-text">Unleashing Parallel Speed with Async</h1>
+            </section>
+
+            <!-- Part 1: The Problem - The Waiting Villain -->
+            <section data-transition="fade">
+                <h1 class="r-fit-text">The True Villain: <mark style="color: #ff6b6b;">WAITING</mark></h1>
+            </section>
+
+            <section data-transition="slide-up">
+                <div class="mermaid" style="zoom: 2;">
+                    %%{init: {'theme': 'dark'}}%%
+                    sequenceDiagram
+                        participant You
+                        participant LLM
+                        You->>LLM: Process Resume 1?
+                        activate LLM
+                        Note over You, LLM: 10+ seconds of waiting...
+                        LLM-->>You: Result 1
+                        deactivate LLM
+                        You->>LLM: Process Resume 2?
+                        activate LLM
+                        Note over You, LLM: 10+ seconds of waiting...
+                        LLM-->>You: Result 2
+                        deactivate LLM
+                </div>
+                <h2 class="r-fit-text" style="color: #ff6b6b;">5-20 seconds of pure, wasted time... per resume.</h2>
+            </section>
+
+            <!-- Part 2: The Smart Chef Analogy -->
+            <section data-transition="fade">
+                <h1 class="r-fit-text">The Smart Chef Analogy</h1>
+            </section>
+
+            <section data-transition="slide-up">
+                <div style="display: flex; align-items: center;">
+                    <div style="flex: 1;">
+                        <h2 style="color: #ff6b6b;">The Slow Chef</h2>
+                        <div class="mermaid" style="zoom: 2;">
+                            %%{init: {'theme': 'dark'}}%%
+                            graph TD
+                                A[Start Eggs] --> B[Wait for Eggs]
+                                B --> C[Serve Eggs]
+                                C --> D[Start Toast]
+                                D --> E[Wait for Toast]
+                                E --> F[Serve Toast]
+                        </div>
+                    </div>
+                    <div style="flex: 1;">
+                        <h2 style="color: #4CAF50;">The Smart Chef</h2>
+                        <div class="mermaid" style="zoom: 2;">
+                            %%{init: {'theme': 'dark'}}%%
+                            graph TD
+                                subgraph " "
+                                    A[Start Eggs] --> B[Wait for Eggs]
+                                    C[Start Toast] --> D[Wait for Toast]
+                                end
+                                B --> E[Serve Eggs]
+                                D --> F[Serve Toast]
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Part 3: Simple Python Example -->
+            <section data-transition="zoom-in">
+                <h1 class="r-fit-text">2 Magic Words in Python</h1>
+                <div style="display: flex; align-items: center;">
+                    <div style="flex: 1;">
+                        <h2 style="color: #4CAF50; font-size: 3em;"><code>async</code></h2>
+                        <p>A label for functions that might <strong>wait</strong></p>
+                    </div>
+                    <div style="flex: 1;">
+                        <h2 style="color: #4CAF50; font-size: 3em;"><code>await</code></h2>
+                        <p>Pause one task and let others run</p>
+                    </div>
+                </div>
+            </section>
+
+            <section>
+                <pre style="font-size: 0.8em;"><code class="language-python" data-trim data-line-numbers="|4-7|9-12|14-21|23" style="max-height: 95vh; white-space: pre-wrap; word-wrap: break-word; overflow-wrap: break-word;">
+import asyncio
+import time
+
+async def make_coffee():  # Takes 3s
+    print("Start coffee...")
+    await asyncio.sleep(3)
+    print("Coffee ready!")
+
+async def make_toast():   # Takes 2s
+    print("Start toast...")
+    await asyncio.sleep(2)
+    print("Toast ready!")
+
+async def main():
+    start_time = time.time()
+    # Run both tasks concurrently
+    await asyncio.gather(
+        make_coffee(),
+        make_toast()
+    )
+    print(f"Total time: {time.time() - start_time:.2f}s")
+
+asyncio.run(main())
+                </code></pre>
+            </section>
+
+            <section data-transition="slide-up">
+                <h1>The Output</h1>
+                <pre style="font-size: 1.2em; background: #2c2c2c; padding: 30px; border-radius: 10px;"><code style="color: #4CAF50;">Start coffee...
+Start toast...
+Toast ready!
+Coffee ready!
+
+Total time: 3.01s</code></pre>
+                <h2 class="fragment r-fit-text" style="color: #4CAF50;">Total Time = Time of Longest Task</h2>
+            </section>
+
+            <!-- Part 4: Upgrading to Async LLM Call -->
+            <section data-transition="fade">
+                <h1>Upgrading to an Async LLM Call</h1>
+            </section>
+
+            <section data-transition="slide-up">
+                <div style="display: flex; align-items: center;">
+                    <div style="flex: 1;">
+                        <h2 style="color: #ff6b6b;">Before - Synchronous</h2>
+                        <pre style="font-size: 0.65em;"><code class="language-python" data-trim style="max-height: 95vh; white-space: pre-wrap; word-wrap: break-word; overflow-wrap: break-word;">
+from openai import OpenAI
+import os
+
+def call_llm(messages):
+    client = OpenAI(api_key=...)
+
+    response = client.chat.completions.create(
+        model="gpt-4o",
+        messages=messages
+    )
+
+    return response.choices[0].message.content
+                        </code></pre>
+                    </div>
+                    <div style="flex: 1;">
+                        <h2 style="color: #4CAF50;">After - Asynchronous</h2>
+                        <pre style="font-size: 0.65em;"><code class="language-python" data-trim style="max-height: 95vh; white-space: pre-wrap; word-wrap: break-word; overflow-wrap: break-word;">
+from openai import AsyncOpenAI
+import os
+
+async def call_llm_async(messages):
+    client = AsyncOpenAI(api_key=...)
+
+    response = await client.chat.completions.create(
+        model="gpt-4o",
+        messages=messages
+    )
+
+    return response.choices[0].message.content
+                        </code></pre>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Part 5: Upgrading the Batch Node -->
+            <section data-transition="fade">
+                <h1>Upgrading the Batch Node</h1>
+            </section>
+
+            <section>
+                <div style="display: flex; align-items: center;">
+                    <div style="flex: 1;">
+                        <h3 style="color: #ff6b6b;">Before - BatchNode</h3>
+                        <pre style="font-size: 0.6em;"><code class="language-python" data-trim data-line-numbers="2,3,6,8,11" style="max-height: 95vh; white-space: pre-wrap; word-wrap: break-word; overflow-wrap: break-word;">
+# Before
+class BatchResumeParserNode(BatchNode):
+    def prep(self, shared):
+        return shared.get("resumes", [])
+
+    def exec(self, one_resume_text):
+        ...
+        response = call_llm(prompt)
+        ...
+    
+    def post(self, shared, prep_res, exec_res_list):
+        shared["all_parsed_resumes"] = exec_res_list
+                        </code></pre>
+                    </div>
+                    <div style="flex: 1;">
+                        <h3 style="color: #4CAF50;">After - AsyncParallelBatchNode</h3>
+                        <pre style="font-size: 0.6em;"><code class="language-python" data-trim data-line-numbers="2,3,6,8,11" style="max-height: 95vh; white-space: pre-wrap; word-wrap: break-word; overflow-wrap: break-word;">
+# After
+class BatchResumeParserNode(AsyncParallelBatchNode):
+    async def prep_async(self, shared):
+        return shared.get("resumes", [])
+
+    async def exec_async(self, one_resume_text):
+        ...
+        response = await call_llm_async(prompt)
+        ...
+
+    async def post_async(self, shared, prep_res, 
+                                       exec_res_list):
+        shared["all_parsed_resumes"] = exec_res_list
+                        </code></pre>
+                    </div>
+                </div>
+            </section>
+            
+            <!-- Part 6: The "Unbelievably Simple" Implementation -->
+            <section data-transition="fade">
+                <h1>The "Unbelievably <mark>Simple</mark>" Implementation</h1>
+            </section>
+
+            <section>
+                <h3 style="color: #ff6b6b;">BatchNode - Sequential</h3>
+                <pre style="font-size: 0.9em;"><code class="language-python" data-trim data-line-numbers="4" style="max-height: 95vh; white-space: pre-wrap; word-wrap: break-word; overflow-wrap: break-word;">
+class BatchNode(Node):
+    def _exec(self, items):
+        # A simple, sequential for loop
+        return [super(BatchNode, self)._exec(i) for i in (items or [])]
+                </code></pre>
+                <h3 style="color: #4CAF50;">AsyncParallelBatchNode - Parallel</h3>
+                <pre style="font-size: 0.9em;"><code class="language-python" data-trim data-line-numbers="4" style="max-height: 95vh; white-space: pre-wrap; word-wrap: break-word; overflow-wrap: break-word;">
+class AsyncParallelBatchNode(AsyncNode, BatchNode):
+    async def _exec(self, items):
+        # Creates tasks and runs them all concurrently
+        return await asyncio.gather(*(super(AsyncParallelBatchNode, self)._exec(i) for i in items))
+                </code></pre>
+                <h2 class="fragment r-fit-text">A loop becomes a gather. That's it.</h2>
+            </section>
+
+            <!-- Part 6: Performance Comparison -->
+            <section data-transition="zoom-in">
+                <h1>The Performance Payoff</h1>
+                <div style="display: flex; align-items: center;">
+                    <div style="flex: 1;">
+                        <h2 style="color: #ff6b6b;">Sequential Time</h2>
+                        <p style="font-size: 1em;"><code>10 resumes × 10 seconds</code></p>
+                        <h1 style="color: #ff6b6b; font-size: 4em;">100s</h1>
+                    </div>
+                    <div style="flex: 1;">
+                        <h2 style="color: #4CAF50;">Parallel Time</h2>
+                        <p style="font-size: 1em;"><code>Time of Longest Task</code></p>
+                        <h1 style="color: #4CAF50; font-size: 4em;">10s</h1>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Part 7: Important Considerations -->
+            <section data-transition="fade" data-background-color="#1a1a1a">
+                <h1 style="color: #ff6b6b;">⚠️ Heads Up!</h1>
+                <div style="margin-top: 50px;">
+                    <h2 style="font-size: 2.5em; margin-bottom: 30px;">
+                        <span style="color: #4CAF50;">1.</span> Watch for API Rate Limits
+                    </h2>
+                    <h2 style="font-size: 2.5em;">
+                        <span style="color: #4CAF50;">2.</span> Ensure Tasks are Independent
+                    </h2>
+                </div>
+            </section>
+
+            <!-- Multi-Step Workflows Section -->
+            <!-- Part 1: The Problem with Single, Large Prompts -->
+            <section data-transition="fade">
+                <h1 class="r-fit-text">Multi-Step Workflows</h1>
+            </section>
+
+            <section data-transition="fade">
+                <h1 class="r-fit-text">"Write a comprehensive blog post about AI safety..."</h1>
+            </section>
+
+            <section data-transition="zoom-in" data-background-color="#2c2c2c">
+                <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 95vh;">
+                    <div style="background: #ff6b6b; color: white; padding: 40px 80px; border-radius: 50%; font-size: 8em; font-weight: bold; margin-bottom: 50px;">C+</div>
+                    <h2 style="color: #ff6b6b;">Generic rambling output</h2>
+                </div>
+            </section>
+
+            <section data-transition="fade" data-background-color="#1a1a1a">
+                <h1 class="r-fit-text" style="color: #4CAF50;">Task Decomposition</h1>
+                <h2 class="fragment fade-in" style="margin-top: 50px;">Break big tasks into small tasks</h2>
+            </section>
+
+            <!-- Part 2: Designing the Workflow -->
+            <section data-transition="fade">
+                <div class="mermaid" style="zoom: 5;">
+                    %%{init: {'theme': 'dark'}}%%
+                    graph LR
+                        A[Outliner] --> B[BatchDrafter] --> C[Combiner]
+                </div>
+            </section>
+
+            <section data-transition="fade" data-background-color="#1a1a1a">
+                <h1 class="r-fit-text" style="color: #4CAF50;">Workflow + Batch = Power</h1>
+                <h2 class="fragment fade-in" style="margin-top: 50px;">List → Parallel Processing → Combine</h2>
+            </section>
+
+            <!-- Part 3: The Node-by-Node Implementation -->
+            <section data-auto-animate data-background-color="#1a1a1a">
+                <div style="text-align: center;">
+                    <pre style="font-size: 1em;"><code class="language-python" data-trim data-line-numbers="2-3|5-7|9-10" style="max-height: 95vh;">
+class GenerateOutline(Node):
+    def prep(self, shared):
+        return shared["topic"]
+
+    def exec(self, topic):
+        prompt = f"List section titles for {topic}"
+        return call_llm(prompt)
+
+    def post(self, shared, prep_res, exec_res):
+        shared["section_titles"] = exec_res.strip().split('\n')
+                    </code></pre>
+                </div>
+            </section>
+
+            <section data-auto-animate data-background-color="#1a1a1a">
+                <div style="text-align: center;">
+                    <pre style="font-size: 1em;"><code class="language-python" data-trim data-line-numbers="2-3|5-7|9-10" style="max-height: 95vh;">
+class BatchDraftSections(BatchNode):
+    def prep(self, shared):
+        return shared["section_titles"]
+
+    def exec(self, section_title):
+        prompt = f"Write content for: {section_title}"
+        return call_llm(prompt)
+
+    def post(self, shared, prep_res, exec_res):
+        shared["section_drafts"] = exec_res
+                    </code></pre>
+                </div>
+            </section>
+
+            <section data-auto-animate data-background-color="#1a1a1a">
+                <div style="text-align: center;">
+                    <pre style="font-size: 1em;"><code class="language-python" data-trim data-line-numbers="2-3|5-8|10-11" style="max-height: 95vh;">
+class CombineAndRefine(Node):
+    def prep(self, shared):
+        return shared["section_drafts"]
+
+    def exec(self, section_drafts):
+        combined = "\n\n".join(section_drafts)
+        prompt = f"Combine and polish: {combined}"
+        return call_llm(prompt)
+
+    def post(self, shared, prep_res, exec_res):
+        shared["final_article"] = exec_res
+                    </code></pre>
+                </div>
+            </section>
+
+            <!-- Part 4: Connecting and Running the Flow -->
+            <section data-auto-animate data-background-color="#1a1a1a">
+                <div style="text-align: center;">
+                    <pre style="font-size: 1em;"><code class="language-python" data-trim data-line-numbers="1-2|4-7" style="max-height: 95vh;">
+# Connect the chain
+outline_node >> batch_draft_node >> combine_node
+
+# Create and run
+flow = Flow(start=outline_node)
+shared = {"topic": "AI Safety"}
+flow.run(shared)
+                    </code></pre>
+                </div>
+            </section>
+
+            <!-- Part 5: Tracing the Shared Store -->
+            <section data-transition="none">
+                <h1>Workflow Walkthrough</h1>
+                <div style="display: flex; align-items: center;">
+                    <div style="flex: 0 0 50%; max-width: 50%;">
+                        <div class="mermaid" style="zoom: 3;">
+                            %%{init: {'theme': 'dark'}}%%
+                            graph LR
+                                A[Outliner] --> B[BatchDrafter] --> C[Combiner]
+                        </div>
+                    </div>
+                    <div style="flex: 0 0 50%; max-width: 50%;">
+                        <pre style="font-size: 0.8em;"><code class="language-python" data-trim style="max-height: 95vh; white-space: pre-wrap; word-wrap: break-word; overflow-wrap: break-word;">
+# Initial State
+shared = {"topic": "AI Safety"}
+                        </code></pre>
+                    </div>
+                </div>
+            </section>
+
+            <section data-transition="none">
+                <div style="display: flex; align-items: center;">
+                    <div style="flex: 0 0 50%; max-width: 50%;">
+                        <div class="mermaid" style="zoom: 3;">
+                            %%{init: {'theme': 'dark'}}%%
+                            graph LR
+                                A["[Outliner]"] --> B[BatchDrafter] --> C[Combiner]
+                                style A fill:#4CAF50,stroke:#333
+                        </div>
+                    </div>
+                    <div style="flex: 0 0 50%; max-width: 50%;">
+                        <pre style="font-size: 0.8em;"><code class="language-python" data-trim style="max-height: 95vh; white-space: pre-wrap; word-wrap: break-word; overflow-wrap: break-word;">
+# After Outliner - now we have a LIST!
+shared = {
+    "topic": "AI Safety",
+    "section_titles": ["Introduction", "Key Risks", "Solutions"]
+}
+                        </code></pre>
+                    </div>
+                </div>
+            </section>
+
+            <section data-transition="none">
+                <div style="display: flex; align-items: center;">
+                    <div style="flex: 0 0 50%; max-width: 50%;">
+                        <div class="mermaid" style="zoom: 3;">
+                            %%{init: {'theme': 'dark'}}%%
+                            graph LR
+                                A[Outliner] --> B["[BatchDrafter]"] --> C[Combiner]
+                                style B fill:#4CAF50,stroke:#333
+                        </div>
+                    </div>
+                    <div style="flex: 0 0 50%; max-width: 50%;">
+                        <pre style="font-size: 0.8em;"><code class="language-python" data-trim style="max-height: 95vh; white-space: pre-wrap; word-wrap: break-word; overflow-wrap: break-word;">
+# After BatchDrafter - LIST of drafted sections!
+shared = {
+    "topic": "AI Safety",
+    "section_titles": ["Introduction", "Key Risks", "Solutions"],
+    "section_drafts": [
+        "AI safety introduction content...",
+        "Key risks in AI development...", 
+        "Proposed solutions and approaches..."
+    ]
+}
+                        </code></pre>
+                    </div>
+                </div>
+            </section>
+
+            <section data-transition="none">
+                <div style="display: flex; align-items: center;">
+                    <div style="flex: 0 0 50%; max-width: 50%;">
+                        <div class="mermaid" style="zoom: 3;">
+                            %%{init: {'theme': 'dark'}}%%
+                            graph LR
+                                A[Outliner] --> B[BatchDrafter] --> C["[Combiner]"]
+                                style C fill:#4CAF50,stroke:#333
+                        </div>
+                    </div>
+                    <div style="flex: 0 0 50%; max-width: 50%;">
+                        <pre style="font-size: 0.8em;"><code class="language-python" data-trim style="max-height: 95vh; white-space: pre-wrap; word-wrap: break-word; overflow-wrap: break-word;">
+# Final result - combined and polished
+shared = {
+    "topic": "AI Safety",
+    "section_titles": ["Introduction", "Key Risks", "Solutions"],
+    "section_drafts": [...],
+    "final_article": "AI Safety: A Comprehensive Guide..."
+}
+                        </code></pre>
+                    </div>
+                </div>
+            </section>
+
+            <section data-transition="zoom-in" data-background-color="#2c2c2c">
+                <h2 class="r-fit-text fade-in">By breaking one complex request into 3 simple requests...</h2>
+                <h1 class="fragment r-fit-text fade-in" style="color: #4CAF50;">Much higher-quality output!</h1>
+            </section>
+
+            <!-- Part 1: The Problem with Rigid Workflows -->
+            <section data-transition="slide-up" data-background-color="#2c2c2c">
+                <div class="mermaid" style="zoom: 4;">
+                    %%{init: {'theme': 'dark'}}%%
+                    graph LR
+                        A[Outline] --> B[Draft] --> C[Combine]
+                </div>
+                <h1 class="fragment fade-in" style="color: #ff6b6b; margin-top: 50px;">The path is fixed. It can't adapt.</h1>
+            </section>
+
+            <section data-transition="fade" data-background-color="#1a1a1a">
+                <h2 class="r-fit-text" style="color: #ff6b6b;">What if it could REWRITE its plan?</h2>
+                <h2 class="fragment fade-in r-fit-text" style="color: #FFD700;">What if it could ADAPT on the fly?</h2>
+                <h2 class="fragment fade-in r-fit-text" style="color: #4CAF50;">What if it could actually THINK?</h2>
+            </section>
+
+            <!-- Part 2: The Big "Secret" Revealed -->
+            <section data-transition="fade" data-background-color="#000">
+                <h1 class="r-fit-text" style="color: #4CAF50; font-size: 6em;">The AGENT</h1>
+                <div class="fragment fade-in" style="margin-top: 50px;">
+                    <h2 class="r-fit-text" style="color: #ff6b6b;">Magic? Consciousness? A Black Box?</h2>
+                </div>
+            </section>
+
+            <section data-transition="zoom-in" data-background-color="#1a1a1a">
+                <h1 class="r-fit-text">An Agent = A <mark>Flow</mark> with a Loop & a Branch</h1>
+            </section>
+
+            <section data-transition="slide-up" data-background-color="#2c2c2c">
+                <div class="mermaid" style="zoom: 3;">
+                    %%{init: {'theme': 'dark'}}%%
+                    graph TD
+                        A[Decide Node] -->|action: 'search'| B[Search Node]
+                        A -->|action: 'answer'| C[Answer Node]
+                        B --> A
+                </div>
+            </section>
+
+            <!-- Part 3: Building a Web Search Agent -->
+            <section data-transition="fade" data-background-color="#1a1a1a">
+                <h1 class="r-fit-text" style="color: #4CAF50;">Building a Web Search Agent</h1>
+            </section>
+
+            <section data-transition="zoom-in" data-background-color="#1a1a1a">
+                <h2 style="color: #4CAF50;">The Brain: DecideAction Node</h2>
+                <pre style="font-size: 0.8em;"><code class="language-python" data-trim data-line-numbers="|2-5|7-27|29-32" style="max-height: 80vh;">
+class DecideAction(Node):
+    def prep(self, shared):
+        context = shared.get("context", "No previous search")
+        question = shared["question"]
+        return question, context
+
+    def exec(self, inputs):
+        question, context = inputs
+        prompt = f"""Given the context, should you 'search' for more
+info or 'answer' now?
+
+Context: {context}
+Query: {question}
+
+Actions:
+- search
+- answer
+
+Respond in YAML:
+```yaml
+action: &lt;your_choice&gt;
+search_query: &lt;if searching&gt;
+```"""
+        response = call_llm(prompt)
+        yaml_str = response.split("```yaml")[1].split("```")[0].strip()
+        decision = yaml.safe_load(yaml_str)
+        return decision
+
+    def post(self, shared, prep_res, exec_res):
+        if exec_res["action"] == "search":
+            shared["search_query"] = exec_res["search_query"]
+        return exec_res["action"]
+                </code></pre>
+            </section>
+
+            <section data-transition="zoom-in" data-background-color="#1a1a1a">
+                <h2 style="color: #4CAF50;">The Tool: SearchWeb Node</h2>
+                <pre style="font-size: 0.8em;"><code class="language-python" data-trim data-line-numbers="|2-3|5-17|19-23" style="max-height: 80vh;">
+class SearchWeb(Node):
+    def prep(self, shared):
+        return shared["search_query"]
+
+    def exec(self, search_query):
+        # Search the web for information
+        search_client = GoogleSearchAPI(api_key="YOUR_API_KEY")
+        results = search_client.search({
+            "query": search_query,
+            "num_results": 3,
+            "language": "en"
+        })
+        
+        formatted_results = f"Results for: {search_query}\n"
+        for result in results:
+            formatted_results += f"- {result.title}: {result.snippet}\n"
+        return formatted_results
+
+    def post(self, shared, prep_res, exec_res):
+        previous = shared.get("context", "")
+        shared["context"] = previous + "\n\nSEARCH: " + \
+                            prep_res + "\nRESULTS: " + exec_res
+        return "decide"  # Loop back to the brain
+                </code></pre>
+            </section>
+
+            <section data-transition="zoom-in" data-background-color="#1a1a1a">
+                <h2 style="color: #4CAF50;">The Exit: DirectAnswer Node</h2>
+                <pre style="font-size: 0.8em;"><code class="language-python" data-trim data-line-numbers="|2-5|7-15|17-19" style="max-height: 80vh;">
+class DirectAnswer(Node):
+    def prep(self, shared):
+        question = shared["question"]
+        context = shared.get("context", "")
+        return question, context
+
+    def exec(self, inputs):
+        question, context = inputs
+        prompt = f"""Based on the following information, answer the question.
+
+Question: {question}
+Research: {context}
+
+Provide a comprehensive answer using the research results."""
+        return call_llm(prompt)
+
+    def post(self, shared, prep_res, exec_res):
+        shared["answer"] = exec_res
+        return "done"  # End the flow
+                </code></pre>
+            </section>
+
+            <section data-transition="zoom-in" data-background-color="#1a1a1a">
+                <h2 style="color: #4CAF50;">Wiring the Graph</h2>
+                <pre style="font-size: 1em;"><code class="language-python" data-trim data-line-numbers="" style="max-height: 80vh;">
+# Connect the nodes together
+decide_node - "search" >> search_node
+decide_node - "answer" >> answer_node
+search_node - "decide" >> decide_node  # The loop
+
+flow = Flow(start=decide_node)
+                </code></pre>
+            </section>
+
+            <!-- Part 4: Tracing a Live Run -->
+            <section data-transition="fade" data-background-color="#1a1a1a">
+                <h1 class="r-fit-text">Tracing a Live Run</h1>
+            </section>
+
+            <section data-transition="none">
+                <h1>Initialization</h1>
+                <div style="display: flex; align-items: center;">
+                    <div style="flex: 0 0 50%; max-width: 50%;">
+                        <div class="mermaid" style="zoom: 2.5;">
+                            %%{init: {'theme': 'dark'}}%%
+                            graph TD
+                                A[DecideAction] -->|search| B[SearchWeb]
+                                A -->|answer| C[Answer]
+                                B --> A
+                        </div>
+                    </div>
+                    <div style="flex: 0 0 50%; max-width: 50%;">
+                        <pre style="font-size: 0.8em;"><code class="language-python" data-trim style="max-height: 95vh; white-space: pre-wrap; word-wrap: break-word; overflow-wrap: break-word;">
+# Initial State
+shared = {
+    "question": "Who won the 2024 Physics Nobel Prize?"
+}
+
+# Start the flow
+flow.run(shared)
+                        </code></pre>
+                    </div>
+                </div>
+            </section>
+
+            <section data-transition="none">
+                <h1>Round 1: Decide</h1>
+                <div style="display: flex; align-items: center;">
+                    <div style="flex: 0 0 50%; max-width: 50%;">
+                        <div class="mermaid" style="zoom: 2.5;">
+                            %%{init: {'theme': 'dark'}}%%
+                            graph TD
+                                A["[DecideAction]"] -->|search| B[SearchWeb]
+                                A -->|answer| C[Answer]
+                                B --> A
+                                style A fill:#4CAF50,stroke:#333
+                                linkStyle 0 stroke:#FFD700,stroke-width:4px
+                        </div>
+                    </div>
+                    <div style="flex: 0 0 50%; max-width: 50%;">
+                        <pre style="font-size: 0.8em;"><code class="language-python" data-trim data-line-numbers="3-4" style="max-height: 95vh; white-space: pre-wrap; word-wrap: break-word; overflow-wrap: break-word;">
+# After Round 1: Decide
+shared = {
+    "question": "Who won the 2024 Physics Nobel Prize?",
+    "search_query": "2024 Physics Nobel Prize winner"
+}
+# LLM Output: 'search'
+                        </code></pre>
+                    </div>
+                </div>
+            </section>
+
+            <section data-transition="none">
+                <h1>Round 2: Search</h1>
+                <div style="display: flex; align-items: center;">
+                    <div style="flex: 0 0 50%; max-width: 50%;">
+                        <div class="mermaid" style="zoom: 2.5;">
+                            %%{init: {'theme': 'dark'}}%%
+                            graph TD
+                                A[DecideAction] -->|search| B["[SearchWeb]"]
+                                A -->|answer| C[Answer]
+                                B --> A
+                                style B fill:#4CAF50,stroke:#333
+                        </div>
+                    </div>
+                    <div style="flex: 0 0 50%; max-width: 50%;">
+                        <pre style="font-size: 0.8em;"><code class="language-python" data-trim data-line-numbers="5-6" style="max-height: 95vh; white-space: pre-wrap; word-wrap: break-word; overflow-wrap: break-word;">
+# After Round 2: Search
+shared = {
+    "question": "Who won the 2024 Physics Nobel Prize?",
+    "search_query": "2024 Physics Nobel Prize winner",
+    "context": "SEARCH: 2024 Physics Nobel Prize winner\nRESULTS: The 2024 Nobel Prize in Physics was awarded to John Hopfield and Geoffrey Hinton for foundational discoveries and inventions in machine learning..."
+}
+# Node returns: 'decide'
+                        </code></pre>
+                    </div>
+                </div>
+            </section>
+
+            <section data-transition="none">
+                <h1>Round 3: Decide (with context)</h1>
+                <div style="display: flex; align-items: center;">
+                    <div style="flex: 0 0 50%; max-width: 50%;">
+                        <div class="mermaid" style="zoom: 2.5;">
+                            %%{init: {'theme': 'dark'}}%%
+                            graph TD
+                                A["[DecideAction]"] -->|search| B[SearchWeb]
+                                A -->|answer| C[Answer]
+                                B --> A
+                                style A fill:#4CAF50,stroke:#333
+                                linkStyle 1 stroke:#FFD700,stroke-width:4px
+                        </div>
+                    </div>
+                    <div style="flex: 0 0 50%; max-width: 50%;">
+                        <pre style="font-size: 0.8em;"><code class="language-python" data-trim style="max-height: 95vh; white-space: pre-wrap; word-wrap: break-word; overflow-wrap: break-word;">
+# After Round 3: Decide (with context)
+shared = {
+    "question": "Who won the 2024 Physics Nobel Prize?",
+    "search_query": "2024 Physics Nobel Prize winner", 
+    "context": "SEARCH: 2024 Physics Nobel Prize winner\nRESULTS: The 2024 Nobel Prize in Physics was awarded to John Hopfield and Geoffrey Hinton for foundational discoveries and inventions in machine learning..."
+}
+# LLM Output: 'answer' (no new data added)
+                        </code></pre>
+                    </div>
+                </div>
+            </section>
+
+            <section data-transition="none">
+                <h1>Final Step: Answer</h1>
+                <div style="display: flex; align-items: center;">
+                    <div style="flex: 0 0 50%; max-width: 50%;">
+                        <div class="mermaid" style="zoom: 2.5;">
+                            %%{init: {'theme': 'dark'}}%%
+                            graph TD
+                                A[DecideAction] -->|search| B[SearchWeb]
+                                A -->|answer| C["[Answer]"]
+                                B --> A
+                                style C fill:#4CAF50,stroke:#333
+                        </div>
+                    </div>
+                    <div style="flex: 0 0 50%; max-width: 50%;">
+                        <pre style="font-size: 0.8em;"><code class="language-python" data-trim data-line-numbers="6-7" style="max-height: 95vh; white-space: pre-wrap; word-wrap: break-word; overflow-wrap: break-word;">
+# After Final Step: Answer
+shared = {
+    "question": "Who won the 2024 Physics Nobel Prize?",
+    "search_query": "2024 Physics Nobel Prize winner",
+    "context": "SEARCH: 2024 Physics Nobel Prize winner\nRESULTS: The 2024 Nobel Prize in Physics was awarded to John Hopfield and Geoffrey Hinton...",
+    "answer": "The 2024 Nobel Prize in Physics was awarded to John Hopfield and Geoffrey Hinton for their foundational discoveries and inventions that enable machine learning with artificial neural networks."
+}
+# Flow ends.
+                        </code></pre>
+                    </div>
+                </div>
+            </section>
+
+            <section data-transition="zoom-in" data-background-color="#000">
+                <h1 class="r-fit-text" style="color: #4CAF50; text-shadow: 3px 3px 6px rgba(0,0,0,0.9);">An Agent is Just a Graph.</h1>
+            </section>
+
+            <!-- Part 1: The Mic Drop -->
+            <section data-transition="slide-up" data-background-color="#1a1a1a">
+                <h1 style="color: #4CAF50; margin-bottom: 50px;">What We Just Built:</h1>
+                <div style="font-size: 2em; text-align: left; margin-left: 200px;">
+                    <p class="fragment fade-in">✓ Chatbots</p>
+                    <p class="fragment fade-in">✓ Batch Processing</p>
+                    <p class="fragment fade-in">✓ Parallel Workflows</p>
+                    <p class="fragment fade-in">✓ Agents</p>
+                    <p class="fragment fade-in" style="color: #4CAF50; font-weight: bold;">...all from 100 lines.</p>
+                </div>
+            </section>
+
+            <section data-transition="fade" data-background-color="#1a1a1a">
+                <h1>No Black Boxes</h1>
+                <h1 class="fragment fade-in" style="color: #4CAF50">3 Core Ideas:</h1>
+                <h2 style="font-size: 2em; margin-top: 30px;">
+                    <span class="fragment fade-in">The Node</span>
+                    <span class="fragment fade-in"> <span style="color: #666; margin: 0 30px;">•</span> The Shared Store</span>
+                    <span class="fragment fade-in"> <span style="color: #666; margin: 0 30px;">•</span> The Flow</span>
+                </h2>
+            </section>
+
+            <!-- Part 3: The Call to Action & More Cookbooks -->
+            <section data-transition="fade" data-background-color="#1a1a1a">
+                <h1 class="r-fit-text">Want to try it yourself?</h1>
+                <h2 class="fragment fade-in r-fit-text" style="color: #4CAF50; margin-top: 50px;">Of course you do.</h2>
+            </section>
+
+            <section data-transition="slide-up" data-background-color="#2c2c2c">
+                <img src="./static/pocketflow_github.png" class="r-stretch">
+                <p>https://github.com/The-Pocket/PocketFlow</p>
+            </section>
+
+            <section data-transition="zoom-in" data-background-color="#1a1a1a">
+                <img src="./static/cookbook.png" class="r-stretch">
+                <h2 style="color: #4CAF50; margin-top: 30px;">All built on the same 100-line foundation.</h2>
+            </section>
+
+            <!-- Part 4: The Ultimate Testimony -->
+            <section data-transition="fade" data-background-color="#1a1a1a">
+                <h1 class="r-fit-text">If you think these are just toys...</h1>
+                <h2 class="fragment fade-in r-fit-text" style="color: #4CAF50; margin-top: 50px;">Let me show you something.</h2>
+            </section>
+
+            <section data-transition="slide-up" data-background-color="#000">
+                <h2 style="color: #4CAF50; margin-top: 40px;">Just a more complex workflow. A bigger graph.</h2>
+                <img src="./static/code2tutorial.png" class="r-stretch">
+                <p>https://github.com/The-Pocket/PocketFlow-Tutorial-Codebase-Knowledge</p>
+                
+            </section>
+
+            <section data-transition="zoom-in" data-background-color="#1a1a1a">
+                <div class="mermaid" style="zoom: 2;">
+                    %%{init: {'theme': 'dark'}}%%
+                    flowchart TD
+                        A[FetchRepo] --> B[IdentifyAbstractions]
+                        B --> C[AnalyzeRelationships]
+                        C --> D[OrderChapters]
+                        D --> E[Batch WriteChapters]
+                        E --> F[CombineTutorial]
+                </div>
+            </section>
+
+            <section data-transition="slide-up" data-background-color="#2c2c2c">
+                <img src="./static/star-history-2025710.png" class="r-stretch">
+                <h2 class="r-fit-text fragment fade-in" style="color: #FFD700; margin-top: 30px;">More popular than the framework itself.</h2>
+            </section>
+
+            <!-- Part 5: The Final Reveal -->
+            <section data-transition="fade" data-background-color="#000">
+                <h2 class="fade-in r-fit-text" style="color: #FFD700; margin-top: 50px;">There's one more thing....</h2>
+            </section>
+
+            <section data-transition="zoom-in" data-background-color="#000">
+                <h1>This video was generated by ...</h1>
+                <h1 class="fragment fade-in r-fit-text" style="color: #ff6b6b; text-shadow: 3px 3px 6px rgba(0,0,0,0.9);">a PocketFlow AGENT.</h1>
+            </section>
+
+            <section data-transition="fade" data-background-color="#000">
+                <h1>To be continued...</h1>
+            </section>
+
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/5.2.1/reveal.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/5.2.1/plugin/highlight/highlight.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/reveal.js-mermaid-plugin@2.1.0/plugin/mermaid/mermaid.js"></script>
+    <script>
+        Reveal.initialize({
+            // autoSlide: 2000,
+            plugins: [ RevealHighlight, RevealMermaid ],
+            width: 1920,
+            height: 1080,
+            // controls: false,        // Hide left/right arrow navigation
+            // progress: false,        // Hide bottom progress bar
+            // autoSlideStoppable: false,  // Prevent pausing auto-slide on interaction
+            // keyboard: false,        // Disable keyboard navigation (optional)
+            // touch: false,          // Disable touch navigation (optional)
+        });
+    </script>
+</body>
+</html> 
