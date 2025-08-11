@@ -1,4 +1,4 @@
-<h1 align="center">AI Video Tutorial Generator</h1>
+<h1 align="center">AI Tutor for Learning</h1>
 
 > We use AI to make education addictive
 
