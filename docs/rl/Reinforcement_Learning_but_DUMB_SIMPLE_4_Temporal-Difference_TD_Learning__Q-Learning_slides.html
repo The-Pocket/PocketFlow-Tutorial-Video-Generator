@@ -1,0 +1,1720 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Reinforcement Learning, but DUMB SIMPLE #4: Temporal-Difference (TD) Learning | Q-Learning</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/5.2.1/reveal.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/5.2.1/theme/black.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/monokai.min.css">
+</head>
+<body>
+    <div class="reveal">
+        <div class="slides">
+<!-- START CHAPTER 1 -->
+
+<!-- Because this content is the opening hook questioning a well-known term, this is a POWER TEXT slide. Text analysis: "You've heard of Q-Learning." (26 characters) is a perfect length for r-fit-text. This slide serves to grab the attention of viewers who have some familiarity with the topic but may not understand it deeply. -->
+<section data-auto-animate>
+    <h1 class="r-fit-text">You've heard of Q-Learning.</h1>
+</section>
+
+<!-- Because this content builds on the previous hook by questioning the audience's understanding, this is a POWER TEXT slide. Text analysis: "But what IS it, really?" (23 characters) is also a great fit for r-fit-text. Using data-auto-animate provides a smooth transition from the previous statement, creating a conversational flow. The emphasis on "IS" highlights the core question. -->
+<section data-auto-animate>
+    <h1 class="r-fit-text">You've heard of Q-Learning.</h1>
+    <h2 class="r-fit-text">But what <mark>IS</mark> it, really?</h2>
+</section>
+
+<!-- Because this content introduces the second, more complex term from the title, this is a POWER TEXT slide. Text analysis: The phrase is broken into two parts for impact. "And what does this bizarre phrase..." sets up the confusion, while the fragment reveals the term itself. This follows the frequent change principle for impactful delivery. -->
+<section data-transition="slide">
+    <h2 class="r-fit-text">And what does this bizarre phrase...</h2>
+    <h1 class="r-fit-text fragment">"Temporal-Difference Learning"</h1>
+    <h2 class="r-fit-text fragment">...even mean?</h2>
+</section>
+
+<!-- Because this content makes a direct promise to the viewer about the outcome of the video, this is a POWER TEXT slide. Text analysis: "By the end of this video..." is a classic setup phrase. It's short enough to create anticipation for the next slide. Using data-auto-animate links this setup to its punchline. -->
+<section data-auto-animate>
+    <h2 class="r-fit-text">By the end of this video...</h2>
+</section>
+
+<!-- Because this slide delivers the punchline to the previous setup, this is a POWER TEXT slide. Text analysis: "...it's going to feel DUMB SIMPLE." (33 characters) perfectly fits the r-fit-text style and reinforces the series' brand. The key phrase "DUMB SIMPLE" is highlighted in green to signify a positive, achievable outcome. The data-auto-animate ensures a seamless transition. -->
+<section data-auto-animate>
+    <h2 class="r-fit-text">By the end of this video...</h2>
+    <h1 class="r-fit-text" style="color: #4CAF50;">it's going to feel <mark>DUMB SIMPLE</mark>.</h1>
+</section>
+
+<!-- Because this content transitions by referencing the previous topic (Monte Carlo), this is a POWER TEXT slide. Text analysis: "In our last video, our Monte Carlo agent was incredibly patient." (63 characters) fits well within the r-fit-text sweet spot. This provides necessary context for viewers familiar with the series. Using data-auto-animate connects this statement to its consequence on the next slide. -->
+<section data-auto-animate data-transition="fade-in-then-out">
+    <h2 class="r-fit-text">In our last video, our Monte Carlo agent was incredibly patient.</h2>
+</section>
+
+<!-- Because this slide explains the key limitation of the previous method, this is a POWER TEXT slide. Text analysis: "It had to finish the ENTIRE race before it could learn a single thing." (71 characters) is an ideal length for r-fit-text. The word "ENTIRE" is marked in red for emphasis, highlighting the inefficiency that the new method will solve. data-auto-animate ensures a smooth transition. -->
+<section data-auto-animate data-transition="fade-in-then-out">
+    <h2 class="r-fit-text">It had to finish the <mark style="color: #ff6b6b">ENTIRE</mark> race before it could learn a single thing.</h2>
+</section>
+
+<!-- Because this slide introduces a new analogy to explain the core concept, it's a POWER TEXT slide. Text analysis: "Think about it like this." (25 characters) is a simple, direct transition that primes the audience for an example. Its brevity makes it impactful. -->
+<section data-transition="convex">
+    <h1 class="r-fit-text">Think about it like this.</h1>
+</section>
+
+<!-- Because this slide sets up the analogy scenario, it's a POWER TEXT slide designed for a slightly slower pace. Text analysis: The two sentences together are a bit long, so they are split into a title and a supporting line to maintain readability and impact. The first line sets the context, and the second provides the critical detail. -->
+<section data-auto-animate>
+    <h2 class="r-fit-text">You're cooking dinner and the recipe says "30 minutes."</h2>
+</section>
+
+<!-- Because this slide introduces the "problem" within the analogy, it's a POWER TEXT slide. Text analysis: The sentence "Ten minutes in, you realize you forgot to preheat the oven" (61 characters) is a perfect length. The key mistake, "forgot to preheat the oven," is marked in red to emphasize the error. data-auto-animate smoothly adds this new information to the scenario. -->
+<section data-auto-animate>
+    <h2 class="r-fit-text">You're cooking dinner and the recipe says "30 minutes."</h2>
+    <h1 class="r-fit-text">Ten minutes in, you realize you <mark style="color: #ff6b6b">forgot to preheat the oven</mark>.</h1>
+</section>
+
+<!-- Because this slide poses the central question of the analogy, it's a POWER TEXT slide. Text analysis: "Do you have to wait until dinner is served to know you'll be eating late?" (74 characters) is a powerful, relatable question that directly maps to the problem with Monte Carlo learning. The length is ideal for r-fit-text. -->
+<section data-transition="concave">
+    <h1 class="r-fit-text">Do you have to wait until dinner is served to know you'll be eating late?</h1>
+</section>
+
+<!-- Because this slide provides the immediate, intuitive answer to the previous question, this is a POWER TEXT slide. Text analysis: "Of course not." is extremely short and impactful. Using a large, fixed font size instead of r-fit-text is appropriate here for maximum visual weight without the text becoming absurdly large. -->
+<section data-auto-animate>
+    <h1 class="r-fit-text">Of course not.</h1>
+</section>
+
+<!-- Because this slide reveals the core insight of the analogy, this is a POWER TEXT slide. Text analysis: "You update your estimate immediately." (35 characters) is a concise and powerful statement. "immediately" is the key concept, so it's highlighted in green to signal a positive, smart action. data-auto-animate creates a smooth flow from the previous answer. -->
+<section data-auto-animate>
+    <h1 class="r-fit-text">You update your estimate <mark style="color: #4CAF50;">immediately</mark>.</h1>
+</section>
+
+<!-- Because this slide explicitly connects the analogy's insight back to the learning problem, this is a POWER TEXT slide. Text analysis: "The cold oven tells you everything—you don't need to wait for the final result." (81 characters) is a great summary statement for r-fit-text. It contrasts the immediate information ("cold oven") with the delayed outcome ("final result"). -->
+<section data-transition="zoom">
+    <h2 class="r-fit-text">The cold oven tells you everything—you don't need to wait for the <mark style="color: #ff6b6b">final result</mark>.</h2>
+</section>
+
+<!-- Because this slide acts as a dramatic pause before the big reveal, it's a POWER TEXT slide. Text analysis: The single word "This..." builds anticipation for the definition of Temporal-Difference Learning. The short text is perfect for creating a moment of suspense. data-auto-animate will link this setup to the punchline. -->
+<section data-auto-animate>
+    <h1 class="r-fit-text">This...</h1>
+</section>
+
+<!-- Because this slide provides the formal definition by connecting the analogy to the term, this is a POWER TEXT slide. Text analysis: "...is the entire secret behind Temporal-Difference Learning." (63 characters) is a perfect length. The term "Temporal-Difference Learning" is highlighted. The data-auto-animate transition from "This..." makes the reveal impactful. -->
+<section data-auto-animate>
+    <h1 class="r-fit-text">This...</h1>
+    <h2 class="r-fit-text">is the entire secret behind <mark>Temporal-Difference Learning</mark>.</h2>
+</section>
+
+<!-- Because this slide introduces the key concept and chapter title, this is a POWER TEXT slide. Text analysis: "It’s about being an impatient learner." (35 characters) is the core takeaway. The phrase "impatient learner" is highlighted in green, framing impatience as a positive, efficient trait in this context. This is the central idea of the chapter. -->
+<section data-transition="slide">
+    <h1 class="r-fit-text">It's about being an <mark style="color: #4CAF50;">impatient learner</mark>.</h1>
+</section>
+
+<!-- Because this slide summarizes the core mechanism of TD Learning in simple terms, this is a POWER TEXT slide. Text analysis: "updating your prediction... without waiting for the final result." is broken into two impactful lines. This structure clearly contrasts the action ("updating") with the constraint it overcomes ("without waiting"). -->
+<section data-transition="convex">
+    <h2 class="r-fit-text">Updating your prediction based on new information...</h2>
+    <h1 class="r-fit-text fragment" style="color: #4CAF50;">...without waiting for the final result.</h1>
+</section>
+
+<!-- Because this content serves as a roadmap for the rest of the video, it's a POWER TEXT slide. Text analysis: "This one powerful idea is the engine behind..." sets up the importance of the concept. data-auto-animate is used to connect this idea to the specific algorithms it powers. -->
+<section data-auto-animate>
+    <h2 class="r-fit-text">This one powerful idea is the engine behind...</h2>
+</section>
+
+<!-- Because this slide names the key algorithms that will be covered, this is a POWER TEXT slide. Text analysis: "...both the SARSA algorithm and the legendary Q-Learning algorithm." highlights the two main topics. Marking "SARSA" and "Q-Learning" makes them stand out. The data-auto-animate transition completes the sentence from the previous slide. -->
+<section data-auto-animate>
+    <h2 class="r-fit-text">This one powerful idea is the engine behind...</h2>
+    <h1 class="r-fit-text">both the <mark>SARSA</mark> algorithm and the legendary <mark>Q-Learning</mark> algorithm.</h1>
+</section>
+
+<!-- Because this slide outlines the specific learning objectives for the viewer, it's a TECHNICAL/EDUCATIONAL slide, but formatted for impact like a power text slide. It uses a list structure to clearly state the promises. Fragments are used to reveal each promise one by one, giving each point its own moment and building anticipation for the content to come. -->
+<section>
+    <h2>Here's what you'll learn:</h2>
+    <div style="font-size: 1.8em; line-height: 1.6;">
+        <p class="fragment fade-in">✅ Understand <strong style="color: #4CAF50;">exactly</strong> how Q-Learning works.</p>
+        <p class="fragment fade-in">✅ See the <strong style="color: #4CAF50;">simple update rule</strong> that makes it possible.</p>
+        <p class="fragment fade-in">✅ Discover the <strong style="color: #4CAF50;">one-line change</strong> separating it from SARSA.</p>
+    </div>
+</section>
+
+<!-- END CHAPTER 1 -->
+
+<!-- START CHAPTER 2 -->
+
+<!-- Because this content opens the chapter by directly challenging the core assumption from the previous video (patience in Monte Carlo), this is a POWER TEXT slide. Text analysis: "But that patience isn't a virtue." (32 characters) is a short, provocative statement perfect for r-fit-text. It immediately sets a critical tone and grabs the audience's attention. The data-auto-animate prepares for the next slide to build upon this statement. -->
+<section data-auto-animate>
+    <h1 class="r-fit-text">But that patience isn't a virtue.</h1>
+</section>
+
+<!-- Because this slide delivers the punchline to the previous setup, this is a POWER TEXT slide. Text analysis: "It's a massive, crippling flaw." (31 characters) is another concise, impactful statement. The word "flaw" is highlighted in red to emphasize the negative consequence. The data-auto-animate transition provides a seamless continuation, making the two slides feel like a single, powerful thought. -->
+<section data-auto-animate>
+    <h1 class="r-fit-text">But that patience isn't a virtue.</h1>
+    <h2 class="r-fit-text">It's a massive, crippling <mark style="color: #ff6b6b">flaw</mark>.</h2>
+</section>
+
+<!-- Because this content introduces an analogy to illustrate the flaw, this is a POWER TEXT slide. Text analysis: "Imagine you're playing a long game of chess." (44 characters) is a simple, relatable setup that fits well within the r-fit-text sweet spot. This transitions the abstract concept of a "flaw" into a concrete example. -->
+<section data-transition="concave">
+    <h1 class="r-fit-text">Imagine you're playing a long game of chess.</h1>
+</section>
+
+<!-- Because this slide presents the first key moment in the chess analogy, this is a POWER TEXT slide designed for a multi-step reveal. Text analysis: "On move 5, you make a brilliant play." (37 characters) is concise. The word "brilliant" is highlighted in green to signify a positive action. This slide uses data-auto-animate to set up a sequence showing the contrast between good and bad moves. -->
+<section data-auto-animate>
+    <h2 class="r-fit-text" style="color: #4CAF50;">On move 5, you make a <mark>brilliant</mark> play.</h2>
+</section>
+
+<!-- Because this slide presents the contrasting negative moment in the analogy, this is a POWER TEXT slide. Text analysis: "But on move 40, you make a foolish blunder..." (45 characters) introduces the turn of events. "blunder" is highlighted in red for emphasis. The data-auto-animate smoothly adds this second event, creating a clear timeline and building narrative tension. -->
+<section data-auto-animate>
+    <h2 class="r-fit-text" style="color: #4CAF50;">On move 5, you make a <mark>brilliant</mark> play.</h2>
+    <h2 class="r-fit-text">But on move 40, you make a foolish <mark style="color: #ff6b6b">blunder</mark>...</h2>
+</section>
+
+<!-- Because this slide reveals the final outcome of the analogy, this is a POWER TEXT slide. Text analysis: "...and you lose the game." (22 characters) is a short, definitive conclusion. The word "lose" is highlighted in red to match the negative outcome. data-auto-animate completes the narrative sequence, showing cause and effect. -->
+<section data-auto-animate>
+    <h2 class="r-fit-text" style="color: #4CAF50;">On move 5, you make a <mark>brilliant</mark> play.</h2>
+    <h2 class="r-fit-text">But on move 40, you make a foolish <mark style="color: #ff6b6b">blunder</mark>...</h2>
+    <h1 class="r-fit-text" style="color: #ff6b6b;">...and you <mark>lose</mark> the game.</h1>
+</section>
+
+<!-- Because this slide explains how the Monte Carlo agent interprets the outcome, this is a POWER TEXT slide. Text analysis: "The Monte Carlo agent sees only the final outcome: 'Loss'." (59 characters) is a great length for r-fit-text. This explicitly connects the analogy back to the algorithm being criticized. -->
+<section data-transition="zoom">
+    <h2 class="r-fit-text">The Monte Carlo agent sees only the final outcome: <mark style="color: #ff6b6b">"Loss."</mark></h2>
+</section>
+
+<!-- Because this slide details the critical error in the agent's learning process, this is a POWER TEXT slide. Text analysis: "It marks *every single move* it made as part of a losing strategy." (68 characters) is an ideal length for r-fit-text. Highlighting "every single move" in red emphasizes the indiscriminate, incorrect assignment of blame, which is the core of Monte Carlo's flaw. -->
+<section data-transition="slide">
+    <h1 class="r-fit-text">It marks <mark style="color: #ff6b6b">*every single move*</mark> it made as part of a losing strategy.</h1>
+</section>
+
+<!-- Because this slide drives home the absurdity of the agent's conclusion, this is a POWER TEXT slide. Text analysis: The sentence is broken into two parts for maximum impact. "Including that brilliant one on move 5." is the setup, followed by the fragment revealing the core problem: "It fails to give credit where it's due." The two-part structure creates a moment of reflection before stating the final verdict. -->
+<section data-transition="convex">
+    <h2 class="r-fit-text">Including that brilliant one on move 5.</h2>
+    <h1 class="r-fit-text fragment" style="color: #ff6b6b;">It fails to give credit where it's due.</h1>
+</section>
+
+<!-- Because this content explains the practical consequences of Monte Carlo's flaw, this is a POWER TEXT slide. Text analysis: "This delay is a huge drawback." is a simple summary. The fragment then provides concrete examples: "Episodes can be very long... or never end at all." This makes the abstract problem tangible. -->
+<section>
+    <h2 class="r-fit-text">This delay is a huge drawback.</h2>
+    <div class="fragment fade-in">
+        <h2 class="r-fit-text">In many problems, episodes can be very long (like a game of Go), or they might <mark style="color: #ff6b6b">never end at all</mark>.</h2>
+    </div>
+</section>
+
+<!-- Because this slide transitions from the problem to the search for a solution, this is a POWER TEXT slide. Text analysis: "Waiting for the end is either too slow or completely impossible." (64 characters) is a powerful summary of the problem, fitting perfectly with r-fit-text. The red highlight on "impossible" adds to the sense of urgency. -->
+<section data-transition="concave">
+    <h1 class="r-fit-text">Waiting for the end is either too slow or completely <mark style="color: #ff6b6b">impossible</mark>.</h1>
+</section>
+
+<!-- Because this slide poses the central question that the new chapter will answer, this is a POWER TEXT slide. Text analysis: "So, can we do better?" is a classic, short transition question. data-auto-animate is used to connect this setup to the more detailed question on the next slide. -->
+<section data-auto-animate>
+    <h1 class="r-fit-text">So, can we do better?</h1>
+</section>
+
+<!-- Because this slide refines the previous question, it's a POWER TEXT slide. Text analysis: "Can our agent learn from its mistakes as it makes them...?" is a more specific and evocative question. The data-auto-animate transition makes it feel like a natural continuation of the thought process, leading the audience toward the solution. -->
+<section data-auto-animate>
+    <h1 class="r-fit-text">So, can we do better?</h1>
+    <h2 class="r-fit-text">Can our agent learn from its mistakes <mark>as it makes them</mark>...?</h2>
+</section>
+
+<!-- Because this slide provides a definitive answer to the preceding questions, this is a POWER TEXT slide. Text analysis: "The answer is yes." is short and impactful. Using a large, fixed font size and green color makes the "yes" a powerful, positive statement. The data-auto-animate tag links it to the reveal of the new concept's name. -->
+<section data-auto-animate>
+    <h1 style="font-size: 12em; color: #4CAF50;">Yes.</h1>
+</section>
+
+<!-- Because this slide names the solution, it's a POWER TEXT slide. Text analysis: "And it’s called Temporal-Difference learning." (45 characters) is the big reveal. The term "Temporal-Difference learning" is highlighted to formally introduce the topic. The data-auto-animate transition from "Yes" makes this feel like a direct answer. -->
+<section data-auto-animate>
+    <h1 style="font-size: 12em; color: #4CAF50;">Yes.</h1>
+    <h2 class="r-fit-text">And it’s called <mark>Temporal-Difference learning</mark>.</h2>
+</section>
+
+<!-- Because this content uses a side-by-side comparison to explain a technical concept, this is an EDUCATIONAL slide. It first introduces the Monte Carlo approach as the baseline. The content is structured as a step-by-step list to make the process clear. Red is used to signify this as the "less good" method. The slide is designed to have another box added next to it for comparison. -->
+<section data-auto-animate>
+    <h2 style="margin-bottom: 30px;">Let's revisit your drive home from work.</h2>
+    <div style="display: flex; justify-content: space-around; gap: 40px; font-size: 1.1em;">
+        <div style="flex: 1; background-color: #333; padding: 20px; border-radius: 10px;">
+            <h2 style="color: #ff6b6b;">The Monte Carlo Approach</h2>
+            <h3 style="font-style: italic;">(The Patient Learner)</h3>
+            <ol style="text-align: left; margin-top: 20px; line-height: 1.6;">
+                <li><strong>Predict:</strong> "This trip will take <strong>30 minutes</strong>."</li>
+                <li><strong>Drive:</strong> Hit unexpected traffic.</li>
+                <li><strong>Arrive:</strong> Trip actually took <strong>43 minutes</strong>.</li>
+                <li><strong>Learn:</strong> <mark>Only after the journey is complete</mark>, compare 30 vs. 43.</li>
+            </ol>
+        </div>
+    </div>
+</section>
+
+<!-- Because this slide adds the new concept to the side-by-side comparison, this is an EDUCATIONAL slide. The Temporal-Difference approach appears as a fragment, allowing the audience to first digest the Monte Carlo method before seeing the alternative. Green is used to signify this is the "better" method. The steps clearly highlight the key difference: learning *immediately* after one step, not at the end. The `data-auto-animate` ensures a smooth transition. -->
+<section data-auto-animate>
+    <h2 style="margin-bottom: 30px;">Let's revisit your drive home from work.</h2>
+    <div style="display: flex; justify-content: space-around; gap: 40px; font-size: 1.1em;">
+        <div style="flex: 1; background-color: #333; padding: 20px; border-radius: 10px;">
+            <h2 style="color: #ff6b6b;">The Monte Carlo Approach</h2>
+            <h3 style="font-style: italic;">(The Patient Learner)</h3>
+            <ol style="text-align: left; margin-top: 20px; line-height: 1.6;">
+                <li><strong>Predict:</strong> "This trip will take <strong>30 minutes</strong>."</li>
+                <li><strong>Drive:</strong> Hit unexpected traffic.</li>
+                <li><strong>Arrive:</strong> Trip actually took <strong>43 minutes</strong>.</li>
+                <li><strong>Learn:</strong> <mark>Only after the journey is complete</mark>.</li>
+            </ol>
+        </div>
+        <div class="fragment fade-in" style="flex: 1; background-color: #333; padding: 20px; border-radius: 10px;">
+            <h2 style="color: #4CAF50;">The TD Approach</h2>
+            <h3 style="font-style: italic;">(The Impatient Learner)</h3>
+            <ol style="text-align: left; margin-top: 20px; line-height: 1.6;">
+                <li><strong>Predict:</strong> "This trip will take <strong>30 minutes</strong>."</li>
+                <li><strong>5 mins in:</strong> See traffic jam.</li>
+                <li><strong>New Prediction:</strong> "From here, it's <strong>35 more minutes</strong>."</li>
+                <li><strong>Learn:</strong> <mark>IMMEDIATELY</mark> update based on the difference between the old guess (30) and the new one (5+35=40).</li>
+            </ol>
+        </div>
+    </div>
+</section>
+
+<!-- Because this slide reveals the central, counter-intuitive idea behind TD learning, this is a POWER TEXT slide. Text analysis: "This is the central idea of TD Learning." provides context. The key phrase "We use a new, slightly-more-informed guess to update our old guess" is highlighted, with emphasis on the word "guess" to show that we are not waiting for certainty. -->
+<section>
+    <h2 class="r-fit-text">This is the central idea of TD Learning.</h2>
+    <h1 class="r-fit-text fragment" style="color: #4CAF50;">We use a new, slightly-more-informed <mark>guess</mark> to update our old <mark>guess</mark>.</h1>
+</section>
+
+<!-- Because this slide summarizes the core mechanism of TD Learning, this is a POWER TEXT slide. It contrasts the TD approach with the Monte Carlo approach. Text analysis: The phrase is broken into two for impact. "Instead of waiting for the final outcome..." sets up the problem. The data-auto-animate will connect it to the solution. -->
+<section data-auto-animate>
+    <h1 class="r-fit-text">Instead of waiting for the <mark style="color: #ff6b6b">final outcome</mark>...</h1>
+</section>
+
+<!-- Because this slide completes the thought from the previous one, this is a POWER TEXT slide. Text analysis: "...we take one step, and update our value *immediately*." delivers the punchline. The word "immediately" is highlighted in green to emphasize the efficiency and core benefit of TD Learning. The data-auto-animate transition creates a seamless flow. -->
+<section data-auto-animate>
+    <h1 class="r-fit-text">Instead of waiting for the <mark style="color: #ff6b6b">final outcome</mark>...</h1>
+    <h2 class="r-fit-text">...we take one step, and update our value <mark style="color: #4CAF50;">immediately</mark>.</h2>
+</section>
+
+<!-- Because this slide explains how TD learning combines features from previous methods, this is an EDUCATIONAL slide. It uses a two-column layout for a clear, direct comparison. This helps viewers place TD learning in the context of what they may already know about Monte Carlo and Dynamic Programming. The key concept of "bootstrapping" is introduced and highlighted. -->
+<section>
+    <h1 style="color: #4CAF50; margin-bottom: 40px;">TD Learning: Best of Both Worlds</h1>
+    <div style="display: flex; justify-content: space-around; gap: 40px; font-size: 1.4em;">
+        <div style="flex: 1; text-align: center; background-color: rgba(76, 175, 80, 0.2); padding: 30px; border-radius: 10px; border: 2px solid #4CAF50;">
+            <h2 style="color: #4CAF50;">Like Monte Carlo</h2>
+            <p class="fragment fade-in">It learns directly from raw experience, with <mark style="background-color: #4CAF50; color: white; padding: 2px 6px; border-radius: 4px;">no model</mark> of the environment needed.</p>
+        </div>
+        <div style="flex: 1; text-align: center; background-color: rgba(33, 150, 243, 0.2); padding: 30px; border-radius: 10px; border: 2px solid #2196F3;">
+            <h2 style="color: #2196F3;">Like Dynamic Programming</h2>
+            <p class="fragment fade-in">It updates estimates based on other estimates—called <mark style="background-color: #2196F3; color: white; padding: 2px 6px; border-radius: 4px;">bootstrapping</mark>.</p>
+        </div>
+    </div>
+</section>
+
+<!-- Because this slide provides a final, simple summary of what TD learning is, this is a POWER TEXT slide. Text analysis: "It's a model-free learner that can learn from every single step..." is broken into two parts. This first part establishes the core identity. data-auto-animate connects it to the key benefit. -->
+<section data-auto-animate>
+    <h2 class="r-fit-text">It's a model-free learner that can learn from every single step of the journey...</h2>
+</section>
+
+<!-- Because this slide completes the summary with the main takeaway, this is a POWER TEXT slide. Text analysis: "...without waiting to see the destination." is the punchline. The contrast between "every single step" and "the destination" encapsulates the entire chapter's theme. The green color reinforces this as a positive breakthrough. -->
+<section data-auto-animate>
+    <h2 class="r-fit-text">It's a model-free learner that can learn from every single step of the journey...</h2>
+    <h1 class="r-fit-text" style="color: #4CAF50;">...without waiting to see the destination.</h1>
+</section>
+
+<!-- Because this slide transitions to the next chapter by posing a question, this is a POWER TEXT slide. Text analysis: "So what's the secret sauce that makes this work?" is a classic transition phrase that builds curiosity for the upcoming technical details. -->
+<section data-transition="zoom">
+    <h1 class="r-fit-text">So what's the secret sauce that makes this work?</h1>
+</section>
+
+<!-- Because this slide refines the transition question, setting the stage for Chapter 3, this is a POWER TEXT slide. Text analysis: "How do we actually learn a guess from another guess?" directly quotes the core concept from earlier and frames it as the next problem to be solved, smoothly leading the viewer into the next section of the presentation. -->
+<section data-transition="slide">
+    <h1 class="r-fit-text">How do we actually learn a <mark style="color: #4CAF50;">guess</mark>...</h1>
+    <h2 class="r-fit-text fragment">...from another <mark style="color: #4CAF50;">guess</mark>?</h2>
+</section>
+
+<!-- END CHAPTER 2 -->
+
+<!-- START CHAPTER 3 -->
+
+<!-- Because this content opens the chapter with a provocative statement hinting at an easy solution, this is a POWER TEXT slide. Text analysis: "The answer is so simple, it feels like cheating." (48 characters) is a perfect length for r-fit-text. This builds immediate curiosity and sets the tone for a "dumb simple" explanation. -->
+<section data-auto-animate>
+    <h1 class="r-fit-text">The answer is so simple, it feels like cheating.</h1>
+</section>
+
+<!-- Because this content acts as a dramatic pause and transition before a major reveal, this is a POWER TEXT slide. Text analysis: "This one line of math." (21 characters) is short and impactful, building suspense for the formula. The data-auto-animate from the previous slide creates a seamless flow. -->
+<section data-auto-animate>
+    <h2 class="r-fit-text">The answer is so simple, it feels like cheating.</h2>
+    <h1 class="r-fit-text">This one line of math.</h1>
+</section>
+
+<!-- Because this slide introduces the core technical formula of the chapter, this is a TECHNICAL slide. The TD(0) update rule is the central concept, so it's displayed prominently using LaTeX for clarity. This slide is designed to be a visual anchor that the rest of the chapter will refer back to. -->
+<section data-auto-animate>
+    <div style="font-size: 1.5em; text-align: center;">
+        <p>The TD(0) Update Rule</p>
+        \[ V(S_t) \leftarrow V(S_t) + \alpha [R_{t+1} + \gamma V(S_{t+1}) - V(S_t)] \]
+    </div>
+</section>
+
+<!-- Because this content serves to reassure the audience before the technical breakdown, this is a POWER TEXT slide. Text analysis: The content is split into two slides for impact. "I know this looks complex... but it's the entire secret." acknowledges viewer apprehension while reinforcing the formula's importance. This prepares them for the detailed explanation. -->
+<section data-auto-animate>
+    <h2 class="r-fit-text">I know this looks complex...</h2>
+    <h1 class="r-fit-text fragment">but it's the <mark>entire secret</mark>.</h1>
+</section>
+
+<!-- Because this slide makes a clear promise to the viewer, this is a POWER TEXT slide. Text analysis: "We're going to break down every single piece of it, right now." is a direct and engaging statement. It signals the shift from high-level concepts to a detailed, step-by-step explanation, managing audience expectations. -->
+<section data-transition="convex">
+    <h1 class="r-fit-text">We're going to break down every single piece of it, right now.</h1>
+</section>
+
+<!-- Because this slide re-introduces a concept from the previous chapter for comparison, this is a TECHNICAL slide. It establishes the "old way" (Monte Carlo) as a baseline. Displaying the MC formula in a distinct box creates a visual reference point that will be contrasted with the new TD formula. -->
+<section data-auto-animate>
+    <h2 style="margin-bottom: 30px;">First, what are we replacing?</h2>
+    <div style="background-color: #333; padding: 20px; border-radius: 10px; font-size: 1.2em;">
+        <h3 style="color: #ff6b6b; margin: 0;">The Old Way: Monte Carlo Update</h3>
+        <div style="margin-top: 20px;">
+            \[ V(S_t) \leftarrow V(S_t) + \alpha [\mathbf{G_t} - V(S_t)] \]
+        </div>
+        <p class="fragment fade-in" style="margin-top: 20px;">The target was <code style="color: #ff6b6b;">G_t</code>: the <mark>actual, final</mark> score from that point. You had to wait for it.</p>
+    </div>
+</section>
+
+<!-- Because this content introduces the core conceptual shift of TD learning, this is a POWER TEXT slide. Text analysis: "Temporal-Difference learning performs a brilliant, sneaky substitution." (72 characters) is an ideal length for r-fit-text. It personifies the algorithm, making the concept more engaging and memorable. -->
+<section data-transition="concave">
+    <h1 class="r-fit-text">Temporal-Difference learning performs a brilliant, sneaky <mark>substitution</mark>.</h1>
+</section>
+
+<!-- Because this slide presents the core comparison that defines the chapter, this is a TECHNICAL slide. It uses a side-by-side layout for maximum clarity. The Monte Carlo Target appears first (red for "old/slow"), then the TD Target appears as a fragment (green for "new/efficient"), visually demonstrating the substitution. -->
+<section>
+    <h2>Instead of waiting for the real outcome <code style="color: #ff6b6b">G_t</code>... we create an estimate.</h2>
+    <div style="display: flex; justify-content: space-around; gap: 40px; font-size: 1.1em; margin-top: 40px;">
+        <div style="flex: 1; text-align: center; background-color: #333; padding: 20px; border-radius: 10px; display: flex; flex-direction: column; justify-content: center;">
+            <h2 style="color: #ff6b6b;">Monte Carlo Target</h2>
+            \[ G_t \]
+            <p>The <mark>real</mark> future reward. <br/>You have to wait.</p>
+        </div>
+        <div class="fragment fade-in" style="flex: 1; text-align: center; background-color: #333; padding: 20px; border-radius: 10px; display: flex; flex-direction: column; justify-content: center;">
+            <h2 style="color: #4CAF50;">TD Target</h2>
+            \[ R_{t+1} + \gamma V(S_{t+1}) \]
+            <p>An <mark>estimated</mark> future reward. <br/>You can calculate it immediately.</p>
+        </div>
+    </div>
+</section>
+
+<!-- Because this slide marks the key insight for the audience, this is a POWER TEXT slide. Text analysis: "This is the 'Aha!' moment." (26 characters) is short and powerful. Its purpose is to signal to the viewer that the previous slide contained the most important concept. -->
+<section data-transition="zoom">
+    <h1 class="r-fit-text">This is the "Aha!" moment.</h1>
+</section>
+
+<!-- Because this slide explains the core, counter-intuitive idea of TD learning, this is a POWER TEXT slide. The text is broken into two impactful statements with a fragment reveal. "We are replacing a REAL score... with an ESTIMATED score" clearly articulates the substitution, setting up the next key idea. -->
+<section data-auto-animate>
+    <h2 class="r-fit-text">We are replacing a <mark style="color: #ff6b6b">REAL</mark> score...</h2>
+    <h1 class="r-fit-text fragment" style="color: #4CAF50;">...with an <mark>ESTIMATED</mark> score.</h1>
+</section>
+
+<!-- Because this slide rephrases the core concept in the "dumb simple" language of the series, this is a POWER TEXT slide. Text analysis: "We're updating a guess using another guess!" (43 characters) is the central theme of the chapter. Using "guess" twice emphasizes the bootstrapping concept in an accessible way. -->
+<section data-transition="slide">
+    <h1 class="r-fit-text">We're updating a <mark style="color: #4CAF50;">guess</mark>...</h1>
+    <h2 class="r-fit-text fragment">...using another <mark style="color: #4CAF50;">guess</mark>!</h2>
+</section>
+
+<!-- Because this slide introduces the formal term for the core concept, this is a POWER TEXT slide. Text analysis: "This is called bootstrapping, and it's a revolutionary idea." (60 characters) is a perfect length for r-fit-text. It provides the official name for the "guess from a guess" idea, connecting the simple explanation to the formal terminology. -->
+<section data-transition="convex">
+    <h2 class="r-fit-text">This is called <mark>bootstrapping</mark>, and it's a revolutionary idea.</h2>
+</section>
+
+<!-- Because this slide breaks down the components of the TD Target formula, this is a TECHNICAL slide. The formula is kept at the top as a persistent context. Fragments are used to explain each part (`R_t+1` and `γV(S_t+1)`) step-by-step, preventing information overload and allowing the audience to digest each piece individually. -->
+<section>
+    <h2 style="color: #4CAF50;">Let's break down the TD Target:</h2>
+    <div style="font-size: 1.5em; text-align: center; margin-bottom: 40px;">
+        \[ \underbrace{R_{t+1}}_{\text{Real info}} + \underbrace{\gamma V(S_{t+1})}_{\text{Our best guess}} \]
+    </div>
+    <div style="font-size: 1.3em; text-align: center; line-height: 1.6;">
+        <p class="fragment fade-in">\(R_{t+1}\): The <mark>immediate reward</mark> - real, concrete information.</p>
+        <p class="fragment fade-in" style="margin-top: 20px;">\(\gamma V(S_{t+1})\): The <mark>next state's value</mark> - our best guess of the future.</p>
+    </div>
+</section>
+
+<!-- Because this slide defines another key term, the TD Error, this is a TECHNICAL slide. It shows the full update rule again, but this time uses LaTeX `\underbrace` to highlight the error term specifically. This visually isolates the concept while keeping it in the context of the full formula. The explanation reinforces that this is a measure of "surprise." -->
+<section>
+    <h2>This whole part is the "surprise", or <mark style="color: #4CAF50;">TD Error</mark>:</h2>
+    <div style="font-size: 1.4em; text-align: center;">
+        \[ V(S_t) \leftarrow V(S_t) + \alpha [\underbrace{R_{t+1} + \gamma V(S_{t+1})}_{\text{New, better estimate}} - \underbrace{V(S_t)}_{\text{Old estimate}}] \]
+    </div>
+    <p class="fragment fade-in" style="font-size: 1.3em; margin-top: 30px;">It’s the difference between our new estimate and our old one. The agent uses this error to nudge its old value in the right direction.</p>
+</section>
+
+<!-- Because this slide serves as a transition to a major comparison, this is a POWER TEXT slide. The text is broken into three parts across three slides to build anticipation for the side-by-side algorithm reveal, making the "single line" difference feel more dramatic and significant. -->
+<section data-auto-animate>
+    <h1 class="r-fit-text">Now for the best part.</h1>
+</section>
+
+<!-- Because this content continues the transition, this is a POWER TEXT slide. data-auto-animate smoothly continues the sentence from the previous slide, maintaining the narrative flow. -->
+<section data-auto-animate>
+    <h2 class="r-fit-text">The entire conceptual leap...</h2>
+</section>
+
+<!-- Because this content delivers the punchline of the transition, this is a POWER TEXT slide. The data-auto-animate completes the sentence, and "single line" is marked to emphasize the simplicity of the change, fulfilling the series' "dumb simple" promise. -->
+<section data-auto-animate>
+    <h2 class="r-fit-text">The entire conceptual leap...</h2>
+    <h1 class="r-fit-text">...boils down to a <mark>single line</mark>.</h1>
+</section>
+
+<!-- Because this slide presents a full algorithm comparison, this is a TECHNICAL slide. A two-column layout is used for direct contrast. The Monte Carlo algorithm is shown on the left. The `data-line-numbers` attribute is used to highlight the key update line, which is the focus of the comparison. -->
+<section data-auto-animate>
+    <div style="display: flex; justify-content: space-around; gap: 20px; font-size: 0.9em;">
+        <div style="flex: 1;">
+            <h3 style="color: #ff6b6b;">Monte Carlo (The Patient Learner)</h3>
+            <pre><code class="language-python" data-trim data-line-numbers="8">
+Initialize V(s) for all states
+
+Repeat (for each episode):
+  1. Generate a full episode
+  
+  2. For each state S_t in the episode:
+     a. Calculate the REAL return: G_t
+     b. V(S_t) ← V(S_t) + α[G_t - V(S_t)]
+            </code></pre>
+        </div>
+    </div>
+</section>
+
+<!-- Because this slide completes the side-by-side comparison, this is a TECHNICAL slide. The TD(0) algorithm is added as a fragment on the right. data-auto-animate ensures a smooth reveal. The `data-line-numbers` highlights the corresponding update line in the TD algorithm, making the "single line" difference visually obvious and impactful. -->
+<section data-auto-animate>
+    <div style="display: flex; justify-content: space-around; gap: 20px; font-size: 0.9em;">
+        <div style="flex: 1;">
+            <h3 style="color: #ff6b6b;">Monte Carlo (The Patient Learner)</h3>
+            <pre><code class="language-python" data-trim data-line-numbers="8">
+Initialize V(s) for all states
+
+Repeat (for each episode):
+  1. Generate a full episode
+  
+  2. For each state S_t in the episode:
+     a. Calculate the REAL return: G_t
+     b. V(S_t) ← V(S_t) + α[G_t - V(S_t)]
+            </code></pre>
+        </div>
+        <div class="fade-in" style="flex: 1;">
+            <h3 style="color: #4CAF50;">TD(0) (The Impatient Learner)</h3>
+            <pre><code class="language-python" data-trim data-line-numbers="7">
+Initialize V(s) for all states
+
+Repeat (for each episode):
+  Initialize S
+  Repeat (for each step):
+     a. Take action A, get R, S'
+     b. V(S) ← V(S) + α[R + γV(S') - V(S)]
+     c. S ← S'
+            </code></pre>
+        </div>
+    </div>
+</section>
+
+<!-- Because this slide summarizes the key takeaway from the algorithm comparison, this is a POWER TEXT slide. It explicitly states the substitution using `<code>` tags for the mathematical terms, reinforcing the core message in a clear and concise way. -->
+<section data-transition="concave">
+    <h1 class="r-fit-text">That's it. That's the magic trick.</h1>
+    <h2 class="r-fit-text fragment">We swapped the <mark style="color: #ff6b6b;">actual return</mark> <code>G_t</code> for an <mark style="color: #4CAF50;">estimated return</mark> <code>R + γV(S')</code>.</h2>
+</section>
+
+<!-- Because this slide lists the major benefits of the TD approach, this is an EDUCATIONAL slide. A list format is used for clarity, and fragments reveal each benefit one by one, allowing the audience to absorb the transformative impact of this "tiny change". -->
+<section>
+    <h2>This tiny change transforms our agent:</h2>
+    <div style="display: flex; justify-content: space-around; gap: 40px; font-size: 1.3em; margin-top: 40px;">
+        <div style="flex: 1; text-align: center;">
+            <h3 style="color: #ff6b6b; margin-bottom: 30px;">Monte Carlo</h3>
+            <div style="background-color: rgba(255, 107, 107, 0.1); padding: 20px; border-radius: 10px; margin-bottom: 20px;">
+                <p>Patient learner</p>
+            </div>
+            <div style="background-color: rgba(255, 107, 107, 0.1); padding: 20px; border-radius: 10px; margin-bottom: 20px;">
+                <p>Requires complete episodes</p>
+            </div>
+            <div style="background-color: rgba(255, 107, 107, 0.1); padding: 20px; border-radius: 10px;">
+                <p>High variance, noisy</p>
+            </div>
+        </div>
+        <div style="flex: 1; text-align: center;">
+            <h3 style="color: #4CAF50; margin-bottom: 30px;">TD Learning</h3>
+            <div style="background-color: rgba(76, 175, 80, 0.1); padding: 20px; border-radius: 10px; margin-bottom: 20px;">
+                <p><strong>Updates every step</strong></p>
+            </div>
+            <div style="background-color: rgba(76, 175, 80, 0.1); padding: 20px; border-radius: 10px; margin-bottom: 20px;">
+                <p><strong>Never-ending tasks OK</strong></p>
+            </div>
+            <div style="background-color: rgba(76, 175, 80, 0.1); padding: 20px; border-radius: 10px;">
+                <p><strong>Stable one-step updates</strong></p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Because this slide poses a rhetorical question to transition towards the next chapter's practical example, this is a POWER TEXT slide. Text analysis: "This all sounds incredible in theory..." acknowledges the conceptual nature of the chapter, setting the stage for a practical demonstration. -->
+<section data-auto-animate>
+    <h1 class="r-fit-text">This all sounds incredible in theory...</h1>
+</section>
+
+<!-- Because this slide completes the transition question, this is a POWER TEXT slide. Text analysis: "...but does it actually work?" directly addresses the audience's potential skepticism. The data-auto-animate makes this a seamless two-part question, building anticipation for the proof. -->
+<section data-auto-animate>
+    <h1 class="r-fit-text">This all sounds incredible in theory...</h1>
+    <h2 class="r-fit-text">...but does it actually work?</h2>
+</section>
+
+<!-- Because this slide poses the final hook question of the chapter, this is a POWER TEXT slide. It reframes the previous question in a more evocative way, directly challenging the core concept of "bootstrapping" and leading perfectly into the next chapter's walkthrough. -->
+<section data-transition="zoom">
+    <h1 class="r-fit-text">Can you really learn something meaningful just by looking <mark>one step ahead</mark>?</h1>
+</section>
+
+<!-- Because this slide serves as the final promise and bridge to the next chapter, this is a POWER TEXT slide. It explicitly tells the audience what to expect next ("Let's watch this algorithm learn, step-by-step"), ensuring they are engaged and ready for the practical application. -->
+<section>
+    <h2 class="r-fit-text">Let's watch this algorithm learn, step-by-step.</h2>
+    <h1 class="r-fit-text fragment" style="color: #4CAF50;">We're going to see the numbers change with every single move.</h1>
+</section>
+
+<!-- END CHAPTER 3 -->
+
+<!-- START CHAPTER 4 -->
+
+<!-- Because this content serves as a transition from the previous chapter's theory to this chapter's practical demonstration, this is a POWER TEXT slide. Text analysis: "Does it actually work?" (21 characters) is a perfect, short hook that voices the audience's skepticism. The data-auto-animate tag prepares for a follow-up statement. -->
+<section data-auto-animate>
+    <h1 class="r-fit-text">Does it actually work?</h1>
+</section>
+
+<!-- Because this content builds on the previous hook by directly challenging the core concept of bootstrapping, this is a POWER TEXT slide. Text analysis: "Can you really learn something meaningful just by looking one step ahead?" (70 characters) is an ideal length for r-fit-text and makes the theoretical problem feel tangible. The data-auto-animate creates a seamless two-part question. -->
+<section data-auto-animate>
+    <h1 class="r-fit-text">Does it actually work?</h1>
+    <h2 class="r-fit-text">Can you really learn something meaningful just by looking <mark>one step ahead</mark>?</h2>
+</section>
+
+<!-- Because this slide sets the agenda for the chapter, promising a practical, hands-on walkthrough, this is a POWER TEXT slide. The text is broken into two impactful statements to build excitement. "We're going to trace this algorithm together..." sets the stage, and the fragment reveals the core activity: watching the agent's "brain" change. -->
+<section>
+    <h2 class="r-fit-text">We're going to trace this algorithm together on a dead-simple problem.</h2>
+    <h1 class="r-fit-text fragment" style="color: #4CAF50;">We will watch its "brain" change after every single experience.</h1>
+</section>
+
+<!-- Because this content transitions from the promise to the concrete example, this is a POWER TEXT slide. Text analysis: "No more theory. Let's see the numbers." (38 characters) is a direct, punchy statement that signals the shift to a practical demonstration, fulfilling the "Dumb Simple" series promise. -->
+<section data-transition="slide">
+    <h1 class="r-fit-text">No more theory.</h1>
+    <h2 class="r-fit-text fragment">Let's see the <mark>numbers</mark>.</h2>
+</section>
+
+<!-- Because this slide establishes the complete problem setup that will persist for the rest of the chapter, this is a CRITICAL TECHNICAL slide. It includes the visual mermaid diagram of the world and a clear, two-column layout for the rules and initial state. This slide is the foundation for the persistent context box that is essential for viewers to follow the algorithm's execution. -->
+<section data-auto-animate>
+    <div style="background-color: #333; padding: 15px; border-radius: 10px; margin-bottom: 30px;">
+        <h3 style="color: #4CAF50; margin: 0; font-size: 1.8em;">The Problem: A Simple Line World</h3>
+        <p style="font-size: 1.4em; margin: 10px 0 0 0;">An agent learns to predict the value of each state.</p>
+    </div>
+    <table style="width: 80%; margin: 20px auto; border-collapse: collapse; font-size: 1.8em;">
+        <tr>
+            <td style="border: 3px solid #fff; padding: 20px; background-color: #ff6b6b; color: #000; width: 20%; text-align: center; vertical-align: middle;">T[0]</td>
+            <td style="border: 3px solid #fff; padding: 20px; width: 20%; text-align: center; vertical-align: middle;">A</td>
+            <td style="border: 3px solid #fff; padding: 20px; background-color: #4CAF50; color: #000; width: 20%; text-align: center; vertical-align: middle;">B</td>
+            <td style="border: 3px solid #fff; padding: 20px; width: 20%; text-align: center; vertical-align: middle;">C</td>
+            <td style="border: 3px solid #fff; padding: 20px; background-color: #4CAF50; color: #000; width: 20%; text-align: center; vertical-align: middle;">T[1]</td>
+        </tr>
+    </table>
+    <div style="display: flex; justify-content: space-around; font-size: 1.1em; gap: 20px;">
+        <div style="flex: 1; text-align: left;">
+            <p><strong style="color: #4CAF50;">Rules:</strong></p>
+            <ul>
+                <li>Start in state <strong>B</strong>.</li>
+                <li>Policy: 50% chance Left, 50% Right.</li>
+                <li>Rewards: <strong>+1</strong> for right terminal, <strong>0</strong> otherwise.</li>
+                <li>Parameters: \( \gamma = 1 \), \( \alpha = 0.1 \).</li>
+            </ul>
+        </div>
+        <div style="flex: 1; text-align: left;">
+            <p><strong style="color: #4CAF50;">Initial Brain (V-Values):</strong></p>
+            <ul>
+                <li>`V(A) = 0.5`</li>
+                <li>`V(B) = 0.5`</li>
+                <li>`V(C) = 0.5`</li>
+            </ul>
+        </div>
+    </div>
+</section>
+
+<!-- Because this slide begins the walkthrough for Episode 1, this is a TECHNICAL slide. CRITICAL: The problem context box at the top persists from the previous slide, but is simplified to show the most relevant information: the world diagram and the agent's CURRENT knowledge (V-values). This persistent context is essential for viewers to track the agent's learning process. The trajectory is announced clearly. -->
+<section data-auto-animate>
+    <div style="background-color: #333; padding: 15px; border-radius: 10px; margin-bottom: 20px;">
+        <h3 style="color: #4CAF50; margin: 0; font-size: 1.5em;">Episode 1: A short, unlucky walk</h3>
+        <table style="width: 80%; margin: 10px auto; border-collapse: collapse; font-size: 1.4em;">
+            <tr>
+                <td style="border: 3px solid #fff; padding: 15px; background-color: #ff6b6b; color: #000; width: 20%; text-align: center; vertical-align: middle;">T[0]</td>
+                <td style="border: 3px solid #fff; padding: 15px; width: 20%; text-align: center; vertical-align: middle;">A<br/>V=0.5</td>
+                <td style="border: 3px solid #fff; padding: 15px; width: 20%; text-align: center; vertical-align: middle;">B<br/>V=0.5</td>
+                <td style="border: 3px solid #fff; padding: 15px; width: 20%; text-align: center; vertical-align: middle;">C<br/>V=0.5</td>
+                <td style="border: 3px solid #fff; padding: 15px; background-color: #4CAF50; color: #000; width: 20%; text-align: center; vertical-align: middle;">T[1]</td>
+            </tr>
+        </table>
+    </div>
+    <h2 style="text-align: center;">Trajectory: <code style="font-size: 1.2em;">B → A → Term(0)</code></h2>
+</section>
+
+<!-- Because this slide details the first step of Episode 1, this is a TECHNICAL slide. The persistent context box remains at the top. This slide focuses on a single step (B → A), showing the TD error calculation with fragments to walk the viewer through the logic. The "No surprise" conclusion is highlighted to explain why no update occurs. -->
+<section data-auto-animate>
+    <div style="background-color: #333; padding: 15px; border-radius: 10px; margin-bottom: 20px;">
+        <h3 style="color: #4CAF50; margin: 0; font-size: 1.5em;">Episode 1: A short, unlucky walk</h3>
+        <table style="width: 80%; margin: 10px auto; border-collapse: collapse; font-size: 1.4em;">
+            <tr>
+                <td style="border: 3px solid #fff; padding: 15px; background-color: #ff6b6b; color: #000; width: 20%; text-align: center; vertical-align: middle;">T[0]</td>
+                <td style="border: 3px solid #fff; padding: 15px; width: 20%; text-align: center; vertical-align: middle;">A<br/>V=0.5</td>
+                <td style="border: 3px solid #fff; padding: 15px; width: 20%; text-align: center; vertical-align: middle;">B<br/>V=0.5</td>
+                <td style="border: 3px solid #fff; padding: 15px; width: 20%; text-align: center; vertical-align: middle;">C<br/>V=0.5</td>
+                <td style="border: 3px solid #fff; padding: 15px; background-color: #4CAF50; color: #000; width: 20%; text-align: center; vertical-align: middle;">T[1]</td>
+            </tr>
+        </table>
+    </div>
+    <div style="text-align: center; font-size: 1.2em;">
+        <p><strong>Step 1: B → A</strong> (Reward R=0)</p>
+        <div class="fragment fade-in">
+            <p>TD Error: \( \delta = [R + \gamma V(A)] - V(B) \)</p>
+            <p>\( \delta = [0 + 1 \cdot 0.5] - 0.5 = \mathbf{0} \)</p>
+            <p><mark>No surprise, no update.</mark> The agent thinks A and B are equally good.</p>
+        </div>
+    </div>
+</section>
+
+<!-- Because this slide details the second step of Episode 1, this is a TECHNICAL slide. The persistent context box is still visible. Here, a "surprise" occurs. Fragments reveal the TD Error calculation and the resulting update to V(A). The new value is highlighted in green to signify learning. -->
+<section data-auto-animate>
+    <div style="background-color: #333; padding: 15px; border-radius: 10px; margin-bottom: 20px;">
+        <h3 style="color: #4CAF50; margin: 0; font-size: 1.5em;">Episode 1: A short, unlucky walk</h3>
+        <table style="width: 80%; margin: 10px auto; border-collapse: collapse; font-size: 1.4em;">
+            <tr>
+                <td style="border: 3px solid #fff; padding: 15px; background-color: #ff6b6b; color: #000; width: 20%; text-align: center; vertical-align: middle;">T[0]</td>
+                <td style="border: 3px solid #fff; padding: 15px; width: 20%; text-align: center; vertical-align: middle;">A<br/>V=0.5</td>
+                <td style="border: 3px solid #fff; padding: 15px; width: 20%; text-align: center; vertical-align: middle;">B<br/>V=0.5</td>
+                <td style="border: 3px solid #fff; padding: 15px; width: 20%; text-align: center; vertical-align: middle;">C<br/>V=0.5</td>
+                <td style="border: 3px solid #fff; padding: 15px; background-color: #4CAF50; color: #000; width: 20%; text-align: center; vertical-align: middle;">T[1]</td>
+            </tr>
+        </table>
+    </div>
+    <div style="text-align: center; font-size: 1.2em;">
+        <p><strong>Step 2: A → Term(0)</strong> (Reward R=0, V(Term)=0)</p>
+        <div class="fragment fade-in">
+            <p>TD Error: \( \delta = [R + \gamma V(\text{Term})] - V(A) \)</p>
+            <p>\( \delta = [0 + 1 \cdot 0] - 0.5 = \mathbf{-0.5} \)</p>
+            <p><mark style="color: #ff6b6b">Aha! A surprise!</mark> The agent was too optimistic.</p>
+        </div>
+        <div class="fragment fade-in">
+            <p><strong>Update V(A):</strong> \( V(A) \leftarrow V(A) + \alpha \cdot \delta \)</p>
+            <p>\( V(A) \leftarrow 0.5 + 0.1 \cdot (-0.5) = \)\( \mathbf{\color{#4CAF50}{0.45}} \)</p>
+        </div>
+    </div>
+</section>
+
+<!-- Because this slide summarizes the state of the agent's knowledge after the first episode, this is a TECHNICAL slide. It uses a clear "Knowledge after Episode 1" heading. The mermaid diagram is updated to show the new V(A) value, providing a clean visual summary of the learning that occurred. data-auto-animate ensures a smooth transition of the value in the diagram. -->
+<section data-auto-animate>
+    <div style="background-color: #333; padding: 15px; border-radius: 10px; margin-bottom: 20px;">
+        <h3 style="color: #4CAF50; margin: 0; font-size: 1.5em;">Knowledge after Episode 1</h3>
+        <table style="width: 80%; margin: 10px auto; border-collapse: collapse; font-size: 1.4em;">
+            <tr>
+                <td style="border: 3px solid #fff; padding: 15px; background-color: #ff6b6b; color: #000; width: 20%; text-align: center; vertical-align: middle;">T[0]</td>
+                <td style="border: 3px solid #fff; padding: 15px; width: 20%; text-align: center; vertical-align: middle;">A<br/><b style='color:#4CAF50'>V=0.45</b></td>
+                <td style="border: 3px solid #fff; padding: 15px; width: 20%; text-align: center; vertical-align: middle;">B<br/>V=0.5</td>
+                <td style="border: 3px solid #fff; padding: 15px; width: 20%; text-align: center; vertical-align: middle;">C<br/>V=0.5</td>
+                <td style="border: 3px solid #fff; padding: 15px; background-color: #4CAF50; color: #000; width: 20%; text-align: center; vertical-align: middle;">T[1]</td>
+            </tr>
+        </table>
+    </div>
+    <p style="font-size: 1.4em; text-align: center;">It learned that state A, which leads to a bad outcome, is a little bit worse than it initially thought.</p>
+</section>
+
+<!-- Because this slide begins the walkthrough for Episode 2, this is a TECHNICAL slide. The persistent context box is updated to reflect the agent's new knowledge (V(A)=0.45). This continuity is crucial for showing how learning from one episode carries over to the next. The trajectory is announced. -->
+<section data-auto-animate>
+    <div style="background-color: #333; padding: 15px; border-radius: 10px; margin-bottom: 20px;">
+        <h3 style="color: #4CAF50; margin: 0; font-size: 1.5em;">Episode 2: A short, lucky walk</h3>
+        <table style="width: 80%; margin: 10px auto; border-collapse: collapse; font-size: 1.4em;">
+            <tr>
+                <td style="border: 3px solid #fff; padding: 15px; background-color: #ff6b6b; color: #000; width: 20%; text-align: center; vertical-align: middle;">T[0]</td>
+                <td style="border: 3px solid #fff; padding: 15px; width: 20%; text-align: center; vertical-align: middle;">A<br/>V=0.45</td>
+                <td style="border: 3px solid #fff; padding: 15px; width: 20%; text-align: center; vertical-align: middle;">B<br/>V=0.5</td>
+                <td style="border: 3px solid #fff; padding: 15px; width: 20%; text-align: center; vertical-align: middle;">C<br/>V=0.5</td>
+                <td style="border: 3px solid #fff; padding: 15px; background-color: #4CAF50; color: #000; width: 20%; text-align: center; vertical-align: middle;">T[1]</td>
+            </tr>
+        </table>
+    </div>
+    <div style="text-align: center;">
+        <h2 style="text-align: center;">Trajectory: <code style="font-size: 1.2em;">B → C → Term(+1)</code></h2>
+        <div class="fragment fade-in" style="font-size: 1.2em; margin-top: 30px;">
+            <p><strong>Step 1: B → C</strong> (Reward R=0)</p>
+            <p>TD Error: \( \delta = [0 + 1 \cdot 0.5] - 0.5 = \mathbf{0} \). No surprise... <mark>yet</mark>.</p>
+        </div>
+    </div>
+</section>
+
+<!-- Because this slide details the learning step of Episode 2, this is a TECHNICAL slide. The persistent context box is still visible. It shows the TD Error calculation for the final step, highlighting the positive surprise and the update to V(C). The new value is emphasized in green. -->
+<section data-auto-animate>
+    <div style="background-color: #333; padding: 15px; border-radius: 10px; margin-bottom: 20px;">
+        <h3 style="color: #4CAF50; margin: 0; font-size: 1.5em;">Episode 2: A short, lucky walk</h3>
+        <table style="width: 80%; margin: 10px auto; border-collapse: collapse; font-size: 1.4em;">
+            <tr>
+                <td style="border: 3px solid #fff; padding: 15px; background-color: #ff6b6b; color: #000; width: 20%; text-align: center; vertical-align: middle;">T[0]</td>
+                <td style="border: 3px solid #fff; padding: 15px; width: 20%; text-align: center; vertical-align: middle;">A<br/>V=0.45</td>
+                <td style="border: 3px solid #fff; padding: 15px; width: 20%; text-align: center; vertical-align: middle;">B<br/>V=0.5</td>
+                <td style="border: 3px solid #fff; padding: 15px; width: 20%; text-align: center; vertical-align: middle;">C<br/>V=0.5</td>
+                <td style="border: 3px solid #fff; padding: 15px; background-color: #4CAF50; color: #000; width: 20%; text-align: center; vertical-align: middle;">T[1]</td>
+            </tr>
+        </table>
+    </div>
+    <div style="text-align: center; font-size: 1.2em;">
+        <p><strong>Step 2: C → Term(+1)</strong> (Reward R=+1, V(Term)=0)</p>
+        <div class="fragment fade-in">
+            <p>TD Error: \( \delta = [R + \gamma V(\text{Term})] - V(C) \)</p>
+            <p>\( \delta = [1 + 1 \cdot 0] - 0.5 = \mathbf{0.5} \)</p>
+            <p><mark style="color: #4CAF50">Another surprise!</mark> The agent was too pessimistic.</p>
+        </div>
+        <div class="fragment fade-in">
+            <p><strong>Update V(C):</strong> \( V(C) \leftarrow V(C) + \alpha \cdot \delta \)</p>
+            <p>\( V(C) \leftarrow 0.5 + 0.1 \cdot (0.5) = \)\( \mathbf{\color{#4CAF50}{0.55}} \)</p>
+        </div>
+    </div>
+</section>
+
+<!-- Because this slide summarizes the agent's brain after Episode 2, this is a TECHNICAL slide. The mermaid diagram is updated again to show the new V(C) value. The summary text points out the key limitation so far: V(B) has not changed, setting the stage for the next episode's breakthrough. -->
+<section data-auto-animate>
+    <div style="background-color: #333; padding: 15px; border-radius: 10px; margin-bottom: 20px;">
+        <h3 style="color: #4CAF50; margin: 0; font-size: 1.5em;">Knowledge after Episode 2</h3>
+        <table style="width: 80%; margin: 10px auto; border-collapse: collapse; font-size: 1.4em;">
+            <tr>
+                <td style="border: 3px solid #fff; padding: 15px; background-color: #ff6b6b; color: #000; width: 20%; text-align: center; vertical-align: middle;">T[0]</td>
+                <td style="border: 3px solid #fff; padding: 15px; width: 20%; text-align: center; vertical-align: middle;">A<br/>V=0.45</td>
+                <td style="border: 3px solid #fff; padding: 15px; width: 20%; text-align: center; vertical-align: middle;">B<br/>V=0.5</td>
+                <td style="border: 3px solid #fff; padding: 15px; width: 20%; text-align: center; vertical-align: middle;">C<br/><b style='color:#4CAF50'>V=0.55</b></td>
+                <td style="border: 3px solid #fff; padding: 15px; background-color: #4CAF50; color: #000; width: 20%; text-align: center; vertical-align: middle;">T[1]</td>
+            </tr>
+        </table>
+    </div>
+    <p style="font-size: 1.4em; text-align: center;">So far, so good. But notice, its opinion of the starting state, B, <mark style="color: #ff6b6b">hasn't changed at all</mark>.</p>
+</section>
+
+<!-- Because this slide introduces the most important part of the walkthrough, this is a POWER TEXT slide. It uses dramatic language like "magic" and "trickles back" to build anticipation for the bootstrapping concept that will be demonstrated. -->
+<section>
+    <h2 class="r-fit-text">Episode 3: The Magic Trickle-Back</h2>
+    <h1 class="r-fit-text fragment">Watch how the new knowledge about A and C now changes the agent's mind about B...</h1>
+    <h2 class="r-fit-text fragment" style="color: #4CAF50;">...in the middle of the episode.</h2>
+</section>
+
+<!-- Because this is the pivotal teaching moment of the chapter, this is a CRITICAL TECHNICAL slide. The persistent context box shows the latest V-values. The slide focuses entirely on the first step (B → C), where the "magic" happens. The TD Error calculation now uses the updated V(C)=0.55, resulting in a non-zero error for B for the first time. This update is heavily emphasized. -->
+<section data-auto-animate>
+    <div style="background-color: #333; padding: 15px; border-radius: 10px; margin-bottom: 20px;">
+        <h3 style="color: #4CAF50; margin: 0; font-size: 1.5em;">Episode 3: The Magic Trickle-Back</h3>
+        <table style="width: 80%; margin: 10px auto; border-collapse: collapse; font-size: 1.4em;">
+            <tr>
+                <td style="border: 3px solid #fff; padding: 15px; background-color: #ff6b6b; color: #000; width: 20%; text-align: center; vertical-align: middle;">T[0]</td>
+                <td style="border: 3px solid #fff; padding: 15px; width: 20%; text-align: center; vertical-align: middle;">A<br/>V=0.45</td>
+                <td style="border: 3px solid #fff; padding: 15px; width: 20%; text-align: center; vertical-align: middle;">B<br/>V=0.5</td>
+                <td style="border: 3px solid #fff; padding: 15px; width: 20%; text-align: center; vertical-align: middle;">C<br/>V=0.55</td>
+                <td style="border: 3px solid #fff; padding: 15px; background-color: #4CAF50; color: #000; width: 20%; text-align: center; vertical-align: middle;">T[1]</td>
+            </tr>
+        </table>
+    </div>
+    <div style="text-align: center; font-size: 1.2em;">
+        <p>Trajectory: <code>B → C → B → A → Term(0)</code></p>
+        <p style="margin-top: 20px;"><strong>Step 1: B → C</strong> (Reward R=0)</p>
+        <div class="fragment fade-in">
+            <p>TD Error: \( \delta = [R + \gamma V(C)] - V(B) \)</p>
+            <p>\( \delta = [0 + 1 \cdot \mathbf{0.55}] - 0.5 = \mathbf{0.05} \)</p>
+            <p style="font-size: 1.3em; color: #4CAF50;"><strong>THIS IS THE KEY MOMENT!</strong></p>
+        </div>
+        <div class="fragment fade-in">
+            <p><strong>Update V(B):</strong> \( V(B) \leftarrow 0.5 + 0.1 \cdot (0.05) = \)\( \mathbf{\color{#4CAF50}{0.505}} \)</p>
+            <p>It used its new guess for C to improve its guess for B. <mark>This is bootstrapping!</mark></p>
+        </div>
+    </div>
+</section>
+
+<!-- Because this slide shows the rest of the steps in Episode 3, this is a dense TECHNICAL slide. The context box now reflects the mid-episode update to V(B). It uses fragments to reveal the subsequent updates to V(C), V(B) again, and V(A), demonstrating how the values continue to shift based on the most recent estimates. -->
+<section data-auto-animate>
+    <div style="background-color: #333; padding: 15px; border-radius: 10px; margin-bottom: 20px;">
+        <h3 style="color: #4CAF50; margin: 0; font-size: 1.5em;">Episode 3: The Learning Cascade</h3>
+        <table style="width: 80%; margin: 10px auto; border-collapse: collapse; font-size: 1.4em;">
+            <tr>
+                <td style="border: 3px solid #fff; padding: 15px; background-color: #ff6b6b; color: #000; width: 20%; text-align: center; vertical-align: middle;">T[0]</td>
+                <td style="border: 3px solid #fff; padding: 15px; width: 20%; text-align: center; vertical-align: middle;">A<br/>V=0.45</td>
+                <td style="border: 3px solid #fff; padding: 15px; width: 20%; text-align: center; vertical-align: middle;">B<br/><b style='color:#4CAF50'>V=0.505</b></td>
+                <td style="border: 3px solid #fff; padding: 15px; width: 20%; text-align: center; vertical-align: middle;">C<br/>V=0.55</td>
+                <td style="border: 3px solid #fff; padding: 15px; background-color: #4CAF50; color: #000; width: 20%; text-align: center; vertical-align: middle;">T[1]</td>
+            </tr>
+        </table>
+    </div>
+    <div style="display: flex; justify-content: space-around; font-size: 1em; text-align: center;">
+        <div class="fragment fade-in" style="flex: 1;">
+            <p><strong>Step 2: C → B</strong></p>
+            <p>\( \delta = [0 + 1 \cdot 0.505] - 0.55 = -0.045 \)</p>
+            <p><strong>Update V(C):</strong> \( \rightarrow 0.5455 \)</p>
+        </div>
+        <div class="fragment fade-in" style="flex: 1;">
+            <p><strong>Step 3: B → A</strong></p>
+            <p>\( \delta = [0 + 1 \cdot 0.45] - 0.505 = -0.055 \)</p>
+            <p><strong>Update V(B):</strong> \( \rightarrow 0.4995 \)</p>
+        </div>
+        <div class="fragment fade-in" style="flex: 1;">
+            <p><strong>Step 4: A → Term(0)</strong></p>
+            <p>\( \delta = [0 + 1 \cdot 0] - 0.45 = -0.45 \)</p>
+            <p><strong>Update V(A):</strong> \( \rightarrow 0.405 \)</p>
+        </div>
+    </div>
+</section>
+
+<!-- Because this is the final summary of the walkthrough, this is a TECHNICAL slide. It presents the agent's brain after all three episodes, with an updated mermaid diagram. The text explicitly points out that the values are moving towards their true values, proving that the algorithm works. -->
+<section data-auto-animate>
+    <div style="background-color: #333; padding: 15px; border-radius: 10px; margin-bottom: 20px;">
+        <h3 style="color: #4CAF50; margin: 0; font-size: 1.5em;">Knowledge after Episode 3</h3>
+        <table style="width: 80%; margin: 10px auto; border-collapse: collapse; font-size: 1.4em;">
+            <tr>
+                <td style="border: 3px solid #fff; padding: 15px; background-color: #ff6b6b; color: #000; width: 20%; text-align: center; vertical-align: middle;">T[0]</td>
+                <td style="border: 3px solid #fff; padding: 15px; width: 20%; text-align: center; vertical-align: middle;">A<br/><b style='color:#4CAF50'>V=0.405</b></td>
+                <td style="border: 3px solid #fff; padding: 15px; width: 20%; text-align: center; vertical-align: middle;">B<br/><b style='color:#4CAF50'>V=0.4995</b></td>
+                <td style="border: 3px solid #fff; padding: 15px; width: 20%; text-align: center; vertical-align: middle;">C<br/><b style='color:#4CAF50'>V=0.5455</b></td>
+                <td style="border: 3px solid #fff; padding: 15px; background-color: #4CAF50; color: #000; width: 20%; text-align: center; vertical-align: middle;">T[1]</td>
+            </tr>
+        </table>
+    </div>
+    <p style="font-size: 1.2em; text-align: center;">The values are getting closer to their true values!<br>(True values are closer to A=0.25, B=0.5, C=0.75)</p>
+</section>
+
+<!-- Because this slide provides the key insight and summary of the chapter's demonstration, this is a POWER TEXT slide. It uses the "trickling back" metaphor to explain WHY TD is more efficient, reinforcing the central lesson of the walkthrough. -->
+<section>
+    <h1 class="r-fit-text">Do you see what's happening?</h1>
+    <h2 class="r-fit-text fragment">The information from the final outcomes is slowly "<mark style="color: #4CAF50;">trickling back</mark>" through the states, one step at a time.</h2>
+</section>
+
+<!-- Because this content serves as a concluding statement on the power of TD learning before transitioning, this is a POWER TEXT slide. Text analysis: "This ability to learn from every single step is the engine that will drive our more advanced algorithms." (101 characters) is at the edge of the sweet spot, but works as it summarizes the core benefit and looks forward. -->
+<section>
+    <h2 class="r-fit-text">This ability to learn from every single step is the <mark>engine</mark> that will drive our more advanced algorithms.</h2>
+</section>
+
+<!-- Because this slide identifies the remaining problem and sets up the next chapter, this is a POWER TEXT slide. It connects back to a familiar limitation (prediction vs. control) to create a clear narrative throughline for the series. -->
+<section data-auto-animate>
+    <h2 class="r-fit-text">But this brings us back to a familiar problem.</h2>
+    <h1 class="r-fit-text fragment">This is great for <mark>predicting</mark>...</h1>
+</section>
+
+<!-- Because this slide completes the transition by posing the next key question, this is a POWER TEXT slide. data-auto-animate provides a smooth reveal. The contrast between "predicting" and "what to DO" is the central conflict that the next chapter will resolve. -->
+<section data-auto-animate>
+    <h1 class="r-fit-text">This is great for <mark>predicting</mark>...</h1>
+    <h2 class="r-fit-text">...but it doesn't tell our agent what to <mark style="color: #ff6b6b">DO</mark>.</h2>
+</section>
+
+<!-- Because this is the final hook for the next chapter, this is a POWER TEXT slide. It uses an evocative contrast between "knowing" and "DOING" and explicitly names the next algorithm (SARSA), giving the audience a clear reason to continue watching. -->
+<section>
+    <h2 class="r-fit-text">For that, we need to move from knowing...</h2>
+    <h1 class="r-fit-text fragment" style="color: #4CAF50;">...to DOING.</h1>
+    <h2 class="r-fit-text fragment">And that brings us to a cautious realist called <mark>SARSA</mark>.</h2>
+</section>
+
+<!-- END CHAPTER 4 -->
+
+<!-- START CHAPTER 5 -->
+
+<!-- Because this content opens the chapter with a relatable analogy that distinguishes state-values from action-values, this is a POWER TEXT slide. Text analysis: The analogy is split across two slides for dramatic effect. "Knowing your living room is a great place to be..." (47 characters) is a perfect setup statement for r-fit-text. This introduces the core problem: knowledge vs. action. -->
+<section data-auto-animate>
+    <h2 class="r-fit-text">Knowing your living room is a great place to be...</h2>
+</section>
+
+<!-- Because this slide delivers the punchline of the opening analogy, this is a POWER TEXT slide. Text analysis: "...doesn't help you if you don't know which *door* leads to it." (62 characters) is an ideal length. The word "door" is marked to emphasize the concept of an 'action'. The data-auto-animate transition creates a seamless two-part statement. -->
+<section data-auto-animate>
+    <h2 class="r-fit-text">Knowing your living room is a great place to be...</h2>
+    <h1 class="r-fit-text">...doesn't help you if you don't know which <mark>door</mark> leads to it.</h1>
+</section>
+
+<!-- Because this slide explicitly connects the analogy to the agent's problem, this is a POWER TEXT slide. It bridges the gap between the relatable example and the technical concept. The text is broken into two parts for clarity and impact, using a fragment to reveal the core distinction. -->
+<section>
+    <h2 class="r-fit-text">This is the exact problem our agent has.</h2>
+    <div class="fragment fade-in">
+        <p style="font-size: 1.5em; margin-top: 40px;">Knowing the <mark>value of a state</mark> is prediction.</p>
+        <p style="font-size: 1.5em;">But to make decisions, it needs to know the <mark>value of an action</mark>.</p>
+    </div>
+</section>
+
+<!-- Because this slide visually and technically represents the core conceptual shift of the chapter, this is a TECHNICAL slide. It uses large text and mathematical notation to clearly show the transition from state-values `V(s)` to state-action-values `Q(s,a)`. The arrow visually reinforces the progression. -->
+<section>
+    <h2 class="r-fit-text">We need to move from:</h2>
+    <div style="font-size: 5em; text-align: center; margin-top: 50px;">
+        <code style="color: #ff6b6b;">V(s)</code>
+        <span class="fade-in" style="color: #4CAF50;">→</span>
+        <code class="fade-in" style="color: #4CAF50;">Q(s,a)</code>
+    </div>
+</section>
+
+<!-- Because this slide reassures the audience that the new concept builds on what they've already learned, this is a POWER TEXT slide. Text analysis: "The fantastic news is, we can use the exact same TD learning trick we just learned." (81 characters) is a perfect length for r-fit-text. It reduces cognitive load by connecting the new topic to familiar material. -->
+<section>
+    <h1 class="r-fit-text">The fantastic news is, we can use the <mark style="color: #4CAF50;">exact same TD learning trick</mark> we just learned.</h1>
+</section>
+
+<!-- Because this slide clarifies the small but crucial change in applying the TD trick, this is a POWER TEXT slide. It uses contrasting highlights to make the shift from "states" to "actions" visually obvious. This is a simple but powerful way to convey the core idea. -->
+<section>
+    <h1 class="r-fit-text">We just need to apply it to <mark style="color: #4CAF50;">actions</mark> instead of <mark style="color: #ff6b6b;">states</mark>.</h1>
+</section>
+
+<!-- Because this slide formally introduces the first algorithm for TD control, this is a POWER TEXT slide. It serves as a title card for the main topic of the chapter. The text is broken into two parts to build anticipation before revealing the algorithm's name. -->
+<section>
+    <h2 class="r-fit-text">And this brings us to our first TD <em>control</em> algorithm.</h2>
+    <h2 class="r-fit-text fragment">It has a slightly weird name...</h2>
+    <h1 class="r-fit-text fragment">...but the name is its own instruction manual.</h1>
+</section>
+
+<!-- Because this slide dramatically reveals the name of the algorithm, this is a POWER TEXT slide. Text analysis: The single word "SARSA" is short, so a large fixed font size is used instead of r-fit-text for maximum visual impact. This creates a memorable introduction. -->
+<section data-auto-animate>
+    <h1 style="font-size: 12em;">SARSA</h1>
+</section>
+
+<!-- Because this slide breaks down the acronym "SARSA" into its constituent parts, this is an EDUCATIONAL slide. It uses a list format with progressive fragments to explain each letter, making the "recipe" easy to follow and digest. This demystifies the name and explains its origin. -->
+<section>
+    <h2>What's in a Name?</h2>
+    <p style="font-size: 1.5em;">It's the five pieces of information the agent uses, in order:</p>
+    <div style="font-size: 1.4em; text-align: left; margin-left: 15%; line-height: 1.8; margin-top: 30px;">
+        <p class="fragment fade-in">1. You start in a <strong style="color: #4CAF50;">S</strong>tate (S)</p>
+        <p class="fragment fade-in">2. You take an <strong style="color: #4CAF50;">A</strong>ction (A)</p>
+        <p class="fragment fade-in">3. You get a <strong style="color: #4CAF50;">R</strong>eward (R)</p>
+        <p class="fragment fade-in">4. You land in a new <strong style="color: #4CAF50;">S</strong>tate (S')</p>
+        <p class="fragment fade-in">5. You choose your next <strong style="color: #4CAF50;">A</strong>ction (A')</p>
+    </div>
+</section>
+
+<!-- Because this slide visually represents the SARSA data packet, this is a TECHNICAL slide. It uses a mermaid diagram to show the sequence of events, providing a clear visual model for the acronym. This visual anchor helps solidify the concept for the viewer. -->
+<section>
+    <h2 style="margin-bottom: 40px;">State, Action, Reward, State, Action.</h2>
+    <div class="mermaid" style="zoom: 2.5;">
+        %%{init: {'theme': 'dark'}}%%
+        graph LR
+            S(State S) --> A(Action A)
+            A --> R(Reward R)
+            R --> S_prime(New State S')
+            S_prime --> A_prime(Next Action A')
+    </div>
+    <h1 class="fragment fade-in" style="margin-top: 40px; color: #4CAF50;">SARSA</h1>
+</section>
+
+<!-- Because this slide begins the transition from the old V-value formula to the new Q-value formula, this is a TECHNICAL slide. It re-introduces the TD(0) update rule for V-values, which the audience learned in the previous chapter. This serves as a familiar baseline before the modification is shown. `data-auto-animate` is used to set up the visual transformation. -->
+<section data-auto-animate>
+    <h2>So how do we use this? We just tweak our TD(0) formula.</h2>
+    <p style="font-size: 1.5em; margin-top: 50px;">Remember this?</p>
+    <div data-id="formula" style="font-size: 1.5em; text-align: center; margin-top: 30px;">
+        \[ V(S) \leftarrow V(S) + \alpha[R + \gamma V(S') - V(S)] \]
+    </div>
+</section>
+
+<!-- Because this slide performs the critical visual transformation from the V-value to the Q-value formula, this is a TECHNICAL slide. CRITICAL: Using data-auto-animate, it smoothly morphs the old formula into the SARSA update rule. This is a powerful teaching moment that visually demonstrates how the logic is extended from states to state-action pairs, fulfilling the "dumb simple" promise. -->
+<section data-auto-animate>
+    <h2>Watch closely. We just swap the V's for Q's...</h2>
+    <p style="font-size: 1.5em; margin-top: 50px;">...and get a little more specific.</p>
+    <div data-id="formula" style="font-size: 1.5em; text-align: center; margin-top: 30px;">
+        \[ Q(S,A) \leftarrow Q(S,A) + \alpha[R + \gamma Q(S',A') - Q(S,A)] \]
+    </div>
+</section>
+
+<!-- Because this slide focuses on the most important part of the new formula, the TD Target, this is a TECHNICAL slide. It uses LaTeX's `underbrace` to visually isolate and label the target term. This directs the audience's attention to the core of the update rule and explains its components. -->
+<section>
+    <h2>Look at the <mark style="color: #4CAF50;">TD Target</mark> now:</h2>
+    <div style="font-size: 1.4em; text-align: center; margin-top: 30px;">
+        \[ \underbrace{R + \gamma Q(S',A')}_{\text{The SARSA TD Target}} \]
+    </div>
+    <p class="fragment fade-in" style="font-size: 1.3em; margin-top: 30px;">We update our *current* action `Q(S,A)` based on the reward we got, plus the discounted value of the *next action A'* that we **actually decide to take**.</p>
+</section>
+
+<!-- Because this slide presents the complete SARSA algorithm in pseudocode, this is a TECHNICAL slide. A code block with syntax highlighting and line numbers is used for clarity. The specific SARSA update line is highlighted to connect the full algorithm back to the formula just explained. -->
+<section data-auto-animate>
+    <h3>SARSA Algorithm (On-Policy TD Control)</h3>
+    <pre style="font-size: 0.9em; height: 70vh;"><code class="language-python" data-trim data-line-numbers="11">
+Initialize Q(s,a) for all states and actions
+
+Repeat (for each episode):
+  1. Initialize state S
+  2. Choose action A from S using an ε-greedy policy
+  
+  3. Repeat (for each step):
+     a. Take action A, observe reward R and next state S'
+     b. Choose the NEXT action A' from S' using the ε-greedy policy
+     c. Update the Q-value for the PREVIOUS step:
+        Q(S,A) ← Q(S,A) + α[R + γQ(S',A') - Q(S,A)]
+     d. Update for the next loop: S ← S'; A ← A'
+     
+  Until S is terminal
+    </code></pre>
+</section>
+
+<!-- Because this slide introduces the conceptual explanation of "on-policy," this is a POWER TEXT slide. It serves as a title card for the next section, clearly stating the topic to be discussed. -->
+<section>
+    <h2 class="r-fit-text">The Cautious Realist:</h2>
+    <h1 class="r-fit-text fragment">Why SARSA is "<mark>On-Policy</mark>"</h1>
+</section>
+
+<!-- Because this slide highlights the specific detail that makes SARSA on-policy, this is a TECHNICAL slide. It re-shows the algorithm but this time highlights the line where the next action `A'` is chosen. This provides the necessary context for the explanation that follows. -->
+<section>
+    <p style="font-size: 1.4em;">Pay very close attention to step 3b and 3c.</p>
+    <pre style="font-size: 0.9em; height: 65vh;"><code class="language-python" data-trim data-line-numbers="9,11">
+Initialize Q(s,a) for all states and actions
+
+Repeat (for each episode):
+  1. Initialize state S
+  2. Choose action A from S using an ε-greedy policy
+  
+  3. Repeat (for each step):
+     a. Take action A, observe reward R and next state S'
+     b. Choose the NEXT action A' from S' using the ε-greedy policy
+     c. Update the Q-value for the PREVIOUS step:
+        Q(S,A) ← Q(S,A) + α[R + γQ(S',A') - Q(S,A)]
+     d. Update for the next loop: S ← S'; A ← A'
+     
+  Until S is terminal
+    </code></pre>
+    <p class="fragment fade-in" style="font-size: 1.2em; margin-top: 80px; clear: both;">To update its Q-value, SARSA needs to know `A'`, the <strong>actual action</strong> it's going to take next.</p>
+</section>
+
+<!-- Because this slide provides the key takeaway about SARSA's learning process, this is a POWER TEXT slide. Text analysis: "This is a crucial detail." serves as a brief, impactful transition. The main point, "The Q-values SARSA learns are directly tied to the policy it's currently following," is the core definition of on-policy learning. -->
+<section>
+    <h2 class="r-fit-text">This is a crucial detail.</h2>
+    <h1 class="r-fit-text fragment">The Q-values SARSA learns are directly tied to the <mark>policy it's currently following</mark>.</h1>
+</section>
+
+<!-- Because this slide defines the term "on-policy" clearly, this is a POWER TEXT slide. It states the definition directly and prominently for maximum retention. -->
+<section>
+    <h2 class="r-fit-text" style="color: #4CAF50;">This is why SARSA is called an</h2>
+    <h1 class="r-fit-text" style="color: #4CAF50;"><mark>on-policy</mark> algorithm.</h1>
+</section>
+
+<!-- Because this slide introduces the "realist" personification of SARSA, this is a POWER TEXT slide. This analogy helps make the abstract concept of on-policy learning more intuitive and memorable. -->
+<section data-auto-animate>
+    <h1 class="r-fit-text">SARSA is a <mark>realist</mark>.</h1>
+</section>
+
+<!-- Because this slide elaborates on the "realist" analogy using the cliff example, this is a POWER TEXT slide. The text is broken into a setup and a punchline with a fragment. This narrative structure effectively explains *why* a realist agent might be cautious, linking its policy directly to the values it learns. -->
+<section data-auto-animate>
+    <h1 class="r-fit-text">SARSA is a <mark>realist</mark>.</h1>
+    <h2 class="r-fit-text">It learns the value of its actions while accounting for its own <mark style="color: #ff6b6b;">imperfect, exploratory</mark> behavior.</h2>
+</section>
+
+<!-- Because this slide provides the cliff example, this is a POWER TEXT slide. It gives a concrete example of the cautious behavior. -->
+<section data-auto-animate>
+    <h1 class="r-fit-text">SARSA is a <mark>realist</mark>.</h1>
+    <h2 class="r-fit-text">It knows there's a small chance its own policy will randomly decide to <mark style="color: #ff6b6b;">jump off a cliff</mark>.</h2>
+</section>
+
+<!-- Because this slide provides a final, concise summary of what SARSA learns, this is a POWER TEXT slide. It elegantly wraps up the on-policy concept, emphasizing that the agent learns to be the best version of its current self. -->
+<section data-auto-animate>
+    <h1 class="r-fit-text">SARSA is a <mark>realist</mark>.</h1>
+    <h2 class="r-fit-text">So it learns that the path next to the cliff <mark style="color: #ff6b6b;">isn't as valuable</mark>.</h2>
+</section>
+
+<section>
+    <h1 class="r-fit-text">It learns the best way to behave...</h1>
+    <h2 class="r-fit-text fragment" style="color: #4CAF50;">...<em>given</em> its own cautious, sometimes random nature.</h2>
+</section>
+
+<!-- Because this slide introduces the downside of SARSA and transitions to the next topic, this is a POWER TEXT slide. Highlighting "overly cautious" in red signals a problem or limitation that needs to be overcome. -->
+<section>
+    <h2 class="r-fit-text">But this realism has a downside.</h2>
+    <h1 class="r-fit-text fragment">It can be <mark style="color: #ff6b6b;">overly cautious</mark>.</h1>
+</section>
+
+<!-- Because this slide poses the key question that sets up the need for Q-Learning, this is a POWER TEXT slide. The text is split across two slides using data-auto-animate to create a powerful, multi-part question that builds anticipation for the next chapter's solution. -->
+<section data-auto-animate>
+    <h2 class="r-fit-text">What if we don't want to account for our exploration?</h2>
+</section>
+
+<!-- Because this slide completes the transitional question, this is a POWER TEXT slide. The data-auto-animate provides a seamless flow. Highlighting "perfect, optimal path" clearly states the goal that SARSA's cautiousness prevents it from achieving, creating a strong hook for the next chapter. -->
+<section data-auto-animate>
+    <h2 class="r-fit-text">What if we want our agent to learn the <mark style="color: #4CAF50;">perfect, optimal path</mark>?</h2>
+    <h2 class="r-fit-text fragment">No matter what our current bumbling behavior looks like?</h2>
+</section>
+
+<!-- Because this is the final hook for the next chapter, this is a POWER TEXT slide. It uses a sequence of short, impactful statements with fragments to build excitement. The words "optimistic" and "bolder" directly contrast with SARSA's "realism" and "cautiousness," setting the stage for the next algorithm. -->
+<section>
+    <h2 class="r-fit-text">For that... we need to be a little more <mark style="color: #4CAF50;">optimistic</mark>.</h2>
+    <h2 class="r-fit-text fragment">We need to be a little <mark style="color: #4CAF50;">bolder</mark>.</h2>
+    <h1 class="r-fit-text fragment">And that brings us to the <mark>breakthrough</mark>.</h1>
+</section>
+
+<!-- END CHAPTER 5 -->
+
+<!-- START CHAPTER 6 -->
+
+<!-- Because this content directly addresses the limitation of the previous chapter's algorithm (SARSA), this is a POWER TEXT slide. Text analysis: "That realism has a downside." is a short, impactful statement. Using data-auto-animate will smoothly transition to the next slide, which names the specific problem. -->
+<section data-auto-animate>
+    <h2 class="r-fit-text">That realism has a downside.</h2>
+</section>
+
+<!-- Because this slide completes the thought from the previous one by specifying SARSA's flaw, this is a POWER TEXT slide. Text analysis: "SARSA can be... too cautious." is a concise punchline. Highlighting "too cautious" in red emphasizes this as a negative trait we want to overcome. The data-auto-animate transition makes this feel like a single, evolving thought. -->
+<section data-auto-animate>
+    <h2 class="r-fit-text">SARSA can be...</h2>
+    <h1 class="r-fit-text"><mark style="color: #ff6b6b;">too cautious</mark>.</h1>
+</section>
+
+<!-- Because this slide poses the central question that motivates the new algorithm, this is a POWER TEXT slide. Text analysis: "What if we want to learn about the PERFECT, optimal path..." is the setup. Highlighting "PERFECT, optimal path" in green clearly states the new goal. This slide uses a fragment to separate the goal from the challenging condition. -->
+<section>
+    <h2 class="r-fit-text">What if we want to learn about the <mark style="color: #4CAF50;">PERFECT, optimal path</mark>...</h2>
+    <h2 class="r-fit-text fragment">...even while we're still stumbling around exploring?</h2>
+</section>
+
+<!-- Because this slide breaks down the core conceptual challenge into a simple, powerful question, this is a POWER TEXT slide. Text analysis: "Can we separate exploration from learning?" (38 characters) is a perfect length for r-fit-text. Marking the two key terms makes the core conflict immediately obvious. -->
+<section>
+    <h1 class="r-fit-text">Can we separate <mark>exploration</mark> from <mark>learning</mark>?</h1>
+</section>
+
+<!-- Because this slide continues the questioning from the previous slide, building up the concept of off-policy learning, this is a POWER TEXT slide. The text is broken into two parts with a fragment to create a contrast. "behave cautiously" is highlighted in red to represent the exploratory, imperfect behavior. -->
+<section data-auto-animate>
+    <h2 class="r-fit-text">Can our agent <mark style="color: #ff6b6b;">behave cautiously</mark>...</h2>
+</section>
+
+<!-- Because this slide delivers the punchline to the previous setup, this is a POWER TEXT slide. Text analysis: "...but learn about the true, greedy, optimal policy?" is the core idea. Highlighting "learn greedily" in green contrasts with the previous slide's red, visually representing the separation of behavior and learning. The data-auto-animate makes for a smooth reveal. -->
+<section data-auto-animate>
+    <h2 class="r-fit-text">Can our agent <mark style="color: #ff6b6b;">behave cautiously</mark>...</h2>
+    <h1 class="r-fit-text">...but <mark style="color: #4CAF50;">learn greedily</mark>?</h1>
+</section>
+
+<!-- Because this slide provides the definitive answer to the preceding questions, this is a POWER TEXT slide. Text analysis: "Yes." is extremely short, so a large fixed font size is used for maximum impact. The green color signals a positive, breakthrough moment. The data-auto-animate prepares to connect this answer to the algorithm's name. -->
+<section data-auto-animate>
+    <h1 style="font-size: 12em; color: #4CAF50;">Yes.</h1>
+</section>
+
+<!-- Because this slide formally names the solution, this is a POWER TEXT slide. Text analysis: "And it comes from one of the most important breakthroughs..." builds suspense, while the fragment reveals "Q-learning" as the hero. This structure makes the introduction of the term feel significant. -->
+<section>
+    <h2 class="r-fit-text">And it comes from one of the most important breakthroughs in all of reinforcement learning:</h2>
+    <h1 class="r-fit-text fragment" style="color: #4CAF50;"><mark>Q-learning</mark>.</h1>
+</section>
+
+<!-- Because this slide introduces the critical term "off-policy," this is a POWER TEXT slide. It serves as a title card for the concept. Highlighting "Off-Policy" in green establishes it as a key, positive idea. -->
+<section>
+    <h2 class="r-fit-text">Q-learning is an</h2>
+    <h1 class="r-fit-text" style="color: #4CAF50;"><mark>off-policy</mark> algorithm.</h1>
+</section>
+
+<!-- Because this slide provides a simple, clear definition of "off-policy," this is a POWER TEXT slide. The text is broken into two parts with a fragment to emphasize the contrast between the learned policy and the behavior policy, which is the core of the definition. -->
+<section>
+    <h2 class="r-fit-text">This means the policy it <mark>learns about</mark> (the optimal one)...</h2>
+    <h1 class="r-fit-text fragment">...is <mark>different</mark> from the policy it <mark>uses to act</mark> (the exploratory one).</h1>
+</section>
+
+<!-- Because this content builds suspense by hinting at the simplicity of the solution, this is a POWER TEXT slide. Text analysis: "The change required to do this is so small it's almost funny." (63 characters) fits the r-fit-text sweet spot and aligns with the "Dumb Simple" series theme. -->
+<section data-auto-animate>
+    <h2 class="r-fit-text">The change required to do this is so <mark>small</mark> it's almost funny.</h2>
+</section>
+
+<!-- Because this slide completes the thought from the previous one, emphasizing the importance of the small change, this is a POWER TEXT slide. Text analysis: "But its implications are profound." is a classic contrasting statement. The data-auto-animate transition makes this feel like a single, powerful thought. -->
+<section data-auto-animate>
+    <h2 class="r-fit-text">The change required to do this is so <mark>small</mark> it's almost funny.</h2>
+    <h1 class="r-fit-text">But its implications are <mark>profound</mark>.</h1>
+</section>
+
+<!-- Because this slide sets up the upcoming side-by-side comparison and engages the audience directly, this is a POWER TEXT slide. It clearly instructs the viewer what to look for, making the next slide's reveal more impactful. -->
+<section>
+    <h2 class="r-fit-text">Let's put the two algorithms side-by-side.</h2>
+    <h1 class="r-fit-text fragment">I want you to find the difference.</h1>
+    <h2 class="r-fit-text fragment">There is only <mark>ONE</mark> critical change.</h2>
+</section>
+
+<!-- Because this slide presents the first half of a crucial side-by-side comparison, this is a TECHNICAL slide. It re-introduces the SARSA algorithm from the previous chapter, providing a familiar baseline for the audience. Highlighting the update line focuses attention on the key part of the algorithm. The data-auto-animate tag is critical for a smooth transition to the next slide. -->
+<section data-auto-animate>
+    <div style="display: flex; justify-content: space-around; gap: 20px;">
+        <div style="flex: 1;">
+            <h3 style="color: #ff6b6b;">SARSA (The Cautious Realist)</h3>
+            <pre style="font-size: 0.8em;"><code class="language-python" data-trim data-line-numbers="5">
+Repeat (for each step):
+   a. Take action A, observe R and S'
+   b. Choose A' from S' using ε-greedy policy
+   c. Update: 
+      Q(S,A) ← Q(S,A) + α[R + γQ(S',A') - Q(S,A)]
+   d. S ← S'; A ← A'
+            </code></pre>
+        </div>
+    </div>
+</section>
+
+<!-- Because this slide completes the side-by-side comparison, this is a TECHNICAL slide. CRITICAL: The Q-Learning algorithm is added via data-auto-animate, appearing next to SARSA for direct comparison. Highlighting the Q-Learning update line immediately draws the viewer's eye to the "one critical change," making the difference between `Q(S',A')` and `max Q(S',a)` visually obvious. -->
+<section data-auto-animate>
+    <div style="display: flex; justify-content: space-around; gap: 20px;">
+        <div style="flex: 1;">
+            <h3 style="color: #ff6b6b;">SARSA (The Cautious Realist)</h3>
+            <pre style="font-size: 0.8em;"><code class="language-python" data-trim data-line-numbers="5" style="white-space: pre-wrap; word-wrap: break-word; overflow-wrap: break-word;">
+Repeat (for each step):
+   a. Take action A, observe R and S'
+   b. Choose A' from S' using ε-greedy policy
+   c. Update: 
+      Q(S,A) ← Q(S,A) + α[R + γQ(S',A') - Q(S,A)]
+   d. S ← S'; A ← A'
+            </code></pre>
+        </div>
+        <div style="flex: 1;">
+            <h3 style="color: #4CAF50;">Q-Learning (The Bold Optimist)</h3>
+            <pre style="font-size: 0.8em;"><code class="language-python" data-trim data-line-numbers="5" style="white-space: pre-wrap; word-wrap: break-word; overflow-wrap: break-word;">
+Repeat (for each step):
+   a. Choose A from S using ε-greedy policy
+   b. Take action A, observe R and S'
+   c. Update: 
+      Q(S,A) ← Q(S,A) + α[R + γ max_a Q(S',a) - Q(S,A)]
+   d. S ← S'
+            </code></pre>
+        </div>
+    </div>
+</section>
+
+<!-- Because this slide poses a rhetorical question to the audience after the reveal, this is a POWER TEXT slide. It serves as a brief, impactful pause before explaining the difference in detail. -->
+<section data-auto-animate>
+    <h1 class="r-fit-text">Did you see it?</h1>
+</section>
+
+<!-- Because this slide reveals the location of the key difference, this is a POWER TEXT slide. The data-auto-animate transition makes it feel like a direct answer to the previous question. Highlighting "TD Target" introduces the term that will be explained on the next slide. -->
+<section data-auto-animate>
+    <h1 class="r-fit-text">Did you see it?</h1>
+    <h2 class="r-fit-text">The entire revolution is in the <mark>TD Target</mark>.</h2>
+</section>
+
+<!-- Because this slide provides a detailed, focused comparison of the TD Targets, this is a TECHNICAL slide. It uses a two-column layout for direct contrast. SARSA is colored red to represent its cautious, reality-based approach, while Q-Learning is green for its optimistic, ideal-based approach. The math is displayed clearly with LaTeX, and the key difference (`A'` vs. `max_a`) is emphasized in the text. -->
+<section>
+    <div style="display: flex; justify-content: space-around; gap: 40px; font-size: 1.1em;">
+        <div style="flex: 1; text-align: center; background-color: #333; padding: 20px; border-radius: 10px; display: flex; flex-direction: column; justify-content: center;">
+            <h2 style="color: #ff6b6b;">SARSA's Target</h2>
+            \[ R + \gamma Q(S', A') \]
+            <p>It uses the Q-value of `A'`, the <mark>actual</mark> next action its exploratory policy chose.</p>
+        </div>
+        <div style="flex: 1; text-align: center; background-color: #333; padding: 20px; border-radius: 10px; display: flex; flex-direction: column; justify-content: center;">
+            <h2 style="color: #4CAF50;">Q-Learning's Target</h2>
+            \[ R + \gamma \max_a Q(S', a) \]
+            <p>It <mark>IGNORES</mark> the next action and finds the Q-value of the absolute <mark>best</mark> one.</p>
+        </div>
+    </div>
+</section>
+
+<!-- Because this slide gives a name to the core concept just explained, this is a POWER TEXT slide. The phrase "optimistic update" is highlighted in green to frame it as the positive, key innovation of Q-Learning. -->
+<section>
+    <h1 class="r-fit-text">This is the <mark style="color: #4CAF50;">optimistic update</mark>.</h1>
+</section>
+
+<!-- Because this slide personifies Q-Learning to make the concept more intuitive, this is a POWER TEXT slide. The title "bold optimist" reinforces the theme. The text is broken into a setup and a punchline to explain the "wild assumption" Q-Learning makes. -->
+<section>
+    <h2 class="r-fit-text">Q-learning is a <mark style="color: #4CAF50;">bold optimist</mark>.</h2>
+    <h2 class="r-fit-text fragment">When updating, it assumes it will follow the <mark>perfect, greedy policy</mark> forever.</h2>
+</section>
+
+<!-- Because this slide continues the personification by highlighting what Q-Learning ignores, this is a POWER TEXT slide. It creates a powerful contrast between the ideal it learns about and the reality of its own behavior, which is the essence of off-policy learning. -->
+<section>
+    <h1 class="r-fit-text">It ignores that its <mark style="color: #ff6b6b;">ε-greedy behavior</mark> might choose a "worse" action next.</h1>
+</section>
+
+<!-- Because this slide presents a powerful, concise summary of the off-policy concept, this is a POWER TEXT slide. The contrasting words "perfection" and "imperfectly" are highlighted to drive home the separation between learning and behavior. -->
+<section>
+    <h1 class="r-fit-text">It learns about the value of <mark style="color: #4CAF50;">perfection</mark>, even while behaving <mark style="color: #ff6b6b;">imperfectly</mark>.</h1>
+</section>
+
+<!-- Because this slide provides a simple, relatable analogy to explain the abstract concept, this is a POWER TEXT slide. The analogy of the C-student learning from an A+ answer key makes the idea of off-policy learning instantly understandable. -->
+<section>
+    <h2 class="r-fit-text">It's like a student who gets a C on a practice test...</h2>
+    <h1 class="r-fit-text fragment">...but updates their belief about their potential by looking at the answer key for an A+ student.</h1>
+</section>
+
+<!-- Because this slide elevates the concept to its broader significance in the field, this is a POWER TEXT slide. It clearly states why this idea is so important, reinforcing the "breakthrough" nature of Q-Learning. -->
+<section>
+    <h2 class="r-fit-text">This separation between <mark>behavior</mark> and <mark>learning</mark> is a cornerstone of modern reinforcement learning.</h2>
+</section>
+
+<!-- Because this slide begins the transition to the next chapter by posing the central conflict, this is a POWER TEXT slide. "But it raises the obvious question." is a classic transition. The data-auto-animate prepares to build the question over multiple slides. -->
+<section data-auto-animate>
+    <h2 class="r-fit-text">But it raises the obvious question.</h2>
+    <h1 class="r-fit-text">Which approach is actually better?</h1>
+</section>
+
+<!-- Because this slide presents the two competing philosophies, this is a POWER TEXT slide. Using data-auto-animate, it adds the two options to the question from the previous slide. The contrasting colors (red for the cautious SARSA, green for the bold Q-Learning) visually represent the choice. -->
+<section data-auto-animate>
+    <h1 class="r-fit-text">Which approach is actually better?</h1>
+    <h2 class="r-fit-text">The <mark style="color: #ff6b6b;">cautious realist</mark> that learns from its own mistakes?</h2>
+    <h2 class="r-fit-text">Or the <mark style="color: #4CAF50;">bold optimist</mark> that learns from a perfect ideal?</h2>
+</section>
+
+<!-- Because this slide serves as the final hook for the next chapter, this is a POWER TEXT slide. It uses dramatic language to build anticipation for the practical application and comparison that will resolve the question posed on the previous slides. -->
+<section>
+    <h2 class="r-fit-text">To find out, we need to put them head-to-head.</h2>
+    <h2 class="r-fit-text fragment">We need to see them in action where their philosophies force completely different choices.</h2>
+    <h1 class="r-fit-text fragment">It's time for a <mark>showdown</mark>.</h1>
+</section>
+
+<!-- END CHAPTER 6 -->
+
+<!-- START CHAPTER 7 -->
+
+<!-- Because this content introduces the central conflict of the chapter, this is a POWER TEXT slide. The text is broken into two impactful lines, with a fragment reveal to create a head-to-head feeling. The contrast between the two algorithm names and their policy types is the core theme. -->
+<section data-auto-animate>
+    <h1 class="r-fit-text">SARSA versus Q-Learning.</h1>
+    <h2 class="r-fit-text fragment">On-policy versus off-policy.</h2>
+</section>
+
+<!-- Because this slide sets the stage for the chapter's grand experiment, this is a POWER TEXT slide. Text analysis: "We need to throw them into a world where caution and optimism lead to two completely different choices." (100 characters) is a perfect length for r-fit-text, creating a compelling narrative hook. -->
+<section>
+    <h1 class="r-fit-text">We need a world where caution and optimism lead to <mark>completely different choices</mark>.</h1>
+</section>
+
+<!-- Because this content serves as a dramatic introduction to the problem environment, this is a POWER TEXT slide. It uses a multi-part reveal with fragments to build anticipation, making the name "The Cliff Walking problem" feel significant and slightly menacing. -->
+<section>
+    <h2 class="r-fit-text">Welcome...</h2>
+    <h1 class="r-fit-text fragment">...to the <mark style="color: #ff6b6b">Cliff Walking</mark> problem.</h1>
+</section>
+
+<!-- Because this slide establishes the complete problem setup that will persist for the rest of the chapter, this is a CRITICAL TECHNICAL slide. The context box at the top clearly states the problem. The core of the slide is the ASCII art grid, which provides an immediate, intuitive visual of the environment. The rules and the core risk-reward dilemma are explained below, setting the stage for the showdown. This slide is the foundation for the persistent context that is essential for viewers to understand the results. -->
+<section data-auto-animate>
+    <div style="background-color: #333; padding: 15px; border-radius: 10px; margin-bottom: 20px;">
+        <h3 style="color: #4CAF50; margin: 0; font-size: 1.8em;">The Environment: Cliff Walking</h3>
+        <p style="font-size: 1.4em; margin: 10px 0 0 0;">Navigate from Start (S) to Goal (G) while avoiding the cliff (C).</p>
+    </div>
+    <table style="margin: 30px auto; border-collapse: collapse; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; font-size: 1.4em;">
+        <tr>
+            <td style="width: 40px; height: 40px; border: 3px solid #fff; text-align: center; vertical-align: middle; background: transparent; font-weight: bold;">&nbsp;</td>
+            <td style="width: 40px; height: 40px; border: 3px solid #fff; text-align: center; vertical-align: middle; background: transparent; font-weight: bold;">&nbsp;</td>
+            <td style="width: 40px; height: 40px; border: 3px solid #fff; text-align: center; vertical-align: middle; background: transparent; font-weight: bold;">&nbsp;</td>
+            <td style="width: 40px; height: 40px; border: 3px solid #fff; text-align: center; vertical-align: middle; background: transparent; font-weight: bold;">&nbsp;</td>
+            <td style="width: 40px; height: 40px; border: 3px solid #fff; text-align: center; vertical-align: middle; background: transparent; font-weight: bold;">&nbsp;</td>
+            <td style="width: 40px; height: 40px; border: 3px solid #fff; text-align: center; vertical-align: middle; background: transparent; font-weight: bold;">&nbsp;</td>
+            <td style="width: 40px; height: 40px; border: 3px solid #fff; text-align: center; vertical-align: middle; background: transparent; font-weight: bold;">&nbsp;</td>
+            <td style="width: 40px; height: 40px; border: 3px solid #fff; text-align: center; vertical-align: middle; background: transparent; font-weight: bold;">&nbsp;</td>
+            <td style="width: 40px; height: 40px; border: 3px solid #fff; text-align: center; vertical-align: middle; background: transparent; font-weight: bold;">&nbsp;</td>
+            <td style="width: 40px; height: 40px; border: 3px solid #fff; text-align: center; vertical-align: middle; background: transparent; font-weight: bold;">&nbsp;</td>
+            <td style="width: 40px; height: 40px; border: 3px solid #fff; text-align: center; vertical-align: middle; background: transparent; font-weight: bold;">&nbsp;</td>
+            <td style="width: 40px; height: 40px; border: 3px solid #fff; text-align: center; vertical-align: middle; background: transparent; font-weight: bold;">&nbsp;</td>
+            <td style="color: #4CAF50; font-size: 0.8em; padding-left: 20px; vertical-align: middle; font-weight: 500;">← Safe Route</td>
+        </tr>
+        <tr>
+            <td style="width: 40px; height: 40px; border: 3px solid #fff; text-align: center; vertical-align: middle; background: transparent; font-weight: bold;">&nbsp;</td>
+            <td style="width: 40px; height: 40px; border: 3px solid #fff; text-align: center; vertical-align: middle; background: transparent; font-weight: bold;">&nbsp;</td>
+            <td style="width: 40px; height: 40px; border: 3px solid #fff; text-align: center; vertical-align: middle; background: transparent; font-weight: bold;">&nbsp;</td>
+            <td style="width: 40px; height: 40px; border: 3px solid #fff; text-align: center; vertical-align: middle; background: transparent; font-weight: bold;">&nbsp;</td>
+            <td style="width: 40px; height: 40px; border: 3px solid #fff; text-align: center; vertical-align: middle; background: transparent; font-weight: bold;">&nbsp;</td>
+            <td style="width: 40px; height: 40px; border: 3px solid #fff; text-align: center; vertical-align: middle; background: transparent; font-weight: bold;">&nbsp;</td>
+            <td style="width: 40px; height: 40px; border: 3px solid #fff; text-align: center; vertical-align: middle; background: transparent; font-weight: bold;">&nbsp;</td>
+            <td style="width: 40px; height: 40px; border: 3px solid #fff; text-align: center; vertical-align: middle; background: transparent; font-weight: bold;">&nbsp;</td>
+            <td style="width: 40px; height: 40px; border: 3px solid #fff; text-align: center; vertical-align: middle; background: transparent; font-weight: bold;">&nbsp;</td>
+            <td style="width: 40px; height: 40px; border: 3px solid #fff; text-align: center; vertical-align: middle; background: transparent; font-weight: bold;">&nbsp;</td>
+            <td style="width: 40px; height: 40px; border: 3px solid #fff; text-align: center; vertical-align: middle; background: transparent; font-weight: bold;">&nbsp;</td>
+            <td style="width: 40px; height: 40px; border: 3px solid #fff; text-align: center; vertical-align: middle; background-color: #4CAF50; color: white; font-weight: bold;">G</td>
+            <td style="color: #FFA726; font-size: 0.8em; padding-left: 20px; vertical-align: middle; font-weight: 500;">← Optimal Route</td>
+        </tr>
+        <tr>
+            <td style="width: 40px; height: 40px; border: 3px solid #fff; text-align: center; vertical-align: middle; background-color: #4CAF50; color: white; font-weight: bold;">S</td>
+            <td style="width: 40px; height: 40px; border: 3px solid #fff; text-align: center; vertical-align: middle; background-color: #ff6b6b; color: white; font-weight: bold;">C</td>
+            <td style="width: 40px; height: 40px; border: 3px solid #fff; text-align: center; vertical-align: middle; background-color: #ff6b6b; color: white; font-weight: bold;">C</td>
+            <td style="width: 40px; height: 40px; border: 3px solid #fff; text-align: center; vertical-align: middle; background-color: #ff6b6b; color: white; font-weight: bold;">C</td>
+            <td style="width: 40px; height: 40px; border: 3px solid #fff; text-align: center; vertical-align: middle; background-color: #ff6b6b; color: white; font-weight: bold;">C</td>
+            <td style="width: 40px; height: 40px; border: 3px solid #fff; text-align: center; vertical-align: middle; background-color: #ff6b6b; color: white; font-weight: bold;">C</td>
+            <td style="width: 40px; height: 40px; border: 3px solid #fff; text-align: center; vertical-align: middle; background-color: #ff6b6b; color: white; font-weight: bold;">C</td>
+            <td style="width: 40px; height: 40px; border: 3px solid #fff; text-align: center; vertical-align: middle; background-color: #ff6b6b; color: white; font-weight: bold;">C</td>
+            <td style="width: 40px; height: 40px; border: 3px solid #fff; text-align: center; vertical-align: middle; background-color: #ff6b6b; color: white; font-weight: bold;">C</td>
+            <td style="width: 40px; height: 40px; border: 3px solid #fff; text-align: center; vertical-align: middle; background-color: #ff6b6b; color: white; font-weight: bold;">C</td>
+            <td style="width: 40px; height: 40px; border: 3px solid #fff; text-align: center; vertical-align: middle; background-color: #ff6b6b; color: white; font-weight: bold;">C</td>
+            <td style="width: 40px; height: 40px; border: 3px solid #fff; text-align: center; vertical-align: middle; background-color: #ff6b6b; color: white; font-weight: bold;">C</td>
+            <td style="color: #ff6b6b; font-size: 0.8em; padding-left: 20px; vertical-align: middle; font-weight: 500;">← The Cliff</td>
+        </tr>
+    </table>
+    <div style="font-size: 1.1em; text-align: left; margin-left: 5%;">
+        <p><strong>Rules:</strong> Every step costs <code style="color: #ff6b6b">-1</code> reward.</p>
+        <p><strong>The Catch:</strong> Step on the cliff (C) for a <code style="color: #ff6b6b">-100</code> penalty and return to Start.</p>
+    </div>
+</section>
+
+<!-- Because this slide poses the central question of the chapter after the problem setup, this is a POWER TEXT slide. It serves as a natural transition from explaining the environment to showing the results of the two agents. -->
+<section>
+    <h1 class="r-fit-text">So, how do our two agents handle this trade-off?</h1>
+</section>
+
+<!-- Because this slide introduces the first agent in the showdown, this is a POWER TEXT slide. It uses a two-part reveal with a fragment to build anticipation and clearly state which algorithm is being examined first, along with its established persona. -->
+<section>
+    <h2 class="r-fit-text">First up, the Q-learning agent.</h2>
+    <h1 class="r-fit-text fragment" style="color: #4CAF50;">The Bold Optimist.</h1>
+</section>
+
+<!-- Because this slide explains the Q-learning result, this is a TECHNICAL slide. CRITICAL: The problem context box persists from the setup slide, providing the necessary rules for viewers to understand WHY Q-learning makes its choice. The slide presents the learned policy as an ASCII grid and explains that its `max` operator forces it to learn the optimal path, ignoring the risks of its own exploration. -->
+<section data-auto-animate>
+    <div style="background-color: #333; padding: 15px; border-radius: 10px; margin-bottom: 20px;">
+        <h3 style="color: #4CAF50; margin: 0; font-size: 1.8em;">The Environment: Cliff Walking</h3>
+        <p style="font-size: 1.4em; margin: 10px 0 0 0;">Reward: -1 per step, -100 for falling.</p>
+    </div>
+    <h3 style="margin-bottom: 10px;">The Learned Q-Learning Policy: <mark>Optimal but Suicidal</mark></h3>
+    <table style="margin: 20px auto; border-collapse: collapse; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; font-size: 1.2em;">
+        <tr>
+            <td style="width: 40px; height: 40px; border: 3px solid #fff; text-align: center; vertical-align: middle; background: transparent; font-weight: bold;">&nbsp;</td>
+            <td style="width: 40px; height: 40px; border: 3px solid #fff; text-align: center; vertical-align: middle; background: transparent; font-weight: bold;">&nbsp;</td>
+            <td style="width: 40px; height: 40px; border: 3px solid #fff; text-align: center; vertical-align: middle; background: transparent; font-weight: bold;">&nbsp;</td>
+            <td style="width: 40px; height: 40px; border: 3px solid #fff; text-align: center; vertical-align: middle; background: transparent; font-weight: bold;">&nbsp;</td>
+            <td style="width: 40px; height: 40px; border: 3px solid #fff; text-align: center; vertical-align: middle; background: transparent; font-weight: bold;">&nbsp;</td>
+            <td style="width: 40px; height: 40px; border: 3px solid #fff; text-align: center; vertical-align: middle; background: transparent; font-weight: bold;">&nbsp;</td>
+            <td style="width: 40px; height: 40px; border: 3px solid #fff; text-align: center; vertical-align: middle; background: transparent; font-weight: bold;">&nbsp;</td>
+            <td style="width: 40px; height: 40px; border: 3px solid #fff; text-align: center; vertical-align: middle; background: transparent; font-weight: bold;">&nbsp;</td>
+            <td style="width: 40px; height: 40px; border: 3px solid #fff; text-align: center; vertical-align: middle; background: transparent; font-weight: bold;">&nbsp;</td>
+            <td style="width: 40px; height: 40px; border: 3px solid #fff; text-align: center; vertical-align: middle; background: transparent; font-weight: bold;">&nbsp;</td>
+            <td style="width: 40px; height: 40px; border: 3px solid #fff; text-align: center; vertical-align: middle; background: transparent; font-weight: bold;">&nbsp;</td>
+            <td style="width: 40px; height: 40px; border: 3px solid #fff; text-align: center; vertical-align: middle; background: transparent; font-weight: bold;">&nbsp;</td>
+        </tr>
+        <tr>
+            <td style="width: 40px; height: 40px; border: 3px solid #fff; text-align: center; vertical-align: middle; background: transparent; font-weight: bold;">></td>
+            <td style="width: 40px; height: 40px; border: 3px solid #fff; text-align: center; vertical-align: middle; background: transparent; font-weight: bold;">></td>
+            <td style="width: 40px; height: 40px; border: 3px solid #fff; text-align: center; vertical-align: middle; background: transparent; font-weight: bold;">></td>
+            <td style="width: 40px; height: 40px; border: 3px solid #fff; text-align: center; vertical-align: middle; background: transparent; font-weight: bold;">></td>
+            <td style="width: 40px; height: 40px; border: 3px solid #fff; text-align: center; vertical-align: middle; background: transparent; font-weight: bold;">></td>
+            <td style="width: 40px; height: 40px; border: 3px solid #fff; text-align: center; vertical-align: middle; background: transparent; font-weight: bold;">></td>
+            <td style="width: 40px; height: 40px; border: 3px solid #fff; text-align: center; vertical-align: middle; background: transparent; font-weight: bold;">></td>
+            <td style="width: 40px; height: 40px; border: 3px solid #fff; text-align: center; vertical-align: middle; background: transparent; font-weight: bold;">></td>
+            <td style="width: 40px; height: 40px; border: 3px solid #fff; text-align: center; vertical-align: middle; background: transparent; font-weight: bold;">></td>
+            <td style="width: 40px; height: 40px; border: 3px solid #fff; text-align: center; vertical-align: middle; background: transparent; font-weight: bold;">></td>
+            <td style="width: 40px; height: 40px; border: 3px solid #fff; text-align: center; vertical-align: middle; background: transparent; font-weight: bold;">></td>
+            <td style="width: 40px; height: 40px; border: 3px solid #fff; text-align: center; vertical-align: middle; background-color: #4CAF50; color: white; font-weight: bold;">G</td>
+        </tr>
+        <tr>
+            <td style="width: 40px; height: 40px; border: 3px solid #fff; text-align: center; vertical-align: middle; background: transparent; font-weight: bold;">^</td>
+            <td style="width: 40px; height: 40px; border: 3px solid #fff; text-align: center; vertical-align: middle; background-color: #ff6b6b; color: white; font-weight: bold;">C</td>
+            <td style="width: 40px; height: 40px; border: 3px solid #fff; text-align: center; vertical-align: middle; background-color: #ff6b6b; color: white; font-weight: bold;">C</td>
+            <td style="width: 40px; height: 40px; border: 3px solid #fff; text-align: center; vertical-align: middle; background-color: #ff6b6b; color: white; font-weight: bold;">C</td>
+            <td style="width: 40px; height: 40px; border: 3px solid #fff; text-align: center; vertical-align: middle; background-color: #ff6b6b; color: white; font-weight: bold;">C</td>
+            <td style="width: 40px; height: 40px; border: 3px solid #fff; text-align: center; vertical-align: middle; background-color: #ff6b6b; color: white; font-weight: bold;">C</td>
+            <td style="width: 40px; height: 40px; border: 3px solid #fff; text-align: center; vertical-align: middle; background-color: #ff6b6b; color: white; font-weight: bold;">C</td>
+            <td style="width: 40px; height: 40px; border: 3px solid #fff; text-align: center; vertical-align: middle; background-color: #ff6b6b; color: white; font-weight: bold;">C</td>
+            <td style="width: 40px; height: 40px; border: 3px solid #fff; text-align: center; vertical-align: middle; background-color: #ff6b6b; color: white; font-weight: bold;">C</td>
+            <td style="width: 40px; height: 40px; border: 3px solid #fff; text-align: center; vertical-align: middle; background-color: #ff6b6b; color: white; font-weight: bold;">C</td>
+            <td style="width: 40px; height: 40px; border: 3px solid #fff; text-align: center; vertical-align: middle; background-color: #ff6b6b; color: white; font-weight: bold;">C</td>
+            <td style="width: 40px; height: 40px; border: 3px solid #fff; text-align: center; vertical-align: middle; background-color: #ff6b6b; color: white; font-weight: bold;">C</td>
+        </tr>
+    </table>
+    <p style="font-size: 1.2em; margin-top: 15px;">It finds the shortest path, but an agent following it with ε-greedy exploration will constantly fall off the cliff.</p>
+</section>
+
+<!-- Because this slide introduces the second agent, this is a POWER TEXT slide. It mirrors the structure used for the Q-learning introduction, providing a clear and consistent transition for the audience. -->
+<section>
+    <h2 class="r-fit-text">Now, let's look at SARSA.</h2>
+    <h1 class="r-fit-text fragment" style="color: #ff6b6b;">The Cautious Realist.</h1>
+</section>
+
+<!-- Because this slide explains the SARSA result, this is a TECHNICAL slide. CRITICAL: The same persistent context box is used again, ensuring viewers can directly compare the agents' behavior under the same rules. The slide shows SARSA's safer policy and explains that because it learns from what *actually happens* (including falling off), it learns to avoid the cliff entirely. -->
+<section data-auto-animate>
+    <div style="background-color: #333; padding: 15px; border-radius: 10px; margin-bottom: 20px;">
+        <h3 style="color: #4CAF50; margin: 0; font-size: 1.8em;">The Environment: Cliff Walking</h3>
+        <p style="font-size: 1.4em; margin: 10px 0 0 0;">Reward: -1 per step, -100 for falling.</p>
+    </div>
+    <h3 style="margin-bottom: 10px;">The Learned SARSA Policy: <mark>Sub-optimal but Safe</mark></h3>
+    <table style="margin: 20px auto; border-collapse: collapse; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; font-size: 1.2em;">
+        <tr>
+            <td style="width: 40px; height: 40px; border: 3px solid #fff; text-align: center; vertical-align: middle; background: transparent; font-weight: bold;">></td>
+            <td style="width: 40px; height: 40px; border: 3px solid #fff; text-align: center; vertical-align: middle; background: transparent; font-weight: bold;">></td>
+            <td style="width: 40px; height: 40px; border: 3px solid #fff; text-align: center; vertical-align: middle; background: transparent; font-weight: bold;">></td>
+            <td style="width: 40px; height: 40px; border: 3px solid #fff; text-align: center; vertical-align: middle; background: transparent; font-weight: bold;">></td>
+            <td style="width: 40px; height: 40px; border: 3px solid #fff; text-align: center; vertical-align: middle; background: transparent; font-weight: bold;">></td>
+            <td style="width: 40px; height: 40px; border: 3px solid #fff; text-align: center; vertical-align: middle; background: transparent; font-weight: bold;">></td>
+            <td style="width: 40px; height: 40px; border: 3px solid #fff; text-align: center; vertical-align: middle; background: transparent; font-weight: bold;">></td>
+            <td style="width: 40px; height: 40px; border: 3px solid #fff; text-align: center; vertical-align: middle; background: transparent; font-weight: bold;">></td>
+            <td style="width: 40px; height: 40px; border: 3px solid #fff; text-align: center; vertical-align: middle; background: transparent; font-weight: bold;">></td>
+            <td style="width: 40px; height: 40px; border: 3px solid #fff; text-align: center; vertical-align: middle; background: transparent; font-weight: bold;">></td>
+            <td style="width: 40px; height: 40px; border: 3px solid #fff; text-align: center; vertical-align: middle; background: transparent; font-weight: bold;">></td>
+            <td style="width: 40px; height: 40px; border: 3px solid #fff; text-align: center; vertical-align: middle; background: transparent; font-weight: bold;">v</td>
+        </tr>
+        <tr>
+            <td style="width: 40px; height: 40px; border: 3px solid #fff; text-align: center; vertical-align: middle; background: transparent; font-weight: bold;">^</td>
+            <td style="width: 40px; height: 40px; border: 3px solid #fff; text-align: center; vertical-align: middle; background: transparent; font-weight: bold;">&nbsp;</td>
+            <td style="width: 40px; height: 40px; border: 3px solid #fff; text-align: center; vertical-align: middle; background: transparent; font-weight: bold;">&nbsp;</td>
+            <td style="width: 40px; height: 40px; border: 3px solid #fff; text-align: center; vertical-align: middle; background: transparent; font-weight: bold;">&nbsp;</td>
+            <td style="width: 40px; height: 40px; border: 3px solid #fff; text-align: center; vertical-align: middle; background: transparent; font-weight: bold;">&nbsp;</td>
+            <td style="width: 40px; height: 40px; border: 3px solid #fff; text-align: center; vertical-align: middle; background: transparent; font-weight: bold;">&nbsp;</td>
+            <td style="width: 40px; height: 40px; border: 3px solid #fff; text-align: center; vertical-align: middle; background: transparent; font-weight: bold;">&nbsp;</td>
+            <td style="width: 40px; height: 40px; border: 3px solid #fff; text-align: center; vertical-align: middle; background: transparent; font-weight: bold;">&nbsp;</td>
+            <td style="width: 40px; height: 40px; border: 3px solid #fff; text-align: center; vertical-align: middle; background: transparent; font-weight: bold;">&nbsp;</td>
+            <td style="width: 40px; height: 40px; border: 3px solid #fff; text-align: center; vertical-align: middle; background: transparent; font-weight: bold;">&nbsp;</td>
+            <td style="width: 40px; height: 40px; border: 3px solid #fff; text-align: center; vertical-align: middle; background: transparent; font-weight: bold;">&nbsp;</td>
+            <td style="width: 40px; height: 40px; border: 3px solid #fff; text-align: center; vertical-align: middle; background-color: #4CAF50; color: white; font-weight: bold;">G</td>
+        </tr>
+        <tr>
+            <td style="width: 40px; height: 40px; border: 3px solid #fff; text-align: center; vertical-align: middle; background: transparent; font-weight: bold;">^</td>
+            <td style="width: 40px; height: 40px; border: 3px solid #fff; text-align: center; vertical-align: middle; background-color: #ff6b6b; color: white; font-weight: bold;">C</td>
+            <td style="width: 40px; height: 40px; border: 3px solid #fff; text-align: center; vertical-align: middle; background-color: #ff6b6b; color: white; font-weight: bold;">C</td>
+            <td style="width: 40px; height: 40px; border: 3px solid #fff; text-align: center; vertical-align: middle; background-color: #ff6b6b; color: white; font-weight: bold;">C</td>
+            <td style="width: 40px; height: 40px; border: 3px solid #fff; text-align: center; vertical-align: middle; background-color: #ff6b6b; color: white; font-weight: bold;">C</td>
+            <td style="width: 40px; height: 40px; border: 3px solid #fff; text-align: center; vertical-align: middle; background-color: #ff6b6b; color: white; font-weight: bold;">C</td>
+            <td style="width: 40px; height: 40px; border: 3px solid #fff; text-align: center; vertical-align: middle; background-color: #ff6b6b; color: white; font-weight: bold;">C</td>
+            <td style="width: 40px; height: 40px; border: 3px solid #fff; text-align: center; vertical-align: middle; background-color: #ff6b6b; color: white; font-weight: bold;">C</td>
+            <td style="width: 40px; height: 40px; border: 3px solid #fff; text-align: center; vertical-align: middle; background-color: #ff6b6b; color: white; font-weight: bold;">C</td>
+            <td style="width: 40px; height: 40px; border: 3px solid #fff; text-align: center; vertical-align: middle; background-color: #ff6b6b; color: white; font-weight: bold;">C</td>
+            <td style="width: 40px; height: 40px; border: 3px solid #fff; text-align: center; vertical-align: middle; background-color: #ff6b6b; color: white; font-weight: bold;">C</td>
+            <td style="width: 40px; height: 40px; border: 3px solid #fff; text-align: center; vertical-align: middle; background-color: #ff6b6b; color: white; font-weight: bold;">C</td>
+        </tr>
+    </table>
+    <p style="font-size: 1.2em; margin-top: 15px;">It learns that the cliff is not worth the risk and takes the longer, safer path. It's more effective during the learning process.</p>
+</section>
+
+<!-- Because this slide serves as the key insight and summary of the showdown, this is a POWER TEXT slide. It makes a bold claim that the two preceding images encapsulate the entire on-policy vs. off-policy debate, giving the audience a strong, memorable takeaway. -->
+<section>
+    <h1 class="r-fit-text">This is the entire on-policy vs. off-policy debate, right here in two pictures.</h1>
+</section>
+
+<!-- Because this slide provides a clear, side-by-side summary of the two philosophies, this is an EDUCATIONAL slide. It uses a two-column layout for direct comparison. Each column answers the question "What question does this agent answer?", which is an intuitive way to frame the difference. Fragments are used to reveal the points sequentially, allowing for controlled explanation. -->
+<section>
+    <h2 style="margin-bottom: 30px;">The Takeaway: Two Different Questions</h2>
+    <div style="display: flex; justify-content: space-around; gap: 40px; font-size: 1.2em;">
+        <div style="flex: 1; text-align: center; background-color: #333; padding: 20px; border-radius: 10px; display: flex; flex-direction: column; justify-content: center;">
+            <h2 style="color: #4CAF50;">Q-Learning (Off-Policy)</h2>
+            <p>Answers: "What is the best path, assuming I execute it <mark>perfectly</mark>?"</p>
+            <p class="fragment fade-in" style="font-style: italic;">Learns the optimal policy, but the learning process can be unstable.</p>
+        </div>
+        <div class="fragment fade-in" style="flex: 1; text-align: center; background-color: #333; padding: 20px; border-radius: 10px; display: flex; flex-direction: column; justify-content: center;">
+            <h2 style="color: #ff6b6b;">SARSA (On-Policy)</h2>
+            <p>Answers: "What is the best path for <mark>me</mark>, a clumsy agent still exploring?"</p>
+            <p class="fragment fade-in" style="font-style: italic;">Learns a safer policy that accounts for its own imperfections.</p>
+        </div>
+    </div>
+</section>
+
+<!-- Because this slide delivers a nuanced conclusion to the showdown, this is a POWER TEXT slide. Text analysis: "Neither one is strictly 'better'." (31 characters) is a short, impactful statement that clarifies a common misconception and encourages deeper thinking. -->
+<section data-auto-animate>
+    <h1 class="r-fit-text">Neither one is strictly "better."</h1>
+</section>
+
+<!-- Because this slide completes the thought from the previous one, this is a POWER TEXT slide. The data-auto-animate transition creates a smooth flow. Text analysis: "They are two different tools for two different jobs." (49 characters) is the perfect length to deliver the final verdict on the SARSA vs. Q-learning debate. -->
+<section data-auto-animate>
+    <h1 class="r-fit-text">Neither one is strictly "better."</h1>
+    <h2 class="r-fit-text">They are two different <mark>tools</mark> for two different <mark>jobs</mark>.</h2>
+</section>
+
+<!-- Because this slide elevates the importance of the chapter's lesson, this is a POWER TEXT slide. It emphasizes that understanding this trade-off is a key milestone in mastering the subject, motivating the audience and validating their learning. -->
+<section>
+    <h2 class="r-fit-text">This distinction is crucial to mastering reinforcement learning.</h2>
+</section>
+
+<!-- Because this slide begins the transition to the final chapter by summarizing the series' progress so far, this is a POWER TEXT slide. It recaps the journey from Monte Carlo to TD, providing a sense of accomplishment and narrative closure before introducing the final problem. -->
+<section>
+    <h2 class="r-fit-text">We've moved from patient Monte Carlo to agile TD learning.</h2>
+    <h1 class="r-fit-text fragment">We have two powerful algorithms that can learn and act in the world, without a map.</h1>
+</section>
+
+<!-- Because this content introduces the final problem and hook for the next chapter, this is a POWER TEXT slide. It uses a fragment to create a dramatic reveal of the "tiny, myopic flaw," building suspense for the final topic of the series. -->
+<section>
+    <h2 class="r-fit-text">But both of these methods share one tiny, myopic <mark style="color: #ff6b6b">flaw</mark>...</h2>
+</section>
+
+<!-- Because this slide delivers the punchline of the previous setup, this is a POWER TEXT slide. Text analysis: "...they only look one single step into the future." (47 characters) is the perfect length. Highlighting "one single step" emphasizes the core limitation that the next chapter will address. -->
+<section>
+    <h1 class="r-fit-text">...they only look <mark>one single step</mark> into the future.</h1>
+</section>
+
+<!-- Because this slide poses the final, forward-looking questions of the chapter, this is a POWER TEXT slide. It uses a two-part question with a fragment to create a strong hook, directly asking the audience to consider what comes next and setting the stage for the series finale. -->
+<section>
+    <h2 class="r-fit-text">Where do we go from here?</h2>
+    <h1 class="r-fit-text fragment">What's the next level?</h1>
+</section>
+
+<!-- END CHAPTER 7 -->
+
+<!-- START CHAPTER 8 -->
+
+<!-- Because this content opens the final chapter with a powerful statement summarizing the significance of the video's core topic, this is a POWER TEXT slide. Text analysis: "This leap from Monte Carlo to Temporal-Difference learning is one of the biggest ideas in this entire field." (105 characters) is slightly long, but works as a single impactful statement. Highlighting "biggest ideas" emphasizes its importance. -->
+<section>
+    <h1 class="r-fit-text">This leap from Monte Carlo to Temporal-Difference learning is one of the <mark>biggest ideas</mark> in this entire field.</h1>
+</section>
+
+<!-- Because this slide serves as a congratulatory moment for the viewer, reinforcing their accomplishment, this is a POWER TEXT slide. Text analysis: "You've just understood the engine behind modern RL." (51 characters) is an ideal length for r-fit-text. Marking the word "engine" provides a strong metaphor for the concept's foundational role. -->
+<section>
+    <h1 class="r-fit-text">You've just understood the <mark>engine</mark> behind modern RL.</h1>
+</section>
+
+<!-- Because this content transitions from the high-level summary to a detailed recap, this is a POWER TEXT slide. The text is broken into two parts with a fragment to create a conversational rhythm. The final phrase "DUMB SIMPLE" reinforces the series' brand in green, signaling a clear, positive outcome. -->
+<section>
+    <h2 class="r-fit-text">So what did we actually learn?</h2>
+    <h1 class="r-fit-text fragment">Let's recap. <mark style="color: #4CAF50;">DUMB SIMPLE</mark>.</h1>
+</section>
+
+<!-- Because this slide presents the first of three summary points in a clear, organized manner, this is an EDUCATIONAL slide. It uses a numbered list format for clarity. Fragments will be used to reveal each of the three points sequentially, preventing information overload and allowing the audience to digest each concept individually. -->
+<section data-auto-animate>
+    <h2 style="color: #4CAF50; margin-bottom: 40px;">The Core Ideas</h2>
+    <div style="font-size: 1.5em; line-height: 1.6;">
+        <p><strong>1. TD Learning is Impatient.</strong> It learns from every step, updating its guess. This is <mark>bootstrapping</mark>.</p>
+    </div>
+</section>
+
+<!-- Because this slide adds the second summary point to the list, this is an EDUCATIONAL slide. Using data-auto-animate provides a smooth continuation from the previous slide. The new point about SARSA appears as a fragment, building on the established list structure. -->
+<section data-auto-animate>
+    <h2 style="color: #4CAF50; margin-bottom: 40px;">The Core Ideas</h2>
+    <div style="font-size: 1.5em; line-height: 1.6;">
+        <p><strong>1. TD Learning is Impatient.</strong> It learns from every step, updating its guess. This is <mark>bootstrapping</mark>.</p>
+        <p class="fade-in"><strong>2. SARSA is Cautious.</strong> <em style="color:#ff6b6b">On-policy</em> learner that finds the <mark>safest path</mark>.</p>
+    </div>
+</section>
+
+<!-- Because this slide completes the three-point summary, this is an EDUCATIONAL slide. The data-auto-animate transition ensures consistency. The final point about Q-Learning appears as a fragment, providing a concise, parallel summary of the three key concepts covered in the video. -->
+<section data-auto-animate>
+    <h2 style="color: #4CAF50; margin-bottom: 40px;">The Core Ideas</h2>
+    <div style="font-size: 1.5em; line-height: 1.6;">
+        <p><strong>1. TD Learning is Impatient.</strong> It learns from every step, updating its guess. This is <mark>bootstrapping</mark>.</p>
+        <p><strong>2. SARSA is Cautious.</strong> <em style="color:#ff6b6b">On-policy</em> learner that finds the <mark>safest path</mark>.</p>
+        <p class="fade-in"><strong>3. Q-Learning is Bold.</strong> <em style="color:#4CAF50">Off-policy</em> learner that finds the <mark>optimal path</mark>.</p>
+    </div>
+</section>
+
+<!-- Because this content transitions from the summary to a deeper conceptual insight, this is a POWER TEXT slide. The text is split across two slides with data-auto-animate to create a dramatic pause, first establishing the "crossroads" before revealing the two extremes. -->
+<section data-auto-animate>
+    <h2 class="r-fit-text">But this leaves us at a fascinating crossroads.</h2>
+</section>
+
+<!-- Because this slide completes the transition thought, this is a POWER TEXT slide. The data-auto-animate transition provides a seamless flow. Text analysis: "We've now seen two extremes for learning from experience." (55 characters) is a perfect length for r-fit-text, setting the stage for the bias-variance trade-off. -->
+<section data-auto-animate>
+    <h2 class="r-fit-text">We've now seen <mark>two extremes</mark> for learning from experience.</h2>
+</section>
+
+<!-- Because this slide presents a critical side-by-side comparison of two major learning paradigms, this is an EDUCATIONAL slide. A two-column layout is used for direct contrast. Monte Carlo is colored red to emphasize its high variance, while TD Learning is green to highlight its stability. Fragments reveal the details for each, allowing for a controlled explanation of this crucial trade-off. -->
+<section>
+    <h2 style="margin-bottom: 30px;">The Bias-Variance Trade-off</h2>
+    <div style="display: flex; justify-content: space-around; gap: 40px; font-size: 1.2em;">
+        <div style="flex: 1; text-align: center; background-color: #333; padding: 20px; border-radius: 10px; display: flex; flex-direction: column; justify-content: center;">
+            <h2 style="color: #ff6b6b;">Monte Carlo</h2>
+            <p>Waits for the <mark>true</mark> final outcome.</p>
+            <p class="fade-in">✅ <strong style="color: #4CAF50;">Unbiased</strong> signal (it's the real score).</p>
+            <p class="fade-in">❌ <strong style="color: #ff6b6b;">High Variance</strong> (very noisy).</p>
+        </div>
+        <div class="fade-in" style="flex: 1; text-align: center; background-color: #333; padding: 20px; border-radius: 10px; display: flex; flex-direction: column; justify-content: center;">
+            <h2 style="color: #4CAF50;">TD Learning (1-step)</h2>
+            <p>Learns from a one-step <mark>estimate</mark>.</p>
+            <p class="fade-in">✅ <strong style="color: #4CAF50;">Low Variance</strong> (very stable).</p>
+            <p class="fade-in">❌ <strong style="color: #ff6b6b;">Biased</strong> signal (the estimate can be wrong).</p>
+        </div>
+    </div>
+</section>
+
+<!-- Because this slide summarizes the trade-off just presented, this is a POWER TEXT slide. The text is broken into two impactful lines with a fragment to emphasize the core conflict between the two types of signals. -->
+<section>
+    <h1 class="r-fit-text">So we have a classic trade-off.</h1>
+    <h2 class="r-fit-text fragment">An accurate but <mark style="color: #ff6b6b">noisy</mark> signal... versus a stable but potentially <mark style="color: #ff6b6b">wrong</mark> one.</h2>
+</section>
+
+<!-- Because this content poses a rhetorical question to challenge the established dichotomy, this is a POWER TEXT slide. Text analysis: "But must we choose?" (19 characters) is short, direct, and powerful, effectively hooking the audience for the next idea. -->
+<section>
+    <h1 class="r-fit-text">But must we choose?</h1>
+</section>
+
+<!-- Because this slide expands on the previous question, introducing the possibility of a unified solution, this is a POWER TEXT slide. It uses a multi-part structure with fragments to build excitement and introduce the "slider" metaphor, which is a key concept for the upcoming topic. -->
+<section>
+    <h2 class="r-fit-text">Or can we get the best of both worlds?</h2>
+    <h2 class="r-fit-text fragment">What if we could look <mark>two</mark> steps ahead? Or five? Or fifty?</h2>
+    <h1 class="r-fit-text fragment">What if we could create a "<mark style="color: #4CAF50;">slider</mark>" to perfectly tune the balance?</h1>
+</section>
+
+<!-- Because this slide serves as a powerful pivot from a hypothetical question to a concrete promise, this is a POWER TEXT slide. Text analysis: "That's not a hypothetical question." (33 characters) is a perfect length for r-fit-text. It creates a moment of suspense and anticipation. -->
+<section>
+    <h1 class="r-fit-text">That's not a hypothetical question.</h1>
+</section>
+
+<!-- Because this slide delivers the punchline to the previous setup and reveals the name of the next major topic, this is a POWER TEXT slide. The text is split into two parts with a fragment to build suspense before revealing "n-step learning" as the solution. -->
+<section>
+    <h2 class="r-fit-text">That's exactly what we're going to do in the next video...</h2>
+    <h1 class="r-fit-text fragment">...with <mark style="color: #4CAF50;">n-step learning</mark>.</h1>
+</section>
+
+<!-- Because this slide explains the power and significance of the upcoming topic, this is a POWER TEXT slide. It uses the phrase "unified algorithm" to convey the importance of n-step learning as a concept that connects TD and Monte Carlo. -->
+<section>
+    <h2 class="r-fit-text">Creating a <mark>unified algorithm</mark> that can act like Monte Carlo, like TD, or anywhere in between.</h2>
+</section>
+
+<!-- Because this is the final call to action for the video, this is a POWER TEXT slide. The text is broken into two simple, direct statements. The final line is colored green to create a positive, exciting feeling, encouraging the viewer to subscribe. -->
+<section>
+    <h1 class="r-fit-text">So make sure you're subscribed for that.</h1>
+    <h2 class="fragment fade-in r-fit-text" style="color: #4CAF50;">You won't want to miss it.</h2>
+</section>
+
+<!-- END CHAPTER 8 -->
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/5.2.1/reveal.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/5.2.1/plugin/highlight/highlight.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/5.2.1/plugin/math/math.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/reveal.js-mermaid-plugin@2.1.0/plugin/mermaid/mermaid.js"></script>
+    <script>
+        Reveal.initialize({
+            katex: {
+                version: 'latest',
+                delimiters: [
+                { left: '\\(', right: '\\)', display: false },
+                { left: '\\[', right: '\\]', display: true },
+                ],
+                ignoredTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code'],
+            },
+            plugins: [ RevealHighlight, RevealMath.KaTeX, RevealMermaid ],
+            width: 1920,
+            height: 1080,
+        });
+    </script>
+</body>
+</html>
