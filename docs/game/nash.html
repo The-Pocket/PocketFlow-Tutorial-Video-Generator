@@ -1,0 +1,2408 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>What's Nash Equilibrium? Game Theory for Beginners #1</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/5.2.1/reveal.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/5.2.1/theme/black.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/monokai.min.css">
+    <script src="https://unpkg.com/function-plot/dist/function-plot.js"></script>
+    <style>
+        .function-plot .tick text {
+            fill: white !important;
+            font-size: 18px !important;
+        }
+        .function-plot .axis-label {
+            fill: white !important;
+            font-size: 20px !important;
+        }
+        .function-plot .axis path,
+        .function-plot .axis line {
+            stroke: white !important;
+        }
+        .function-plot .grid line {
+            stroke: #444 !important;
+            stroke-opacity: 0.7 !important;
+        }
+        code, pre, pre code, [class*="language-"] {
+            max-height: 100vh !important;
+        }
+    </style>
+</head>
+<body>
+    <div class="reveal">
+        <div class="slides">
+<!-- START CHAPTER 1 -->
+
+<!-- Because this content is the opening hook that introduces a familiar but maybe misunderstood term, this is a POWER TEXT slide. Text analysis: "You've heard the term 'Nash Equilibrium' thrown around" (53 characters) - a perfect length for r-fit-text. I'll highlight the key term for immediate focus. The slide uses a 'zoom' transition to feel like we're zooming in on this core concept. -->
+<section data-transition="zoom">
+    <h1 class="r-fit-text">You've heard the term <mark>"Nash Equilibrium"</mark> thrown around.</h1>
+</section>
+
+<!-- Because this content expands on the opening hook with specific, relatable examples, this is a POWER TEXT slide. I'm breaking the list into fragments for a conversational, rhythmic reveal, making it feel less like a dry list. Text analysis: Each line is short and punchy, suitable for r-fit-text to maintain consistency. This builds familiarity with the term before we deconstruct it. -->
+<section data-transition="slide">
+    <h2 class="r-fit-text">Maybe in economics class.</h2>
+    <h2 class="fragment fade-in r-fit-text">Maybe in "A Beautiful Mind."</h2>
+    <h2 class="fragment fade-in r-fit-text">Maybe from that friend...</h2>
+</section>
+
+<!-- Because this slide poses the central question of the video directly, this is a POWER TEXT slide. Text analysis: "But what IS it, really?" (23 characters) is short and impactful, perfect for r-fit-text. This creates a dramatic pause and focuses the audience's attention on the mystery we're about to solve. The question mark is key. -->
+<section data-transition="fade">
+    <h1 class="r-fit-text">But what <mark>IS</mark> it, really?</h1>
+</section>
+
+<!-- Because this slide broadens the scope from one term to the entire field, it's a POWER TEXT slide that acts as a transition. Text analysis: "And for that matter, what even IS game theory?" (46 characters) is well within the r-fit-text sweet spot. This sets up the next section, where we'll define the field first. -->
+<section data-transition="convex">
+    <h1 class="r-fit-text">And for that matter, what even IS <mark>game theory</mark>?</h1>
+</section>
+
+<!-- Because this slide introduces a common misconception we are about to debunk, it serves as a POWER TEXT transition. Text analysis: "Here's what most people get wrong:" (33 characters) is a classic setup line that builds anticipation. Using r-fit-text makes it a bold, unmissable statement. -->
+<section data-auto-animate>
+    <h1 class="r-fit-text">Here's what most people get <span style="color: #ff6b6b;">wrong</span>:</h1>
+</section>
+
+<!-- Because this slide states the misconception clearly, it's a POWER TEXT slide that uses auto-animate to smoothly transition from the previous setup. The text from the prior slide remains, creating continuity. Text analysis: The new sentence "They think it's about games" is short and direct. Highlighting 'games' in red emphasizes the incorrect idea. -->
+<section data-auto-animate>
+    <h1 class="r-fit-text">Here's what most people get <span style="color: #ff6b6b;">wrong</span>:</h1>
+    <h2 class="r-fit-text">They think game theory is about <span style="color: #ff6b6b;">games</span>.</h2>
+    <p class="fragment fade-in">(Chess, poker, that kind of thing.)</p>
+</section>
+
+<!-- Because this slide corrects the misconception with a powerful, contrasting statement, this is a POWER TEXT slide. Text analysis: "It's NOT about games" (20 characters) is short, direct, and uses a strong negative. "It's about strategic decisions" (29 characters) provides the correct definition. The contrast between red for 'games' and green for 'strategic decisions' visually reinforces the message. I'm splitting this reveal over two auto-animated slides for maximum impact. -->
+<section data-auto-animate>
+    <h1 class="r-fit-text">It's <span style="color: #ff6b6b;">NOT</span> about games.</h1>
+</section>
+
+<!-- Because this slide completes the thought from the previous one, this is a POWER TEXT slide using auto-animate for a seamless reveal. The first line is removed, and the positive, correct concept is centered. Text analysis: "It's about strategic decisions" (29 chars) is perfect for r-fit-text. Highlighting the key phrase in green signals a positive, core concept. -->
+<section data-auto-animate>
+    <h1 class="r-fit-text">It's about <span style="color: #4CAF50;">strategic decisions</span>.</h1>
+</section>
+
+<!-- Because this content provides the simple, core definition of game theory, it's a POWER TEXT slide. Text analysis: The phrase is split into two slides for pacing and impact. "Any time your best move depends on what someone else does" (59 characters) is a perfect length for r-fit-text and sets up the punchline. -->
+<section data-transition="slide">
+    <h1 class="r-fit-text">Any time your best move depends on what <mark>someone else</mark> does...</h1>
+</section>
+
+<!-- Because this slide delivers the punchline to the definition started on the previous slide, it's a POWER TEXT slide. Text analysis: "...that's game theory." (19 characters) is short and definitive. Using auto-animate provides a smooth continuation from the previous statement, making the two slides feel like a single, well-paced thought. -->
+<section data-auto-animate>
+    <h1 class="r-fit-text">Any time your best move depends on what <mark>someone else</mark> does...</h1>
+    <h1 class="r-fit-text">...that's <span style="color: #4CAF50;">game theory</span>.</h1>
+</section>
+
+<!-- Because this slide is a simple, conversational transition to bring the abstract concept into the real world, this is a POWER TEXT slide. Text analysis: "Think about it." (14 characters) is very short, so r-fit-text will make it large and impactful, demanding the audience's attention. -->
+<section data-transition="fade">
+    <h1 class="r-fit-text">Think about it.</h1>
+</section>
+
+<!-- Because this content lists concrete, real-world examples, this is an EDUCATIONAL slide. It's designed for clarity and relatability, not just impact. I'm using a simple list format with checkmarks and fragment animations to reveal each question one-by-one, allowing the audience to ponder each scenario. -->
+<section data-transition="zoom">
+    <div style="font-size: 2em; line-height: 1.6;">
+        <p>✓ Should you ask for that raise?</p>
+        <p class="fragment fade-in">✓ Should you cooperate with a competitor?</p>
+        <p class="fragment fade-in">✓ Should you trust your partner on a project?</p>
+    </div>
+</section>
+
+<!-- Because this slide makes a powerful concluding statement about the previous examples, it is a POWER TEXT slide. Text analysis: "These aren't games." (18 characters) is short, direct, and contrasts with the earlier misconception. It sets up the final reveal on the next slide. -->
+<section data-auto-animate>
+    <h1 class="r-fit-text">These aren't games.</h1>
+</section>
+
+<!-- Because this slide delivers the punchline from the previous statement, it is a POWER TEXT slide using auto-animate for a smooth transition. Text analysis: "They're real life." (16 characters) is impactful. Highlighting 'real life' drives home the point that game theory is a practical tool, not an abstract hobby. -->
+<section data-auto-animate>
+    <h1 class="r-fit-text">These aren't games.</h1>
+    <h1 class="r-fit-text">They're <mark>real life</mark>.</h1>
+</section>
+
+<!-- Because this slide brings the focus back to the main topic after defining the broader field, it's a POWER TEXT slide. Text analysis: "And Nash Equilibrium?" (20 characters) acts as a header or a question to re-engage the audience on the core concept, creating a transition to its definition. -->
+<section data-transition="concave">
+    <h1 class="r-fit-text">And Nash Equilibrium?</h1>
+</section>
+
+<!-- Because this slide provides the first clear, intuitive definition of Nash Equilibrium, it's a POWER TEXT slide. Text analysis: "It's the answer to 'what happens when everyone makes their best move?'" (69 characters) is an ideal length for r-fit-text. Highlighting 'best move' emphasizes the core idea of rationality and optimization. -->
+<section>
+    <h1 class="r-fit-text">It's the answer to "what happens when everyone makes their <mark>best move</mark>?"</h1>
+</section>
+
+<!-- Because this slide serves as a transition to explain the learning journey, it's a POWER TEXT slide. Text analysis: "But here's the thing—to truly understand Nash Equilibrium, you need to build up to it." is a bit long (95 chars). I'll split it into two slides for better pacing and impact. This first slide sets the stage. -->
+<section data-auto-animate>
+    <h1 class="r-fit-text">But to <mark>truly</mark> understand it...</h1>
+</section>
+
+<!-- Because this slide completes the thought from the previous one, it's a POWER TEXT slide using auto-animate for a smooth reveal. Text analysis: "...you need to build up to it." is a strong concluding phrase. This two-part reveal makes the message feel more deliberate and important. -->
+<section data-auto-animate>
+    <h1 class="r-fit-text">But to <mark>truly</mark> understand it...</h1>
+    <h1 class="r-fit-text">...you need to <span style="color: #4CAF50;">build up</span> to it.</h1>
+</section>
+
+<!-- Because this slide visualizes the learning path for the entire series, it's an EDUCATIONAL slide using a diagram. A Mermaid flowchart is perfect for showing this progression. I am following all mermaid requirements: dark theme, zoom for visibility, and using `()` for the boxes. This roadmap manages audience expectations and gives a clear structure to the content. -->
+<section data-transition="fade">
+    <h2 style="color: #4CAF50;">Our Learning Path</h2>
+    <div class="mermaid" style="zoom: 2.5; margin-top: 50px;">
+        %%{init: {'theme': 'dark'}}%%
+        graph TD
+            A(Dominant Strategies) --> B(Iterated Deletion)
+            B --> C(Nash Equilibrium)
+    </div>
+    <div class="fragment fade-in" style="font-size: 1.2em; margin-top: 40px;">
+        <p>The sweet spot where no one wants to change their strategy.</p>
+    </div>
+</section>
+
+<!-- Because this is the final hook of the intro, promising a transformation in understanding, it's a POWER TEXT slide. Text analysis: "By the end of this video..." (26 chars) is a classic opening for a value proposition. This is the beginning of a three-part closing statement. -->
+<section data-auto-animate>
+    <h1 class="r-fit-text">By the end of this video...</h1>
+</section>
+
+<!-- Because this slide continues the closing promise, it's a POWER TEXT slide using auto-animate. Text analysis: I'm breaking the long original sentence into pieces. "...you won't just KNOW what it means" focuses on moving beyond simple definition to true understanding. -->
+<section data-auto-animate>
+    <h1 class="r-fit-text">By the end of this video...</h1>
+    <h2 class="r-fit-text">...you won't just <mark>know</mark> what it means.</h2>
+</section>
+
+<!-- Because this slide delivers the first part of the value proposition, it's a POWER TEXT slide. Text analysis: "You'll see it everywhere." is short, powerful, and promises a new perspective on the world. Highlighting 'see it everywhere' emphasizes this perceptual shift. -->
+<section data-transition="zoom">
+    <h1 class="r-fit-text">You'll <mark>see it everywhere</mark>.</h1>
+</section>
+
+<!-- Because this slide delivers the final, most important part of the value proposition, it's a POWER TEXT slide. Text analysis: "And more importantly, you'll know how to use it" (48 characters) is a great length for r-fit-text. Highlighting 'use it' in green emphasizes the practical application and empowerment the viewer will gain, ending the chapter on a high note. -->
+<section data-transition="fade">
+    <h1 class="r-fit-text">And more importantly, you'll know how to <span style="color: #4CAF50;">use it</span>.</h1>
+</section>
+
+<!-- END CHAPTER 1 -->
+
+<!-- START CHAPTER 2 -->
+
+<!-- Because this content serves as a transition from the abstract intro to a concrete example, this is a POWER TEXT slide. Text analysis: The two sentences are short and direct. "We need to learn how to see the game itself" (42 chars) and "And to do that, we’re going on a game show" (44 chars) are perfect for r-fit-text. I'll split them into two auto-animating slides for a smooth, conversational buildup. -->
+<section data-auto-animate data-transition="slide">
+    <h1 class="r-fit-text">Before we find the winning move...</h1>
+    <h2 class="r-fit-text">...we need to learn how to <mark>see the game</mark> itself.</h2>
+</section>
+
+<!-- Because this slide completes the opening thought from the previous one, it's a POWER TEXT slide using auto-animate for a seamless reveal. Text analysis: "And to do that, we’re going on a game show." (44 characters) is an ideal length for r-fit-text, creating an engaging hook for the new chapter. -->
+<section data-auto-animate data-transition="slide">
+    <h1 class="r-fit-text">Before we find the winning move...</h1>
+    <h2 class="r-fit-text">...we need to learn how to <mark>see the game</mark> itself.</h2>
+    <h1 class="r-fit-text" style="color: #4CAF50;">And to do that, we’re going on a game show.</h1>
+</section>
+
+<!-- Because this content sets the scene with evocative imagery, this is a POWER TEXT slide. Text analysis: I'm breaking the scene-setting into multiple short, impactful fragments to build atmosphere. Each line is short and punchy, perfect for r-fit-text to create a cinematic feel. -->
+<section data-transition="zoom">
+    <h2 class="r-fit-text">Imagine it.</h2>
+    <p class="fragment fade-in r-fit-text">You're under the bright lights.</p>
+    <p class="fragment fade-in r-fit-text">The audience is roaring.</p>
+</section>
+
+<!-- Because this slide introduces the core scenario, it's a POWER TEXT slide. Text analysis: "You and one other person, Sarah, have just won $100,000" (61 characters) is a perfect, exciting setup for r-fit-text. Highlighting the prize money adds to the impact. -->
+<section>
+    <h1 class="r-fit-text">You and one other person, Sarah, have just won <span style="color: #4CAF50;">$100,000</span>.</h1>
+</section>
+
+<!-- Because this slide introduces the central conflict, it's a POWER TEXT slide. Text analysis: "But there's a catch." (20 characters) is a classic hook, made more dramatic with r-fit-text. The red color emphasizes the tension. -->
+<section data-transition="fade">
+    <h1 class="r-fit-text" style="color: #ff6b6b;">But there's a catch.</h1>
+</section>
+
+<!-- Because this slide explains the fundamental choices in the game, it's an EDUCATIONAL slide. It clearly presents the two available strategies. Using bold and color for the choices makes them stand out. The two-column layout visually separates the choices. -->
+<section data-transition="convex">
+    <h2 class="r-fit-text">You're in separate rooms. You each get two choices:</h2>
+    <div style="display: flex; justify-content: space-around; gap: 40px; font-size: 1.8em; margin-top: 50px;">
+        <div style="flex: 1; text-align: center; background-color: #333; padding: 40px; border-radius: 10px;">
+            <h2 style="color: #4CAF50;">Split</h2>
+        </div>
+        <div style="flex: 1; text-align: center; background-color: #333; padding: 40px; border-radius: 10px;">
+            <h2 style="color: #ff6b6b;">Steal</h2>
+        </div>
+    </div>
+</section>
+
+<!-- Because this content details the rules of the game, this is an EDUCATIONAL slide. A simple, clear list format is best here. Using fragments reveals each rule one by one, allowing the audience to absorb each outcome before moving to the next. Green is used for the positive cooperative outcome, and red for outcomes involving betrayal or loss. -->
+<section data-transition="slide">
+    <h2>The rules are simple:</h2>
+    <div style="font-size: 1.6em; line-height: 1.8; text-align: center;">
+        <p>If you both choose <strong style="color: #4CAF50;">Split</strong>, you each get <strong style="color: #4CAF50;">$50,000</strong>.</p>
+        <p class="fragment fade-in">If you <strong style="color: #4CAF50;">Split</strong> and Sarah <strong style="color: #ff6b6b;">Steals</strong>, she gets <strong style="color: #ff6b6b;">$100,000</strong>. You get nothing.</p>
+        <p class="fragment fade-in">And if you both choose <strong style="color: #ff6b6b;">Steal</strong>… you both walk away with <strong style="color: #ff6b6b;">zero</strong>.</p>
+    </div>
+</section>
+
+<!-- Because this slide poses the central dilemma to the audience, it's a POWER TEXT slide. Text analysis: "What do you do?" (14 characters) is a short, direct question that engages the viewer. The large size from r-fit-text makes it feel like a direct challenge. -->
+<section data-transition="zoom">
+    <h1 class="r-fit-text">What do you do?</h1>
+</section>
+
+<!-- Because this content introduces the formal method for analyzing the problem, it's a POWER TEXT slide. Text analysis: "To solve it, we need to map it out" (34 characters) and "We need to build the game board" (31 characters) are both perfect for r-fit-text. I'll use auto-animate to reveal them sequentially, emphasizing the process. -->
+<section data-auto-animate>
+    <h2 class="r-fit-text">This is a strategic game.</h2>
+    <h1 class="r-fit-text">To solve it, we need to <mark>map it out</mark>.</h1>
+</section>
+
+<section data-auto-animate>
+    <h2 class="r-fit-text">This is a strategic game.</h2>
+    <h1 class="r-fit-text">To solve it, we need to <mark>map it out</mark>.</h1>
+    <h1 class="r-fit-text">We need to build the <span style="color: #4CAF50;">game board</span>.</h1>
+</section>
+
+<!-- Because this slide defines the core components of any game, it's an EDUCATIONAL slide. A numbered list is the clearest way to present this information. The key terms are bolded for emphasis, and the specific examples for this game are included for immediate application. -->
+<section data-transition="fade">
+    <h2>Every game has three core components:</h2>
+    <div style="font-size: 1.5em; text-align: center; line-height: 1.8;">
+        <p>1. <strong>Players:</strong> The decision-makers. (You and Sarah)</p>
+        <p class="fragment fade-in">2. <strong>Strategies:</strong> The choices each player can make. ({Split, Steal})</p>
+        <p class="fragment fade-in">3. <strong>Outcomes:</strong> What happens for every combination of choices.</p>
+    </div>
+</section>
+
+<!-- Because this slide visualizes the game for the first time, it's a critical EDUCATIONAL slide. This is the first introduction to a payoff matrix, presented with familiar dollar amounts. The table is styled to be large and clear, establishing the visual format that will be used for the rest of the chapter. This is the initial problem context that will be transformed later. -->
+<section data-auto-animate data-transition="slide">
+    <h2 style="margin-bottom: 40px;">This is our game board.</h2>
+    <div data-id="game-board">
+        <table style="margin: 0 auto; font-size: 1.2em; border-collapse: collapse;">
+            <thead>
+                <tr>
+                    <th style="padding: 15px; border: 2px solid #fff;">Players</th>
+                    <th style="border: 2px solid #4CAF50; padding: 15px; color: #4CAF50;">Sarah: Split</th>
+                    <th style="border: 2px solid #4CAF50; padding: 15px; color: #ff6b6b;">Sarah: Steal</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td style="border: 2px solid #4CAF50; padding: 15px; color: #4CAF50;"><strong>You: Split</strong></td>
+                    <td style="border: 2px solid #fff; padding: 15px;">You: $50k, Sarah: $50k</td>
+                    <td style="border: 2px solid #fff; padding: 15px;">You: $0, Sarah: $100k</td>
+                </tr>
+                <tr>
+                    <td style="border: 2px solid #4CAF50; padding: 15px; color: #ff6b6b;"><strong>You: Steal</strong></td>
+                    <td style="border: 2px solid #fff; padding: 15px;">You: $100k, Sarah: $0</td>
+                    <td style="border: 2px solid #fff; padding: 15px;">You: $0, Sarah: $0</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</section>
+
+<!-- Because this slide reveals a critical flaw in the current analysis, it's a POWER TEXT slide. Text analysis: I'm breaking the long original sentence into two impactful statements on separate slides. "This board is missing the single most important piece of information" is too long (76 chars) to pair with the punchline. So, "Looking at this, you can’t decide" (32 chars) sets the stage. -->
+<section data-auto-animate>
+    <h1 class="r-fit-text">So, what’s the right move?</h1>
+    <h2 class="r-fit-text">Looking at this, you <mark>can’t decide</mark>.</h2>
+</section>
+
+<!-- Because this slide delivers the crucial insight after the setup, it's a POWER TEXT slide using auto-animate. Text analysis: "Because this board is missing the most important piece of information" (73 characters) is a perfect length for r-fit-text. Revealing this after the previous slide creates a moment of suspense. -->
+<section data-auto-animate>
+    <h1 class="r-fit-text">So, what’s the right move?</h1>
+    <h2 class="r-fit-text">Looking at this, you <mark>can’t decide</mark>.</h2>
+    <h2 class="r-fit-text fade-in">Because this board is missing the <span style="color: #ff6b6b;">most important</span> piece of information...</h2>
+</section>
+
+<!-- Because this slide delivers the punchline to the previous two slides, this is a POWER TEXT slide designed for maximum impact. Text analysis: "What do you actually *want*?" (28 characters) is a powerful, direct question that reframes the entire problem. Using r-fit-text makes it unmissable. -->
+<section data-transition="zoom">
+    <h1 class="r-fit-text">What do you actually <span style="color: #4CAF50;">want</span>?</h1>
+</section>
+
+<!-- Because this content introduces and defines a key term, "Payoffs", this is an EDUCATIONAL slide. It provides a simple, clear definition to anchor the concept before applying it. -->
+<section data-transition="concave">
+    <h2>This is where we introduce <strong style="color: #4CAF50;">Payoffs</strong>.</h2>
+    <h2 class="r-fit-text" style="margin-top: 40px;">Payoffs are just numbers that represent what each outcome is worth <mark>to you</mark>.</h2>
+    <p class="fragment fade-in" style="font-size: 1.5em;">A higher number means a better outcome.</p>
+</section>
+
+<!-- Because this slide introduces the first player archetype, it's an EDUCATIONAL slide. It clearly states the assumption and then lists the preferences in a logical order, associating the numerical payoffs with the outcomes. This prepares the audience for the updated game board. -->
+<section>
+    <h2>Let's assume you're a <strong style="color: #ff6b6b;">Rational Maximizer</strong>.</h2>
+    <p style="font-size: 1.3em;">Your only goal is to get the most money possible.</p>
+    <div style="font-size: 1.5em; text-align: left; margin: 40px 0 0 20%; line-height: 1.8;">
+        <p>1. <strong>Best:</strong> Getting $100k → Payoff of <strong style="color: #4CAF50;">2</strong></p>
+        <p>2. <strong>Good:</strong> Getting $50k → Payoff of <strong style="color: #4CAF50;">1</strong></p>
+        <p>3. <strong>Worst:</strong> Getting $0 → Payoff of <strong style="color: #ff6b6b;">0</strong></p>
+    </div>
+</section>
+
+<!-- Because this slide updates the game board with numerical payoffs, it's a critical TECHNICAL slide. CRITICAL: I'm using data-auto-animate to smoothly transition the dollar amounts from the previous board into these payoff numbers, visually demonstrating the concept. This table now represents the formal game and will serve as the persistent context for the analysis that follows. -->
+<section data-auto-animate>
+    <h1 class="r-fit-text">The Game Board: <strong style="color: #ff6b6b;">Rational Maximizer</strong> vs. <strong style="color: #ff6b6b;">Rational Maximizer</strong></h1>
+    <div data-id="game-board">
+        <table style="margin: 0 auto; font-size: 1.2em; border-collapse: collapse;">
+            <thead>
+                <tr>
+                    <th style="padding: 15px; border: 2px solid #fff;">Players</th>
+                    <th style="border: 2px solid #4CAF50; padding: 15px; color: #4CAF50;">Sarah: Split</th>
+                    <th style="border: 2px solid #4CAF50; padding: 15px; color: #ff6b6b;">Sarah: Steal</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td style="border: 2px solid #4CAF50; padding: 15px; color: #4CAF50;"><strong>You: Split</strong></td>
+                    <td style="border: 2px solid #fff; padding: 15px; font-size: 1.5em;"><span style="color: #4CAF50;">1</span>, 1</td>
+                    <td style="border: 2px solid #fff; padding: 15px; font-size: 1.5em;"><span style="color: #ff6b6b;">0</span>, 2</td>
+                </tr>
+                <tr>
+                    <td style="border: 2px solid #4CAF50; padding: 15px; color: #ff6b6b;"><strong>You: Steal</strong></td>
+                    <td style="border: 2px solid #fff; padding: 15px; font-size: 1.5em;"><span style="color: #4CAF50;">2</span>, 0</td>
+                    <td style="border: 2px solid #fff; padding: 15px; font-size: 1.5em;"><span style="color: #ff6b6b;">0</span>, 0</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+    <p style="margin-top: 20px;">(Your Payoff, Sarah's Payoff)</p>
+</section>
+
+<!-- Because this slide analyzes the choices based on the new payoff matrix, it's a TECHNICAL slide. Problem context that must persist: the Rational Maximizer payoff matrix from the previous slide. I'll duplicate the matrix and use fragments to walk through the logic step-by-step, highlighting the relevant numbers to make the decision process crystal clear. -->
+<section>
+    <h2>Your choice becomes clearer...</h2>
+    <table style="margin: 20px auto; font-size: 1.2em; border-collapse: collapse;">
+        <thead>
+            <tr>
+                <th style="padding: 15px; border: 2px solid #fff;">Your Choice</th>
+                <th style="border: 2px solid #4CAF50; padding: 15px; color: #4CAF50;">If Sarah Splits</th>
+                <th style="border: 2px solid #4CAF50; padding: 15px; color: #ff6b6b;">If Sarah Steals</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td style="border: 2px solid #4CAF50; padding: 15px; color: #4CAF50;"><strong>You: Split</strong></td>
+                <td style="border: 2px solid #fff; padding: 15px; font-size: 1.5em;" ><strong>1</strong>, 1</td>
+                <td style="border: 2px solid #fff; padding: 15px; font-size: 1.5em;" ><strong>0</strong>, 2</td>
+            </tr>
+            <tr>
+                <td style="border: 2px solid #4CAF50; padding: 15px; color: #ff6b6b;"><strong>You: Steal</strong></td>
+                <td style="border: 2px solid #fff; padding: 15px; font-size: 1.5em;" class="highlight-green"><strong>2</strong>, 0</td>
+                <td style="border: 2px solid #fff; padding: 15px; font-size: 1.5em;"><strong>0</strong>, 0</td>
+            </tr>
+        </tbody>
+    </table>
+    <div style="font-size: 1.3em;">
+        <p class="fragment fade-in" data-fragment-index="1">If Sarah splits, you should <strong style="color: #ff6b6b;">steal</strong>. (2 is > 1)</p>
+        <p class="fragment fade-in" data-fragment-index="2">If Sarah steals, you should also <strong style="color: #ff6b6b;">steal</strong>. (0 is no worse than 0)</p>
+        <p class="fragment fade-in" data-fragment-index="3"><strong style="color: #ff6b6b; font-size: 1.5em;">Stealing looks like the logical move.</strong></p>
+    </div>
+</section>
+
+<!-- Because this slide is a dramatic transition introducing a new idea, it's a POWER TEXT slide. Text analysis: "But here’s the twist." (21 characters) is a classic, short, and punchy line that creates suspense. -->
+<section data-transition="convex">
+    <h1 class="r-fit-text">But here’s the <mark>twist</mark>.</h1>
+</section>
+
+<!-- Because this slide introduces the second player archetype with a question, it's a POWER TEXT slide. Text analysis: The question is broken across two lines for readability and impact. This challenges the assumption of pure rationality and sets up the next scenario. -->
+<section>
+    <h1 class="r-fit-text">What if you’re not a Rational Maximizer?</h1>
+    <h2 class="r-fit-text fragment fade-in">What if you're a <span style="color: #4CAF50;">Trusting Idealist</span>?</h2>
+</section>
+
+<!-- Because this slide explains the new mindset of the Idealist, it's a POWER TEXT slide. Text analysis: I'll use auto-animate over two slides to build the core idea: the situation is the same, but the player's motivation (YOU) has changed. This is the central theme of the chapter. -->
+<section data-auto-animate>
+    <h2 class="r-fit-text">The situation hasn’t changed.</h2>
+    <h2 class="r-fit-text">The money is the same.</h2>
+    <h2 class="r-fit-text">The rules are the same.</h2>
+</section>
+
+<section data-auto-animate>
+    <h2 class="r-fit-text">The situation hasn’t changed.</h2>
+    <h2 class="r-fit-text">The money is the same.</h2>
+    <h2 class="r-fit-text">The rules are the same.</h2>
+    <h1 class="r-fit-text">But <span style="color: #4CAF50;">YOU</span> have changed.</h1>
+</section>
+
+<!-- Because this slide details the preferences of the new player type, this is an EDUCATIONAL slide. Like before, a numbered list clearly lays out the new payoff structure, highlighting the huge value placed on mutual trust (Payoff of 3). -->
+<section>
+    <h2>Your new preferences as a <strong style="color: #4CAF50;">Trusting Idealist</strong>:</h2>
+    <div style="font-size: 1.2em; text-align: left; margin: 20px 0 0 10%; line-height: 1.8;">
+        <p>1. <strong>ABSOLUTE BEST:</strong> You both Split. (Mutual trust) → Payoff of <strong style="color: #4CAF50;">3</strong></p>
+        <p>2. <strong>Good:</strong> You get the money, but feel bad. → Payoff of <strong style="color: #4CAF50;">2</strong></p>
+        <p>3. <strong>Bad:</strong> You get betrayed, but kept your integrity. → Payoff of <strong style="color: #ff6b6b;">1</strong></p>
+        <p>4. <strong>Worst:</strong> You both steal. (Total failure of trust) → Payoff of <strong style="color: #ff6b6b;">0</strong></p>
+    </div>
+</section>
+
+<!-- Because this slide presents the new game board, it's a critical TECHNICAL slide. This slide shows how YOUR payoffs have changed while Sarah's (the Rational Maximizer) have not. This asymmetric game is the core of the "twist" and serves as the new persistent context for analysis. -->
+<section>
+    <h2>The New Game: <strong style="color: #4CAF50;">Idealist</strong> vs. <strong style="color: #ff6b6b;">Maximizer</strong></h2>
+    <table style="margin: 20px auto; font-size: 1.2em; border-collapse: collapse;">
+        <thead>
+            <tr>
+                <th style="padding: 15px; border: 2px solid #fff;">Strategy</th>
+                <th style="border: 2px solid #4CAF50; padding: 15px; color: #4CAF50;">Sarah: Split</th>
+                <th style="border: 2px solid #4CAF50; padding: 15px; color: #ff6b6b;">Sarah: Steal</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td style="border: 2px solid #4CAF50; padding: 15px; color: #4CAF50;"><strong>You: Split</strong></td>
+                <td style="border: 2px solid #fff; padding: 15px; font-size: 1.5em;"><span style="color: #4CAF50;">3</span>, 1</td>
+                <td style="border: 2px solid #fff; padding: 15px; font-size: 1.5em;"><span style="color: #4CAF50;">1</span>, 2</td>
+            </tr>
+            <tr>
+                <td style="border: 2px solid #4CAF50; padding: 15px; color: #ff6b6b;"><strong>You: Steal</strong></td>
+                <td style="border: 2px solid #fff; padding: 15px; font-size: 1.5em;"><span style="color: #ff6b6b;">2</span>, 0</td>
+                <td style="border: 2px solid #fff; padding: 15px; font-size: 1.5em;"><span style="color: #ff6b6b;">0</span>, 0</td>
+            </tr>
+        </tbody>
+    </table>
+    <div style="font-size: 1.3em; margin-top: 30px;">
+        <p class="fragment fade-in">If Sarah splits, you should <strong style="color: #4CAF50;">split</strong>. (3 is > 2)</p>
+        <p class="fragment fade-in">If Sarah steals, you should... <strong style="color: #4CAF50;">STILL split</strong>. (1 is > 0)</p>
+    </div>
+</section>
+
+<!-- Because this slide highlights the dramatic reversal of the optimal strategy, it's a POWER TEXT slide. Text analysis: "Your rational choice has completely flipped" (44 characters) is a perfect summary of the preceding analysis, using r-fit-text for maximum impact. The contrasting colors visually reinforce the flip from Steal to Split. -->
+<section data-transition="zoom">
+    <h1 class="r-fit-text">Your rational choice has completely flipped.</h1>
+    <h1 class="r-fit-text"><del style="color: #ff6b6b;">Steal</del> → <span style="color: #4CAF50;">Split</span></h1>
+</section>
+
+<!-- Because this slide signals the main takeaway of the chapter, it's a POWER TEXT slide. Text analysis: "This is the huge 'aha!' moment." (31 characters) is short, celebratory, and emphasizes the importance of the discovery just made. -->
+<section>
+    <h1 class="r-fit-text">This is the huge <mark>"aha!"</mark> moment.</h1>
+</section>
+
+<!-- Because this slide begins to state the chapter's main thesis, it's a POWER TEXT slide. Text analysis: "The physical situation doesn't define the game" (49 characters) is an ideal length for r-fit-text. It sets up the contrast that will be resolved on the next slide. The red color emphasizes what is NOT true. -->
+<section data-auto-animate data-transition="fade">
+    <h1 class="r-fit-text" style="color: #ff6b6b;">The physical situation doesn't define the game.</h1>
+</section>
+
+<!-- Because this slide delivers the core thesis, it's a POWER TEXT slide using auto-animate for a powerful reveal. Text analysis: "The players' *motivations* do." (29 characters) is the punchline. The green color and emphasis on "motivations" drive home the central lesson of the chapter. -->
+<section data-auto-animate data-transition="fade">
+    <h1 class="r-fit-text" style="color: #ff6b6b;">The physical situation doesn't define the game.</h1>
+    <h1 class="r-fit-text" style="color: #4CAF50;">The players' <mark>motivations</mark> do.</h1>
+</section>
+
+<!-- Because this slide summarizes the chapter and sets up the next one, this is a final POWER TEXT slide. It reinforces the three core components (Players, Strategies, Payoffs) as the key to building the game board, concluding the chapter's learning objective. -->
+<section data-transition="slide">
+    <h2 class="r-fit-text">You can't solve a strategic problem until you know what everyone is <mark>truly</mark> playing for.</h2>
+    <h2 class="fragment fade-in r-fit-text" style="margin-top: 40px;">By defining the <strong style="color: #4CAF50;">Players</strong>, <strong style="color: #4CAF50;">Strategies</strong>, and <strong style="color: #4CAF50;">Payoffs</strong>, you've built the game board.</h2>
+</section>
+
+<!-- END CHAPTER 2 -->
+
+<!-- START CHAPTER 3 -->
+
+<!-- Because this content transitions from the previous chapter and re-establishes the core problem, this is a POWER TEXT slide. Text analysis: "Let's go back to our Split or Steal game." (41 characters) is a perfect length for r-fit-text to re-engage the audience with the familiar scenario. -->
+<section data-transition="slide">
+    <h1 class="r-fit-text">Let's go back to our Split or Steal game.</h1>
+</section>
+
+<!-- Because this slide builds on the previous one to highlight the user's current dilemma, it's a POWER TEXT slide using data-auto-animate for a smooth reveal. Text analysis: "You've got the map... but you're still stuck." is a great metaphor and the text length is ideal. This creates a feeling of being on the cusp of a solution. -->
+<section data-auto-animate>
+    <h2 class="r-fit-text">You've got your payoff matrix.</h2>
+    <h2 class="r-fit-text">You know what everyone wants.</h2>
+    <h1 class="r-fit-text" style="color: #ff6b6b;">But you're still stuck on the actual decision.</h1>
+</section>
+
+<!-- Because this slide introduces the chapter's core concept, it's a POWER TEXT slide. Text analysis: The phrase "Here's what expert game theorists do first:" sets up the reveal. The key term "Dominant Strategy" is highlighted in green to signify it's a powerful, positive concept. -->
+<section data-transition="convex">
+    <h2 class="r-fit-text">Here's what expert game theorists do first:</h2>
+    <h1 class="r-fit-text fragment fade-in" style="color: #4CAF50;">They look for a <mark>Dominant Strategy</mark>.</h1>
+</section>
+
+<!-- Because this content defines the power of a dominant strategy, this is a POWER TEXT slide. Text analysis: "a move so powerful it's always the right choice" (49 characters) is an ideal length for r-fit-text. This slide explains the concept in simple, impactful terms before showing the formal definition. -->
+<section>
+    <h1 class="r-fit-text">A move so powerful it's <mark>always</mark> the right choice...</h1>
+    <h2 class="fragment fade-in r-fit-text">...no matter what your opponent does.</h2>
+</section>
+
+<!-- Because this slide delivers the punchline about the utility of finding a dominant strategy, it is a POWER TEXT slide. Text analysis: "If you find one, the game is instantly solved" (46 characters) is a short, powerful statement that highlights the value of this tool. The green color reinforces the 'solution' aspect. -->
+<section data-transition="zoom">
+    <h1 class="r-fit-text" style="color: #4CAF50;">If you find one, the game is <mark>instantly solved</mark>.</h1>
+</section>
+
+<!-- Because this slide introduces the formal mathematical definition, which can be intimidating, this is a TECHNICAL slide. The goal is to present it accurately but also set up the subsequent "translation" slide. The LaTeX formula is the centerpiece. -->
+<section>
+    <h2 style="color: #4CAF50;">The Formal Definition</h2>
+    <p style="font-size: 1.2em;">A strategy is strictly dominant if, for any opponent strategy \(s_{-i}\):</p>
+    <div style="text-align: center; font-size: 1.6em; margin-top: 30px;">
+        \[ u_i(s_i', s_{-i}) > u_i(s_i'', s_{-i}) \]
+    </div>
+    <p class="fragment fade-in" style="font-size: 1.1em; margin-top: 30px;"><strong>Where:</strong> \(u_i\) = your payoff, \(s_i'\) = dominant strategy, \(s_i''\) = other strategy, \(s_{-i}\) = opponent's choice</p>
+    <p class="fragment fade-in" style="font-size: 1.2em; margin-top: 20px;">(Your payoff from the dominant move is strictly GREATER than from any other move.)</p>
+</section>
+
+<!-- Because this slide is designed to demystify the previous slide's complex formula, this is a POWER TEXT slide. Text analysis: The first line is conversational and acknowledges the complexity. The second line breaks it down into a simple, memorable rule. Highlighting "always better" is crucial as it's the core concept. -->
+<section data-auto-animate>
+    <h1 class="r-fit-text">I know that looks like academic nonsense.</h1>
+</section>
+
+<!-- Because this slide provides the simplified, understandable takeaway from the formal definition, it's a POWER TEXT slide using auto-animate for a smooth transition. Text analysis: "A dominant strategy is a move that's ALWAYS BETTER" (52 characters) is a perfect, memorable phrase for r-fit-text. -->
+<section data-auto-animate>
+    <h1 class="r-fit-text">I know that looks like academic nonsense.</h1>
+    <h1 class="r-fit-text" style="color: #4CAF50;">Let's use a simple rule: a dominant strategy is a move that's <mark>always better</mark>.</h1>
+</section>
+
+
+<!-- Because this content sets up the first practice problem, this is a TECHNICAL slide. CRITICAL: The problem setup (Principled Sarah vs. Rational Steven) and the payoff matrix are the persistent context. This exact context box and matrix MUST be visible on all subsequent slides that analyze this scenario. This allows the audience to follow the logic without losing track of the game's rules. -->
+<section data-auto-animate data-transition="slide">
+    <div style="padding: 20px;">
+        <div style="background-color: #333; padding: 15px; border-radius: 10px; margin-bottom: 30px;">
+            <h3 style="color: #4CAF50; margin: 0; font-size: 1.6em;">Example 1: Finding Sarah's Dominant Strategy</h3>
+            <p style="font-size: 1.2em; margin: 10px 0 0 0;"><strong style="color: #4CAF50;">"Principled" Sarah</strong> vs. <strong style="color: #ff6b6b;">"Rational" Steven</strong></p>
+        </div>
+        <div data-id="principled-matrix">
+            <table style="margin: 0 auto; font-size: 1.1em; border-collapse: collapse;">
+                <thead>
+                    <tr>
+                        <th style="padding: 15px; border: 2px solid #fff;">Strategy</th>
+                        <th style="border: 2px solid #fff; padding: 15px;">Steven: Split</th>
+                        <th style="border: 2px solid #fff; padding: 15px;">Steven: Steal</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td style="border: 2px solid #fff; padding: 15px;"><strong>Sarah: Split</strong></td>
+                        <td style="border: 2px solid #fff; padding: 15px; font-size: 1.5em;"><mark>3</mark>, 1</td>
+                        <td style="border: 2px solid #fff; padding: 15px; font-size: 1.5em;"><mark>1</mark>, 2</td>
+                    </tr>
+                    <tr>
+                        <td style="border: 2px solid #fff; padding: 15px;"><strong>Sarah: Steal</strong></td>
+                        <td style="border: 2px solid #fff; padding: 15px; font-size: 1.5em;"><mark>2</span>, 0</td>
+                        <td style="border: 2px solid #fff; padding: 15px; font-size: 1.5em;">0, 0</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        <p class="fragment fade-in" style="font-size: 1.3em; margin-top: 30px;">To find her best move, we check ALL of Steven's options.</p>
+    </div>
+</section>
+
+<!-- Because this slide walks through the first step of the analysis, this is a TECHNICAL slide. CRITICAL: The problem context box and the payoff matrix persist from the previous slide, which is essential for viewers to follow the logic. The first column of the matrix is highlighted to visually guide the audience's attention, and fragments reveal the step-by-step reasoning. -->
+<section data-auto-animate>
+    <div style="padding: 20px;">
+        <div style="background-color: #333; padding: 15px; border-radius: 10px; margin-bottom: 30px;">
+            <h3 style="color: #4CAF50; margin: 0; font-size: 1.6em;">Example 1: Finding Sarah's Dominant Strategy</h3>
+            <p style="font-size: 1.2em; margin: 10px 0 0 0;"><strong style="color: #4CAF50;">"Principled" Sarah</strong> vs. <strong style="color: #ff6b6b;">"Rational" Steven</strong></p>
+        </div>
+        <div data-id="principled-matrix">
+             <table style="margin: 0 auto; font-size: 1.1em; border-collapse: collapse;">
+                <thead>
+                    <tr>
+                        <th style="padding: 15px; border: 2px solid #fff;">Strategy</th>
+                        <th style="border: 2px solid #4CAF50; background-color: #2a3d2a; padding: 15px;">Steven: Split</th>
+                        <th style="border: 2px solid #fff; padding: 15px;">Steven: Steal</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td style="border: 2px solid #fff; padding: 15px;"><strong>Sarah: Split</strong></td>
+                        <td style="border: 2px solid #fff; padding: 15px; font-size: 1.5em; background-color: #2a3d2a;"><mark style="background-color: #4CAF50; color: #000;">3</mark>, 1</td>
+                        <td style="border: 2px solid #fff; padding: 15px; font-size: 1.5em;"><mark>1</mark>, 2</td>
+                    </tr>
+                    <tr>
+                        <td style="border: 2px solid #fff; padding: 15px;"><strong>Sarah: Steal</strong></td>
+                        <td style="border: 2px solid #fff; padding: 15px; font-size: 1.5em; background-color: #2a3d2a;"><mark>2</span>, 0</td>
+                        <td style="border: 2px solid #fff; padding: 15px; font-size: 1.5em;">0, 0</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        <div style="font-size: 1.3em; margin-top: 30px; text-align: center;">
+            <p><strong>Step 1:</strong> If Steven chooses <strong>Split</strong>...</p>
+            <p class="fragment fade-in">Sarah's best move is <strong style="color: #4CAF50;">Split</strong> (Payoff 3 > 2).</p>
+            <p class="fragment fade-in" style="font-size: 1.1em; color: #888;">\(u_{Sarah}(\text{Split}, \text{Split}) > u_{Sarah}(\text{Steal}, \text{Split})\)</p>
+        </div>
+    </div>
+</section>
+
+<!-- Because this slide walks through the second step of the analysis, this is a TECHNICAL slide. CRITICAL: Again, the problem context and matrix persist. The highlight now shifts to the second column, visually demonstrating the next logical step. The previous analysis remains visible but de-emphasized, allowing the viewer to build a complete picture. -->
+<section data-auto-animate>
+     <div style="padding: 20px;">
+        <div style="background-color: #333; padding: 15px; border-radius: 10px; margin-bottom: 30px;">
+            <h3 style="color: #4CAF50; margin: 0; font-size: 1.6em;">Example 1: Finding Sarah's Dominant Strategy</h3>
+            <p style="font-size: 1.2em; margin: 10px 0 0 0;"><strong style="color: #4CAF50;">"Principled" Sarah</strong> vs. <strong style="color: #ff6b6b;">"Rational" Steven</strong></p>
+        </div>
+        <div data-id="principled-matrix">
+             <table style="margin: 0 auto; font-size: 1.1em; border-collapse: collapse;">
+                <thead>
+                    <tr>
+                        <th style="padding: 15px; border: 2px solid #fff;">Strategy</th>
+                        <th style="border: 2px solid #fff; padding: 15px;">Steven: Split</th>
+                        <th style="border: 2px solid #4CAF50; background-color: #2a3d2a; padding: 15px;">Steven: Steal</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td style="border: 2px solid #fff; padding: 15px;"><strong>Sarah: Split</strong></td>
+                        <td style="border: 2px solid #fff; padding: 15px; font-size: 1.5em;"><mark>3</mark>, 1</td>
+                        <td style="border: 2px solid #fff; padding: 15px; font-size: 1.5em; background-color: #2a3d2a;"><mark style="background-color: #4CAF50; color: #000;">1</mark>, 2</td>
+                    </tr>
+                    <tr>
+                        <td style="border: 2px solid #fff; padding: 15px;"><strong>Sarah: Steal</strong></td>
+                        <td style="border: 2px solid #fff; padding: 15px; font-size: 1.5em;"><mark>2</span>, 0</td>
+                        <td style="border: 2px solid #fff; padding: 15px; font-size: 1.5em; background-color: #2a3d2a;">0, 0</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        <div style="font-size: 1.3em; margin-top: 30px; text-align: center;">
+            <p style="opacity: 0.5;"><strong>Step 1:</strong> If Steven chooses <strong>Split</strong>, Sarah should <strong>Split</strong> (3 > 2).</p>
+            <p class="fragment fade-in"><strong>Step 2:</strong> If Steven chooses <strong>Steal</strong>...</p>
+            <p class="fragment fade-in">Sarah's best move is <strong style="color: #4CAF50;">STILL Split</strong> (Payoff 1 > 0).</p>
+            <p class="fragment fade-in" style="font-size: 1.1em; color: #888;">\(u_{Sarah}(\text{Split}, \text{Steal}) > u_{Sarah}(\text{Steal}, \text{Steal})\)</p>
+        </div>
+    </div>
+</section>
+
+<!-- Because this slide delivers the "aha!" moment and summarizes the findings from the analysis, it's a POWER TEXT slide. Text analysis: The content is broken into three impactful statements revealed sequentially to build to the conclusion. "It doesn't matter what Steven does" is the key insight. -->
+<section data-transition="zoom">
+    <h1 class="r-fit-text">This is the "aha!" moment.</h1>
+    <h2 class="fragment fade-in r-fit-text">It doesn't matter what Steven does.</h2>
+    <h1 class="fragment fade-in r-fit-text" style="color: #4CAF50;">Split is <mark>ALWAYS</mark> her best move.</h1>
+</section>
+
+<!-- Because this slide gives the formal name to the strategy and declares the problem solved, it is a POWER TEXT slide. Text analysis: The term "Strictly Dominant Strategy" is highlighted in green for emphasis. The final statement "The game is solved for her" provides a satisfying conclusion. -->
+<section>
+    <h2 class="r-fit-text"><strong>Split</strong> is a <span style="color: #4CAF50;">Strictly Dominant Strategy</span> for Principled Sarah.</h2>
+    <p class="fragment fade-in" style="font-size: 1.2em; margin-top: 30px;">\(u_{Sarah}(\text{Split}, s_{Steven}) > u_{Sarah}(\text{Steal}, s_{Steven})\) <strong>for all</strong> \(s_{Steven}\)</p>
+    <h1 class="fragment fade-in r-fit-text">The game is solved for her. Her decision is made.</h1>
+</section>
+
+<!-- Because this slide introduces the formal mathematical definition of weak dominance, this is a TECHNICAL slide. It provides the complete mathematical formulation including the strict inequality condition. -->
+<section>
+    <h2 style="color: #ff6b6b;">The Formal Definition: Weak Dominance</h2>
+    <p style="font-size: 1.2em;">A strategy is weakly dominant if, for any opponent strategy \(s_{-i}\):</p>
+    <div style="text-align: center; font-size: 1.6em; margin-top: 30px;">
+        \[ u_i(s_i', s_{-i}) \geq u_i(s_i'', s_{-i}) \]
+    </div>
+    <p class="fragment fade-in" style="font-size: 1.2em; margin-top: 20px;"><strong>with strict inequality for at least one</strong> \(s_{-i}\)</p>
+    <p class="fragment fade-in r-fit-text" style="margin-top: 30px;"><strong>Where:</strong> \(u_i\) = your payoff, \(s_i'\) = weakly dominant strategy, \(s_i''\) = other strategy, \(s_{-i}\) = opponent's choice</p>
+    <p class="fragment fade-in" style="font-size: 1.2em; margin-top: 20px;">(Your payoff is <strong>never worse</strong> and <strong>sometimes better</strong> than any other move.)</p>
+</section>
+
+<!-- Because this content sets up the second example, which contrasts with the first, this is a TECHNICAL slide. Just like before, this slide establishes the new persistent context: Rational Sarah vs. Rational Steven, and her different payoff matrix. This context is critical for the upcoming analysis. -->
+<section data-auto-animate data-transition="slide">
+    <div style="padding: 20px;">
+        <div style="background-color: #333; padding: 15px; border-radius: 10px; margin-bottom: 30px;">
+            <h3 style="color: #ff6b6b; margin: 0; font-size: 1.6em;">Example 2: What about "Rational" Sarah?</h3>
+            <p style="font-size: 1.2em; margin: 10px 0 0 0;">The one who only cared about the money.</p>
+        </div>
+        <div data-id="rational-matrix">
+            <table style="margin: 0 auto; font-size: 1.1em; border-collapse: collapse;">
+                <thead>
+                    <tr>
+                        <th style="padding: 15px; border: 2px solid #fff;">Strategy</th>
+                        <th style="border: 2px solid #fff; padding: 15px;">Steven: Split</th>
+                        <th style="border: 2px solid #fff; padding: 15px;">Steven: Steal</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td style="border: 2px solid #fff; padding: 15px;"><strong>Sarah: Split</strong></td>
+                        <td style="border: 2px solid #fff; padding: 15px; font-size: 1.5em;">1, 1</td>
+                        <td style="border: 2px solid #fff; padding: 15px; font-size: 1.5em;">0, 2</td>
+                    </tr>
+                    <tr>
+                        <td style="border: 2px solid #fff; padding: 15px;"><strong>Sarah: Steal</strong></td>
+                        <td style="border: 2px solid #fff; padding: 15px; font-size: 1.5em;"><mark>2</span>, 0</td>
+                        <td style="border: 2px solid #fff; padding: 15px; font-size: 1.5em;">0, 0</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</section>
+
+<!-- Because this slide walks through the analysis for the second example, this is a TECHNICAL slide. CRITICAL: The context box and matrix persist via data-auto-animate. This slide combines both steps of the analysis, using fragments to reveal them sequentially. Highlighting the relevant numbers visually guides the viewer through the new logic. -->
+<section data-auto-animate>
+    <div style="padding: 20px;">
+        <div style="background-color: #333; padding: 15px; border-radius: 10px; margin-bottom: 30px;">
+            <h3 style="color: #ff6b6b; margin: 0; font-size: 1.6em;">Example 2: What about "Rational" Sarah?</h3>
+            <p style="font-size: 1.2em; margin: 10px 0 0 0;">The one who only cared about the money.</p>
+        </div>
+        <div data-id="rational-matrix">
+            <table style="margin: 0 auto; font-size: 1.1em; border-collapse: collapse;">
+                <thead>
+                    <tr>
+                        <th style="padding: 15px; border: 2px solid #fff;">Strategy</th>
+                        <th style="border: 2px solid #ff6b6b; background-color: #3d2a2a; padding: 15px;">Steven: Split</th>
+                        <th style="border: 2px solid #fff; padding: 15px;">Steven: Steal</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td style="border: 2px solid #fff; padding: 15px;"><strong>Sarah: Split</strong></td>
+                        <td style="border: 2px solid #fff; padding: 15px; font-size: 1.5em; background-color: #3d2a2a;">1, 1</td>
+                        <td style="border: 2px solid #fff; padding: 15px; font-size: 1.5em;">0, 2</td>
+                    </tr>
+                    <tr>
+                        <td style="border: 2px solid #fff; padding: 15px;"><strong>Sarah: Steal</strong></td>
+                        <td style="border: 2px solid #fff; padding: 15px; font-size: 1.5em; background-color: #3d2a2a;"><mark style="background-color: #ff6b6b; color: #000;">2</mark>, 0</td>
+                        <td style="border: 2px solid #fff; padding: 15px; font-size: 1.5em;">0, 0</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        <div style="font-size: 1.3em; margin-top: 30px; text-align: center;">
+            <p><strong>Step 1:</strong> If Steven chooses <strong>Split</strong>...</p>
+            <p class="fragment fade-in">Sarah's best move is <strong style="color: #ff6b6b;">Steal</strong> (Payoff 2 > 1).</p>
+            <p class="fragment fade-in" style="font-size: 1.1em; color: #888;">\(u_{Sarah}(\text{Steal}, \text{Split}) > u_{Sarah}(\text{Split}, \text{Split})\)</p>
+        </div>
+    </div>
+</section>
+
+<!-- Because this slide walks through the second step of analysis (Steven Steals column), this is a TECHNICAL slide. The column highlighting shifts to show the second scenario analysis, mirroring the structure of Example 1. -->
+<section data-auto-animate>
+    <div style="padding: 20px;">
+        <div style="background-color: #333; padding: 15px; border-radius: 10px; margin-bottom: 30px;">
+            <h3 style="color: #ff6b6b; margin: 0; font-size: 1.6em;">Example 2: What about "Rational" Sarah?</h3>
+            <p style="font-size: 1.2em; margin: 10px 0 0 0;">The one who only cared about the money.</p>
+        </div>
+        <div data-id="rational-matrix">
+            <table style="margin: 0 auto; font-size: 1.1em; border-collapse: collapse;">
+                <thead>
+                    <tr>
+                        <th style="padding: 15px; border: 2px solid #fff;">Strategy</th>
+                        <th style="border: 2px solid #fff; padding: 15px;">Steven: Split</th>
+                        <th style="border: 2px solid #ff6b6b; background-color: #3d2a2a; padding: 15px;">Steven: Steal</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td style="border: 2px solid #fff; padding: 15px;"><strong>Sarah: Split</strong></td>
+                        <td style="border: 2px solid #fff; padding: 15px; font-size: 1.5em;">1, 1</td>
+                        <td style="border: 2px solid #fff; padding: 15px; font-size: 1.5em; background-color: #3d2a2a;">0, 2</td>
+                    </tr>
+                    <tr>
+                        <td style="border: 2px solid #fff; padding: 15px;"><strong>Sarah: Steal</strong></td>
+                        <td style="border: 2px solid #fff; padding: 15px; font-size: 1.5em;">2, 0</td>
+                        <td style="border: 2px solid #fff; padding: 15px; font-size: 1.5em; background-color: #3d2a2a;">0, 0</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        <div style="font-size: 1.3em; margin-top: 30px; text-align: center;">
+            <p style="opacity: 0.5;"><strong>Step 1:</strong> If Steven chooses <strong>Split</strong>, Sarah should <strong>Steal</strong> (2 > 1).</p>
+            <p class="fade-in"><strong>Step 2:</strong> If Steven chooses <strong>Steal</strong>...</p>
+            <p class="fragment fade-in">Sarah's best move is <strong style="color: #ff6b6b;">Steal</strong> (or Split - both give 0).</p>
+            <p class="fragment fade-in" style="font-size: 1.1em; color: #888;">\(u_{Sarah}(\text{Steal}, \text{Steal}) \geq u_{Sarah}(\text{Split}, \text{Steal})\)</p>
+        </div>
+    </div>
+</section>
+
+<!-- Because this slide defines the concept of weak dominance based on the previous analysis, this is a POWER TEXT slide. Text analysis: The key phrases "never worse" and "sometimes better" are highlighted to create a memorable definition. This introduces the new term after the audience has already seen the logic in action. -->
+<section data-transition="fade">
+    <h2 class="r-fit-text">So, her 'Steal' strategy is...</h2>
+    <h1 class="fragment fade-in r-fit-text" style="margin-top: 40px;"><mark>Never worse</mark> than 'Split', and <mark>sometimes better</mark>.</h1>
+    <h1 class="fragment fade-in r-fit-text" style="color: #4CAF50;">This is a <mark>Weakly Dominant Strategy</mark>.</h1>
+    <p class="fragment fade-in" style="font-size: 1.2em; margin-top: 30px;">\(u_{Sarah}(\text{Steal}, s_{Steven}) \geq u_{Sarah}(\text{Split}, s_{Steven})\) <strong>for all</strong> \(s_{Steven}\)</p>
+</section>
+
+<!-- Because this slide explains the practical implication of a weakly dominant strategy, it's a POWER TEXT slide. Text analysis: The statement is clear and direct. The final move "Steal" is highlighted in red to match the "Rational Maximizer" theme. -->
+<section>
+    <h2 class="r-fit-text">For any rational player, the choice is still obvious:</h2>
+    <h1 class="r-fit-text fragment fade-in">You play the move that can't hurt you and might help you.</h1>
+    <h1 class="fragment fade-in r-fit-text">For Rational Sarah, that move is <span style="color: #ff6b6b;">Steal</span>.</h1>
+</section>
+
+<!-- Because this content serves as the final, empowering takeaway for the entire chapter, it is a multi-slide POWER TEXT sequence. This first slide sets up the final lesson with an exciting premise. -->
+<section data-auto-animate data-transition="zoom">
+    <h1 class="r-fit-text">This is your new superpower.</h1>
+</section>
+
+<!-- Because this slide poses the central question that the chapter has taught the viewer to ask, this is a POWER TEXT slide. It's designed to be a memorable, practical tool. The question format is engaging and direct. -->
+<section data-transition="fade">
+    <h2 class="r-fit-text">Before you overthink any decision, ask yourself:</h2>
+    <h1 class="fragment fade-in r-fit-text">"Do I have a <span style="color: #4CAF50;">dominant strategy</span>?"</h1>
+</section>
+
+<!-- Because this slide delivers the final, satisfying punchline of the chapter, it is a POWER TEXT slide. It's broken into a two-part reveal for maximum impact, confirming that finding this strategy solves the problem. -->
+<section data-auto-animate>
+    <h1 class="r-fit-text">If you do...</h1>
+</section>
+
+<!-- Because this slide completes the final thought with a dramatic conclusion, it is a POWER TEXT slide using auto-animate. This confirms the value of the entire lesson and gives the chapter a strong sense of closure. The term "master move" connects back to the chapter title. -->
+<section data-auto-animate>
+    <h1 class="r-fit-text">If you do...</h1>
+    <h1 class="r-fit-text">...the game is already <mark>solved</mark>.</h1>
+    <h2 class="fragment fade-in r-fit-text">You have found the <span style="color: #4CAF50;">master move</span>.</h2>
+</section>
+
+<!-- END CHAPTER 3 -->
+
+<!-- START CHAPTER 4 -->
+
+<!-- Because this content serves as a transition from the previous chapter on dominant strategies to a more complex scenario, this is a POWER TEXT slide. Text analysis: The sentences are broken into two slides using data-auto-animate for a deliberate, conversational pace. "But life is rarely that simple" (30 chars) and "Most of the time, there IS no dominant strategy" (48 chars) are both excellent for r-fit-text. Highlighting 'no dominant strategy' in red emphasizes the new problem. -->
+<section data-auto-animate data-transition="slide">
+    <h1 class="r-fit-text">But life is rarely that simple.</h1>
+</section>
+
+<!-- Because this slide completes the opening thought by stating the problem, it's a POWER TEXT slide using auto-animate for a smooth reveal. Text analysis: The first line persists while the new line introduces the core challenge of this chapter. The red highlight visually signals a problem or obstacle. -->
+<section data-auto-animate>
+    <h1 class="r-fit-text">But life is rarely that simple.</h1>
+    <h1 class="r-fit-text">Most of the time, there is <span style="color: #ff6b6b;">NO dominant strategy</span>.</h1>
+</section>
+
+<!-- Because this content directly poses the central question of the chapter to the audience, this is a POWER TEXT slide. Text analysis: The question "Are you stuck analyzing every 'crazy' move that would ruin everything?" (70 characters) is a good length for r-fit-text. Highlighting 'crazy' move focuses attention on the source of the paralysis. -->
+<section data-transition="convex">
+    <h1 class="r-fit-text">So now what?</h1>
+    <h2 class="r-fit-text fragment fade-in">Are you stuck analyzing every <mark>'crazy' move</mark> that would ruin everything?</h2>
+</section>
+
+<!-- Because this slide provides a direct and impactful answer to the previous question, this is a POWER TEXT slide. Text analysis: The single word "No." is extremely short (3 characters), so instead of r-fit-text which would make it too large, I'm using `font-size: 12em` for a controlled, dramatic effect. This creates a powerful pause. -->
+<section data-transition="fade">
+    <h1 style="font-size: 12em;">No.</h1>
+</section>
+
+<!-- Because this content reveals the core insight of the chapter, it is a multi-slide POWER TEXT sequence designed for a slow, deliberate reveal. This first slide sets up the core principle. Text analysis: "Because rational players don't make crazy moves." (47 characters) is perfect for r-fit-text. Highlighting 'crazy moves' in red links back to the earlier question. -->
+<section data-auto-animate>
+    <h1 class="r-fit-text">Because rational players don't make <span style="color: #ff6b6b;">crazy moves</span>.</h1>
+</section>
+
+<!-- Because this slide builds on the previous insight to deliver the key action, it's a POWER TEXT slide using auto-animate. The first line persists, and the new line reveals the powerful consequence of that insight. Highlighting 'delete' in green signifies a positive, strategic action. -->
+<section data-auto-animate>
+    <h1 class="r-fit-text">Because rational players don't make <span style="color: #ff6b6b;">crazy moves</span>.</h1>
+    <h1 class="r-fit-text">And once you realize that, you can literally <span style="color: #4CAF50;">delete</span> those threats.</h1>
+</section>
+
+<!-- Because this slide introduces the formal name of the technique, it's a POWER TEXT slide. It's designed to first present the intimidating name and then immediately offer a simpler alternative. Text analysis: The formal name is long, so it appears as a clear but less emphasized header. -->
+<section data-transition="zoom">
+    <h2 class="r-fit-text">We're going to use a technique called...</h2>
+    <h1 class="fragment fade-in r-fit-text"><strong>Iterated Deletion of Dominated Strategies</strong></h1>
+</section>
+
+<!-- Because this slide provides a more intuitive and memorable name for the complex technique, this is a POWER TEXT slide. Text analysis: This is a classic "setup and punchline" structure. "I know, it's a mouthful" acknowledges the complexity, and then "The Rationality Cascade" is revealed as the powerful, simple alternative. The green color reinforces its positive utility. -->
+<section>
+    <h2 class="r-fit-text">I know, it's a mouthful.</h2>
+    <h2 class="r-fit-text fragment fade-in">So let's call it the...</h2>
+    <h1 class="r-fit-text fragment fade-in" style="color: #4CAF50;"><mark>Rationality Cascade</mark></h1>
+</section>
+
+<!-- Because this content breaks down the core logic of the Rationality Cascade, this is an EDUCATIONAL slide. A numbered list is the clearest format, and using fragments reveals each logical step in sequence, allowing the audience to follow the chain of reasoning. Key terms like 'rational' and 'never' are emphasized. -->
+<section data-transition="concave">
+    <h2>It's based on one simple, powerful idea:</h2>
+    <div style="font-size: 1.4em; text-align: center; line-height: 1.8;">
+        <p class="fragment fade-in">1. You are <strong>rational</strong>.</p>
+        <p class="fragment fade-in">2. You assume your opponent is <strong>also rational</strong>.</p>
+        <p class="fragment fade-in">3. Therefore, they will <strong style="color: #ff6b6b;">never</strong> choose a move that's obviously terrible for them.</p>
+        <p class="fragment fade-in">4. Knowing this, you can <strong style="color: #4CAF50;">delete</strong> that threat and see the real game.</p>
+    </div>
+</section>
+
+<!-- Because this content sets up the main problem for this chapter, this is a TECHNICAL slide. CRITICAL: This slide establishes the persistent context—the 3x3 payoff matrix for the tech company game. This exact game board MUST persist or be systematically reduced across all subsequent analysis slides for viewers to understand the deletion process. The slide clearly defines the players and presents the initial, complex game state. -->
+<section data-auto-animate>
+    <div style="padding: 20px;">
+        <div style="background-color: #333; padding: 15px; border-radius: 10px; margin-bottom: 20px;">
+            <h3 style="color: #4CAF50; margin: 0; font-size: 1.6em;">The Tech Company Game</h3>
+            <p style="font-size: 1.2em; margin: 10px 0 0 0;"><strong style="color: #4CAF50;">Innovate Corp. (You)</strong> vs. <strong style="color: #fff;">BuildIt Inc.</strong></p>
+        </div>
+        <div data-id="game-matrix">
+            <table style="margin: 0 auto; font-size: 1em; border-collapse: collapse;">
+                <thead>
+                    <tr>
+                        <th style="padding: 10px; border: 2px solid #fff;">Players</th>
+                        <th colspan="3" style="border: 2px solid #fff; padding: 10px;">BuildIt Inc.</th>
+                    </tr>
+                    <tr>
+                        <th style="padding: 10px; border: 2px solid #fff;"></th>
+                        <th style="border: 2px solid #fff; padding: 10px; text-align: center;">Safe Bet</th>
+                        <th style="border: 2px solid #fff; padding: 10px; text-align: center;">New Feature</th>
+                        <th style="border: 2px solid #fff; padding: 10px; text-align: center;">Moonshot Project</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td style="border: 2px solid #fff; padding: 10px;"><strong>Strategy A</strong></td>
+                        <td style="border: 2px solid #fff; padding: 10px; font-size: 1.5em;">5, 6</td>
+                        <td style="border: 2px solid #fff; padding: 10px; font-size: 1.5em;">4, 7</td>
+                        <td style="border: 2px solid #fff; padding: 10px; font-size: 1.5em;">-5, -10</td>
+                    </tr>
+                    <tr>
+                        <td style="border: 2px solid #fff; padding: 10px;"><strong>Strategy B</strong></td>
+                        <td style="border: 2px solid #fff; padding: 10px; font-size: 1.5em;">6, 4</td>
+                        <td style="border: 2px solid #fff; padding: 10px; font-size: 1.5em;">5, 5</td>
+                        <td style="border: 2px solid #fff; padding: 10px; font-size: 1.5em;">-1, -8</td>
+                    </tr>
+                    <tr>
+                        <td style="border: 2px solid #fff; padding: 10px;"><strong>Strategy C</strong></td>
+                        <td style="border: 2px solid #fff; padding: 10px; font-size: 1.5em;">4, 2</td>
+                        <td style="border: 2px solid #fff; padding: 10px; font-size: 1.5em;">2, 3</td>
+                        <td style="border: 2px solid #fff; padding: 10px; font-size: 1.5em;">3, -9</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        <p style="margin-top: 10px;">(Your Payoff, BuildIt's Payoff)</p>
+    </div>
+</section>
+
+<!-- Because this slide highlights the initial feeling of being overwhelmed by a seemingly irrational threat, this is a TECHNICAL slide that overlays a POWER TEXT element. CRITICAL: The context box and full 3x3 matrix persist. The "Moonshot" column is highlighted in red to visually represent the threat, while the text expresses the player's paralysis. This directly connects the emotional state to the data on the board. -->
+<section data-auto-animate>
+    <div style="padding: 20px;">
+        <div style="background-color: #333; padding: 15px; border-radius: 10px; margin-bottom: 20px;">
+            <h3 style="color: #4CAF50; margin: 0; font-size: 1.6em;">The Tech Company Game</h3>
+            <p style="font-size: 1.2em; margin: 10px 0 0 0;"><strong style="color: #4CAF50;">Innovate Corp. (You)</strong> vs. <strong style="color: #fff;">BuildIt Inc.</strong></p>
+        </div>
+        <div data-id="game-matrix">
+            <table style="margin: 0 auto; font-size: 1em; border-collapse: collapse;">
+                <thead>
+                    <tr>
+                        <th style="padding: 10px; border: 2px solid #fff;">Players</th>
+                        <th colspan="3" style="border: 2px solid #fff; padding: 10px;">BuildIt Inc.</th>
+                    </tr>
+                    <tr>
+                        <th style="padding: 10px; border: 2px solid #fff;"></th>
+                        <th style="border: 2px solid #fff; padding: 10px; text-align: center;">Safe Bet</th>
+                        <th style="border: 2px solid #fff; padding: 10px; text-align: center;">New Feature</th>
+                        <th style="border: 2px solid #ff6b6b; background-color: #4d2d2d; padding: 10px;">Moonshot Project</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td style="border: 2px solid #fff; padding: 10px;"><strong>Strategy A</strong></td>
+                        <td style="border: 2px solid #fff; padding: 10px; font-size: 1.5em;">5, 6</td>
+                        <td style="border: 2px solid #fff; padding: 10px; font-size: 1.5em;">4, 7</td>
+                        <td style="border: 2px solid #fff; padding: 10px; font-size: 1.5em; background-color: #4d2d2d;">-5, -10</td>
+                    </tr>
+                    <tr>
+                        <td style="border: 2px solid #fff; padding: 10px;"><strong>Strategy B</strong></td>
+                        <td style="border: 2px solid #fff; padding: 10px; font-size: 1.5em;">6, 4</td>
+                        <td style="border: 2px solid #fff; padding: 10px; font-size: 1.5em;">5, 5</td>
+                        <td style="border: 2px solid #fff; padding: 10px; font-size: 1.5em; background-color: #4d2d2d;">-1, -8</td>
+                    </tr>
+                    <tr>
+                        <td style="border: 2px solid #fff; padding: 10px;"><strong>Strategy C</strong></td>
+                        <td style="border: 2px solid #fff; padding: 10px; font-size: 1.5em;">4, 2</td>
+                        <td style="border: 2px solid #fff; padding: 10px; font-size: 1.5em;">2, 3</td>
+                        <td style="border: 2px solid #fff; padding: 10px; font-size: 1.5em; background-color: #4d2d2d;">3, -9</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        <h2 class="r-fit-text" style="margin-top: 20px; color: #ff6b6b;">That single threat makes it impossible to choose. You're stuck.</h2>
+    </div>
+</section>
+
+<!-- Because this slide signals a shift in mindset from panic to strategic thinking, this is a POWER TEXT slide. Text analysis: This is a classic "But wait..." transition. "You're a game theorist now" is an empowering statement. The final sentence sets up the next analytical step. The sequential reveal with fragments creates a calming, methodical pace. -->
+<section data-transition="fade">
+    <h1 class="r-fit-text">But wait.</h1>
+    <h2 class="fragment fade-in r-fit-text">You're a game theorist now.</h2>
+    <h2 class="fragment fade-in r-fit-text">Before you panic, analyze the board from <mark>their</mark> perspective.</h2>
+</section>
+
+<!-- Because this slide walks through the first step of the iterated deletion analysis, this is a TECHNICAL slide. CRITICAL: The full 3x3 matrix persists. The slide uses highlighting and fragments to systematically compare BuildIt Inc.'s payoffs for 'New Feature' vs. 'Moonshot', demonstrating that 'Moonshot' is always the worse choice for them. This visual guidance is crucial for understanding the concept of a dominated strategy. -->
+<section data-auto-animate>
+    <h2 style="color: #4CAF50;">Step 1: Analyze BuildIt Inc.'s Choices</h2>
+    <p>Compare their `New Feature` strategy to their `Moonshot` strategy.</p>
+    <div style="padding: 20px;">
+        <table style="margin: 0 auto; font-size: 1em; border-collapse: collapse;">
+            <thead>
+                <tr>
+                    <th style="padding: 10px; border: 2px solid #fff;"></th>
+                    <th colspan="3" style="border: 2px solid #fff; padding: 10px; text-align: center;">BuildIt Inc.</th>
+                </tr>
+                <tr>
+                    <th style="padding: 10px; border: 2px solid #fff;">Strategy</th>
+                    <th style="border: 2px solid #fff; padding: 10px; text-align: center;">Safe Bet</th>
+                    <th style="border: 2px solid #4CAF50; background-color: #2a3d2a; padding: 10px; text-align: center;">New Feature</th>
+                    <th style="border: 2px solid #ff6b6b; background-color: #3d2a2a; padding: 10px; text-align: center;">Moonshot Project</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td style="border: 2px solid #fff; padding: 10px;"><strong>Strategy A</strong></td>
+                    <td style="border: 2px solid #fff; padding: 10px; font-size: 1.5em;">5, 6</td>
+                    <td class="fragment highlight-green" data-fragment-index="1" style="border: 2px solid #fff; padding: 10px; font-size: 1.5em; background-color: #2a3d2a;">4, <strong style="font-size: 1.3em;">7</strong></td>
+                    <td class="fragment highlight-red" data-fragment-index="1" style="border: 2px solid #fff; padding: 10px; font-size: 1.5em; background-color: #3d2a2a;">-5, <strong style="font-size: 1.3em;">-10</strong></td>
+                </tr>
+                <tr>
+                    <td style="border: 2px solid #fff; padding: 10px;"><strong>Strategy B</strong></td>
+                    <td style="border: 2px solid #fff; padding: 10px; font-size: 1.5em;">6, 4</td>
+                    <td class="fragment highlight-green" data-fragment-index="2" style="border: 2px solid #fff; padding: 10px; font-size: 1.5em; background-color: #2a3d2a;">5, <strong style="font-size: 1.3em;">5</strong></td>
+                    <td class="fragment highlight-red" data-fragment-index="2" style="border: 2px solid #fff; padding: 10px; font-size: 1.5em; background-color: #3d2a2a;">-1, <strong style="font-size: 1.3em;">-8</strong></td>
+                </tr>
+                <tr>
+                    <td style="border: 2px solid #fff; padding: 10px;"><strong>Strategy C</strong></td>
+                    <td style="border: 2px solid #fff; padding: 10px; font-size: 1.5em;">4, 2</td>
+                    <td class="fragment highlight-green" data-fragment-index="3" style="border: 2px solid #fff; padding: 10px; font-size: 1.5em; background-color: #2a3d2a;">2, <strong style="font-size: 1.3em;">3</strong></td>
+                    <td class="fragment highlight-red" data-fragment-index="3" style="border: 2px solid #fff; padding: 10px; font-size: 1.5em; background-color: #3d2a2a;">3, <strong style="font-size: 1.3em;">-9</strong></td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+    <p class="fragment fade-in" data-fragment-index="4" style="font-size: 1.4em; margin-top: 20px;">In every single case, `New Feature` is better for them.</p>
+</section>
+
+<!-- Because this slide delivers the first major "Aha!" moment of the analysis, this is a POWER TEXT slide. It is broken into a three-slide sequence for maximum impact. This first slide simply announces the insight. -->
+<section data-auto-animate data-transition="zoom">
+    <h1 class="r-fit-text">This is the first "Aha!" moment.</h1>
+</section>
+
+<!-- Because this slide explains the insight in formal terms, this is a POWER TEXT slide using auto-animate. Text analysis: Stating that Moonshot "is strictly dominated" gives a name to the phenomenon the audience just witnessed. The red highlight emphasizes the negative, dominated strategy. -->
+<section data-auto-animate>
+    <h1 class="r-fit-text">This is the first "Aha!" moment.</h1>
+    <h2 class="r-fit-text">The `Moonshot Project` is an unmitigated disaster for them.</h2>
+    <h2 class="r-fit-text fragment fade-in">It is <span style="color: #ff6b6b;">strictly dominated</span> by `New Feature`.</h2>
+</section>
+
+<!-- Because this slide delivers the powerful conclusion of the first deletion step, it is a POWER TEXT slide. Text analysis: "The most terrifying threat just vanished" (39 characters) is an impactful statement. Highlighting "vanished" provides a strong visual punchline. -->
+<section>
+    <h1 class="r-fit-text">The most terrifying threat...</h1>
+    <h1 class="r-fit-text fragment fade-in">...just <mark>vanished</mark>.</h1>
+</section>
+
+<!-- Because this slide shows the result of the first deletion, it is a TECHNICAL slide. CRITICAL: This slide uses data-auto-animate to visually remove the 'Moonshot' column from the persistent game board. This transformation is a powerful teaching moment, showing the game literally simplifying. This new 3x2 matrix becomes the new persistent context for the next step. -->
+<section data-auto-animate>
+    <h2 style="color: #4CAF50;">Step 2: The Cascade Continues</h2>
+    <p>The crazy threat is gone. The game is simpler.</p>
+    <div data-id="game-matrix">
+        <table style="margin: 0 auto; font-size: 1em; border-collapse: collapse;">
+            <thead>
+                <tr>
+                    <th style="padding: 10px; border: 2px solid #fff;"></th>
+                    <th colspan="2" style="border: 2px solid #fff; padding: 10px; text-align: center;">BuildIt Inc.</th>
+                </tr>
+                <tr>
+                    <th style="padding: 10px; border: 2px solid #fff;">Strategy</th>
+                    <th style="border: 2px solid #fff; padding: 10px;">Safe Bet</th>
+                    <th style="border: 2px solid #fff; padding: 10px;">New Feature</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td style="border: 2px solid #fff; padding: 10px;"><strong>Innovate: Strategy A</strong></td>
+                    <td style="border: 2px solid #fff; padding: 10px; font-size: 1.5em;">5, 6</td>
+                    <td style="border: 2px solid #fff; padding: 10px; font-size: 1.5em;">4, 7</td>
+                </tr>
+                <tr>
+                    <td style="border: 2px solid #fff; padding: 10px;"><strong>Innovate: Strategy B</strong></td>
+                    <td style="border: 2px solid #fff; padding: 10px; font-size: 1.5em;">6, 4</td>
+                    <td style="border: 2px solid #fff; padding: 10px; font-size: 1.5em;">5, 5</td>
+                </tr>
+                <tr>
+                    <td style="border: 2px solid #fff; padding: 10px;"><strong>Innovate: Strategy C</strong></td>
+                    <td style="border: 2px solid #fff; padding: 10px; font-size: 1.5em;">4, 2</td>
+                    <td style="border: 2px solid #fff; padding: 10px; font-size: 1.5em;">2, 3</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</section>
+
+<!-- Because this slide walks through the second deletion step, this is a TECHNICAL slide. CRITICAL: The now-simplified 3x2 matrix persists from the previous slide. The slide uses highlighting on rows A and C to guide the viewer's comparison from their own perspective. Fragments reveal the logic step-by-step. -->
+<section data-auto-animate>
+    <h2 style="color: #4CAF50;">Now, re-evaluate YOUR options.</h2>
+    <p>Compare your `Strategy A` against your `Strategy C`.</p>
+    <div data-id="game-matrix">
+        <table style="margin: 0 auto; font-size: 1em; border-collapse: collapse;">
+            <thead>
+                <tr>
+                    <th style="padding: 10px; border: 2px solid #fff;"></th>
+                    <th colspan="2" style="border: 2px solid #fff; padding: 10px; text-align: center;">BuildIt Inc.</th>
+                </tr>
+                <tr>
+                    <th style="padding: 10px; border: 2px solid #fff;">Strategy</th>
+                    <th style="border: 2px solid #fff; padding: 10px;">Safe Bet</th>
+                    <th style="border: 2px solid #fff; padding: 10px;">New Feature</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr style="background-color: #2a3d2a;">
+                    <td style="border: 2px solid #fff; padding: 10px;"><strong>Innovate: Strategy A</strong></td>
+                    <td style="border: 2px solid #fff; padding: 10px; font-size: 1.5em;"><strong style="color: #4CAF50;">5</strong>, 6</td>
+                    <td style="border: 2px solid #fff; padding: 10px; font-size: 1.5em;"><strong style="color: #4CAF50;">4</strong>, 7</td>
+                </tr>
+                <tr>
+                    <td style="border: 2px solid #fff; padding: 10px;"><strong>Innovate: Strategy B</strong></td>
+                    <td style="border: 2px solid #fff; padding: 10px; font-size: 1.5em;">6, 4</td>
+                    <td style="border: 2px solid #fff; padding: 10px; font-size: 1.5em;">5, 5</td>
+                </tr>
+                <tr style="background-color: #4d2d2d;">
+                    <td style="border: 2px solid #fff; padding: 10px;"><strong>Innovate: Strategy C</strong></td>
+                    <td style="border: 2px solid #fff; padding: 10px; font-size: 1.5em;"><strong style="color: #ff6b6b;">4</strong>, 2</td>
+                    <td style="border: 2px solid #fff; padding: 10px; font-size: 1.5em;"><strong style="color: #ff6b6b;">2</strong>, 3</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+    <div style="font-size: 1.3em; margin-top: 20px;">
+        <p class="fragment fade-in">If BuildIt chooses `Safe Bet`: A (5) is better than C (4).</p>
+        <p class="fragment fade-in">If BuildIt chooses `New Feature`: A (4) is better than C (2).</p>
+    </div>
+</section>
+
+<!-- Because this slide states the conclusion of the second analysis step, this is a POWER TEXT slide. Text analysis: "Another 'Aha!' moment!" signals a new insight. The conclusion that "Strategy A strictly dominates Strategy C" is stated clearly, followed by the logical consequence: deleting C. -->
+<section data-transition="fade">
+    <h1 class="r-fit-text">Another "Aha!" moment!</h1>
+    <h2 class="fragment fade-in r-fit-text">Your own `Strategy A` <mark>strictly dominates</mark> `Strategy C`.</h2>
+    <h2 class="fragment fade-in r-fit-text">As a rational player, you can <span style="color: #4CAF50;">delete C</span>.</h2>
+</section>
+
+<!-- Because this slide shows the result of the second deletion, creating the final 2x2 game, this is a TECHNICAL slide. CRITICAL: Using data-auto-animate, this slide visually removes row C, transforming the 3x2 matrix into a 2x2 one. This final, simplified matrix becomes the new persistent context for the last step of the analysis. -->
+<section data-auto-animate>
+    <h2 style="color: #4CAF50;">Step 3: The Final Reveal</h2>
+    <p>BuildIt Inc. knows you're rational, so the game in *their* mind simplifies again:</p>
+    <div data-id="game-matrix">
+        <table style="margin: 0 auto; font-size: 1em; border-collapse: collapse;">
+            <thead>
+                <tr>
+                    <th style="padding: 10px; border: 2px solid #fff;"></th>
+                    <th colspan="2" style="border: 2px solid #fff; padding: 10px; text-align: center;">BuildIt Inc.</th>
+                </tr>
+                <tr>
+                    <th style="padding: 10px; border: 2px solid #fff;">Strategy</th>
+                    <th style="border: 2px solid #fff; padding: 10px;">Safe Bet</th>
+                    <th style="border: 2px solid #fff; padding: 10px;">New Feature</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td style="border: 2px solid #fff; padding: 10px;"><strong>Innovate: Strategy A</strong></td>
+                    <td style="border: 2px solid #fff; padding: 10px; font-size: 1.5em;">5, 6</td>
+                    <td style="border: 2px solid #fff; padding: 10px; font-size: 1.5em;">4, 7</td>
+                </tr>
+                <tr>
+                    <td style="border: 2px solid #fff; padding: 10px;"><strong>Innovate: Strategy B</strong></td>
+                    <td style="border: 2px solid #fff; padding: 10px; font-size: 1.5em;">6, 4</td>
+                    <td style="border: 2px solid #fff; padding: 10px; font-size: 1.5em;">5, 5</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</section>
+
+<!-- Because this slide performs the final analysis on the 2x2 board, this is a TECHNICAL slide. CRITICAL: The 2x2 matrix persists. Highlighting is used to show that for BuildIt Inc., 'New Feature' now dominates 'Safe Bet'. This leads to the powerful conclusion that you can predict their move. -->
+<section data-auto-animate>
+    <h2 style="color: #4CAF50;">One last time, analyze BuildIt's choice.</h2>
+    <div data-id="game-matrix">
+        <table style="margin: 0 auto; font-size: 1em; border-collapse: collapse;">
+            <thead>
+                <tr>
+                    <th style="padding: 10px; border: 2px solid #fff;"></th>
+                    <th colspan="2" style="border: 2px solid #fff; padding: 10px; text-align: center;">BuildIt Inc.</th>
+                </tr>
+                <tr>
+                    <th style="padding: 10px; border: 2px solid #fff;">Strategy</th>
+                    <th style="border: 2px solid #fff; padding: 10px; background-color: #4d2d2d;">Safe Bet</th>
+                    <th style="border: 2px solid #fff; padding: 10px; background-color: #2a3d2a;">New Feature</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td style="border: 2px solid #fff; padding: 10px;"><strong>Innovate: Strategy A</strong></td>
+                    <td style="border: 2px solid #fff; padding: 10px; font-size: 1.5em;">5, <strong style="color: #ff6b6b;">6</strong></td>
+                    <td style="border: 2px solid #fff; padding: 10px; font-size: 1.5em;">4, <strong style="color: #4CAF50;">7</strong></td>
+                </tr>
+                <tr>
+                    <td style="border: 2px solid #fff; padding: 10px;"><strong>Innovate: Strategy B</strong></td>
+                    <td style="border: 2px solid #fff; padding: 10px; font-size: 1.5em;">6, <strong style="color: #ff6b6b;">4</strong></td>
+                    <td style="border: 2px solid #fff; padding: 10px; font-size: 1.5em;">5, <strong style="color: #4CAF50;">5</strong></td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+    <div class="fragment fade-in" style="font-size: 1.3em; margin-top: 20px;">
+        <p>`New Feature` now <strong style="color: #4CAF50;">strictly dominates</strong> `Safe Bet` for BuildIt Inc.</p>
+        <h2 class="r-fit-text">You have just <mark>predicted their move</mark> with certainty.</h2>
+    </div>
+</section>
+
+<!-- Because this slide reveals your final, optimal move based on the prediction, this is a TECHNICAL slide. CRITICAL: The 2x2 matrix persists. The highlighting now focuses on the 'New Feature' column, since you know that's what BuildIt will choose. A final highlight on your payoff for Strategy B makes the solution obvious. -->
+<section data-auto-animate>
+    <h2 style="color: #4CAF50;">They MUST choose `New Feature`. So what's your best move?</h2>
+    <div data-id="game-matrix">
+        <table style="margin: 0 auto; font-size: 1em; border-collapse: collapse;">
+            <thead>
+                <tr>
+                    <th style="padding: 10px; border: 2px solid #fff;"></th>
+                    <th colspan="2" style="border: 2px solid #fff; padding: 10px; text-align: center;">BuildIt Inc.</th>
+                </tr>
+                <tr>
+                    <th style="padding: 10px; border: 2px solid #fff;">Strategy</th>
+                    <th style="border: 2px solid #fff; padding: 10px; opacity: 0.3;">Safe Bet</th>
+                    <th style="border: 2px solid #fff; padding: 10px; background-color: #2a3d2a;">New Feature</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td style="border: 2px solid #fff; padding: 10px;"><strong>Innovate: Strategy A</strong></td>
+                    <td style="border: 2px solid #fff; padding: 10px; font-size: 1.5em; opacity: 0.3;">5, 6</td>
+                    <td style="border: 2px solid #fff; padding: 10px; font-size: 1.5em; background-color: #2a3d2a;"><strong style="font-size: 1.3em;">4</strong>, 7</td>
+                </tr>
+                <tr>
+                    <td style="border: 2px solid #fff; padding: 10px;"><strong>Innovate: Strategy B</strong></td>
+                    <td style="border: 2px solid #fff; padding: 10px; font-size: 1.5em; opacity: 0.3;">6, 4</td>
+                    <td style="border: 2px solid #fff; padding: 10px; font-size: 1.5em; background-color: #2a3d2a;"><mark style="background-color: #4CAF50; color: #000; font-size: 1.3em;"><strong>5</strong></span>, 5</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+    <h2 class="r-fit-text" style="margin-top: 20px;">The choice is obvious.</h2>
+</section>
+
+<!-- Because this slide announces the final solution to the entire complex problem, this is a POWER TEXT slide. Text analysis: Stating the solution "(Strategy B, New Feature)" clearly and concisely provides a satisfying conclusion to the multi-step analysis. Highlighting it in green reinforces it as the "winning" outcome. -->
+<section data-transition="zoom">
+    <h2 class="r-fit-text">The single logical outcome of this complex, scary game is:</h2>
+    <h1 class="r-fit-text fragment fade-in" style="color: #4CAF50;">(Strategy B, New Feature)</h1>
+</section>
+
+<!-- Because this content summarizes the key takeaway and philosophy of the chapter, this is a POWER TEXT slide sequence. This first slide establishes Iterated Deletion as a tool for clarity. Text analysis: "cutting through the noise" is a powerful, memorable metaphor perfect for r-fit-text. -->
+<section data-transition="slide">
+    <h1 class="r-fit-text">Iterated Deletion is your tool for <mark>cutting through the noise</mark>.</h1>
+</section>
+
+<!-- Because this slide reframes the idea of a "threat," it's a POWER TEXT slide using auto-animate for a smooth, two-part reveal. Text analysis: It contrasts the idea of a 'threat' with a 'distraction', which is the core lesson. Highlighting 'distraction' in red makes the point stick. -->
+<section data-auto-animate>
+    <h2 class="r-fit-text">A move that's terrible for your opponent isn't a threat—</h2>
+</section>
+
+<section data-auto-animate>
+    <h2 class="r-fit-text">A move that's terrible for your opponent isn't a threat—</h2>
+    <h1 class="r-fit-text">it's a <span style="color: #ff6b6b;">distraction</span>.</h1>
+</section>
+
+<!-- Because this slide delivers the final, empowering message of the chapter, it's a POWER TEXT slide. The phrase "peel away these impossible layers" visually evokes the onion metaphor used earlier. Highlighting "winning move" in green provides a strong, positive conclusion and transitions to the next chapter. -->
+<section data-transition="fade">
+    <h2 class="r-fit-text">By peeling away the impossible layers...</h2>
+    <h1 class="fragment fade-in r-fit-text">...you reveal the true heart of the game and find your <span style="color: #4CAF50;">winning move</span>.</h1>
+</section>
+
+<!-- END CHAPTER 4 -->
+
+<!-- START CHAPTER 5 -->
+
+<!-- Because this content introduces a scenario where the previously learned tools (Dominant Strategies, Iterated Deletion) are insufficient, this is a POWER TEXT slide. Text analysis: The content describes a complex situation of interdependence and being "stuck." I'll break it into three auto-animating slides to build a sense of descending into this complex loop, creating a feeling of being trapped before the solution is introduced. -->
+<section data-auto-animate data-transition="slide">
+    <h1 class="r-fit-text">Sometimes, a game is so perfectly balanced...</h1>
+    <h2 class="r-fit-text">...that our first two tools just don't work.</h2>
+</section>
+
+<!-- Because this slide continues the setup from the previous one, it's a POWER TEXT slide using auto-animate for a smooth reveal. Text analysis: The short, punchy phrases "No dominant strategies" and "Nothing to delete" are perfect for a large, impactful font. They directly reference the tools from previous chapters, showing they are now useless. -->
+<section data-auto-animate>
+    <h1 class="r-fit-text">Sometimes, a game is so perfectly balanced...</h1>
+    <h2 class="r-fit-text">...that our first two tools just don't work.</h2>
+    <h1 class="r-fit-text" style="color: #ff6b6b; margin-top: 50px;">No dominant strategies. Nothing to delete.</h1>
+</section>
+
+<!-- Because this slide delivers the punchline of the problem—the feeling of being stuck—it's a POWER TEXT slide using auto-animate. Text analysis: "You're stuck in an endless loop" (28 characters) is a great length for r-fit-text. Highlighting "stuck" in red emphasizes the central challenge that this chapter will solve. -->
+<section data-auto-animate>
+    <h1 class="r-fit-text">Sometimes, a game is so perfectly balanced...</h1>
+    <h2 class="r-fit-text">...that our first two tools just don't work.</h2>
+    <h1 class="r-fit-text" style="color: #ff6b6b; margin-top: 50px;">No dominant strategies. Nothing to delete.</h1>
+    <h1 class="fade-in r-fit-text">You're <span style="color: #ff6b6b;">stuck</span> in an endless loop.</h1>
+</section>
+
+<!-- Because this slide signals a necessary shift in thinking, it's a POWER TEXT slide that acts as a transition. Text analysis: "This is where we need a completely different approach" (53 characters) is a perfect length for r-fit-text. It clearly signals a new direction for the audience. -->
+<section data-transition="convex">
+    <h1 class="r-fit-text">This is where we need a completely different approach.</h1>
+</section>
+
+<!-- Because this slide contrasts the old way of thinking with the new, it's a POWER TEXT slide sequence. This first part sets up the contrast by mentioning the old goal ("single 'best' move"). I'm breaking the sentence across two slides for pacing and impact. -->
+<section data-auto-animate>
+    <h2 class="r-fit-text">Instead of looking for the single "best" move...</h2>
+</section>
+
+<!-- Because this slide delivers the new goal, it's a POWER TEXT slide using auto-animate for a smooth reveal. Text analysis: "...we're going to look for a stable outcome" (42 characters) is a great length for r-fit-text. Highlighting "stable outcome" in green introduces the new, positive concept. -->
+<section data-auto-animate>
+    <h2 class="r-fit-text">Instead of looking for the single "best" move...</h2>
+    <h1 class="r-fit-text">...we're going to look for a <span style="color: #4CAF50;">stable outcome</span>.</h1>
+</section>
+
+<!-- Because this slide formally introduces the central concept of the entire video series, this is a POWER TEXT slide designed for maximum impact. Text analysis: "This is the legendary Nash Equilibrium" (35 characters) is short and powerful. Highlighting the key term makes it unmissable. -->
+<section data-transition="zoom">
+    <h1 class="r-fit-text">This is the legendary <mark>Nash Equilibrium</mark>.</h1>
+</section>
+
+<!-- Because this slide provides the simple, intuitive definition that will guide the chapter, this is a POWER TEXT slide. Text analysis: "And it's all about finding the 'no regrets' point" (50 characters) is a perfect, memorable phrase for r-fit-text. Highlighting "'no regrets'" reinforces this core idea. -->
+<section>
+    <h1 class="r-fit-text">And it's all about finding the <mark>"no regrets"</mark> point.</h1>
+</section>
+
+<!-- Because this content presents the formal mathematical definition of Nash Equilibrium, this is a TECHNICAL slide. The LaTeX formula is the centerpiece, presented without much fanfare to set up the subsequent slides that will demystify it. This is for the viewers who appreciate the formal rigor. -->
+<section data-transition="fade">
+    <h2 style="color: #4CAF50;">Here's the formal math.</h2>
+    <p style="font-size: 1.2em;">A set of strategies is a Nash Equilibrium if:</p>
+    <div style="text-align: center; font-size: 1.8em; margin-top: 50px;">
+        \[ u_i(s_i^*, s_{-i}^*) \geq u_i(s_i, s_{-i}^*) \]
+    </div>
+    <p class="fragment fade-in" style="font-size: 1.1em; margin-top: 30px;"><strong>Where:</strong> \(u_i\) = player i's payoff, \(s_i^*\) = player i's equilibrium strategy, \(s_{-i}^*\) = all other players' equilibrium strategies, \(s_i\) = any alternative strategy for player i</p>
+    <p class="fragment fade-in" style="font-size: 1.2em; margin-top: 20px;">(No player can improve their payoff by unilaterally changing their strategy.)</p>
+</section>
+
+<!-- Because this slide is designed to be a relatable and humorous reaction to the complex math on the previous slide, it is a POWER TEXT slide. Text analysis: "I know, that looks intense" (26 characters) is a short, conversational phrase that builds rapport with the audience by acknowledging the formula's difficulty. -->
+<section data-auto-animate>
+    <h1 class="r-fit-text">I know, that looks intense.</h1>
+</section>
+
+<!-- Because this slide simplifies the complex formula into a simple, memorable name, this is a POWER TEXT slide using auto-animate for a smooth reveal. Text analysis: The phrase "But the idea behind it is incredibly simple" sets up the punchline. Revealing "The 'No Regrets Test'" in green provides a clear, positive, and understandable alternative. -->
+<section data-auto-animate>
+    <h1 class="r-fit-text">I know, that looks intense.</h1>
+    <h2 class="r-fit-text">But the idea behind it is incredibly simple.</h2>
+    <h1 class="fragment fade-in r-fit-text" style="color: #4CAF50;">It's called the <mark>"No Regrets Test."</mark></h1>
+</section>
+
+<!-- Because this content explains the "No Regrets Test" in simple terms, it's a POWER TEXT slide. Text analysis: The explanation is broken into a three-slide sequence to make it more digestible. This first slide sets up the core question. The question format is engaging and sets a clear context. -->
+<section data-auto-animate>
+    <h2 class="r-fit-text">An outcome is a Nash Equilibrium if no player can look back and say...</h2>
+</section>
+
+<!-- Because this slide delivers the "regret" quote, it's a POWER TEXT slide using auto-animate for a powerful reveal. Text analysis: The quote is memorable and perfectly captures the feeling of regret. Highlighting "wish I had chosen something else" emphasizes the core of the test. -->
+<section data-auto-animate>
+    <h2 class="r-fit-text">An outcome is a Nash Equilibrium if no player can look back and say...</h2>
+    <h1 class="r-fit-text" style="color: #ff6b6b;">"Darn it! Knowing what they did, I <mark>wish I had chosen something else</mark>."</h1>
+</section>
+
+<!-- Because this slide provides the final, positive conclusion of the "No Regrets Test", it's a POWER TEXT slide. It contrasts the negative feeling of regret with the positive state of a Nash Equilibrium. Highlighting "No regrets" in green provides a satisfying resolution. -->
+<section data-transition="zoom">
+    <h2 class="r-fit-text">Everyone is happy with their choice, <mark>given</mark> what everyone else chose.</h2>
+    <h1 class="r-fit-text fragment fade-in" style="color: #4CAF50;">No regrets.</h1>
+</section>
+
+<!-- Because this content introduces the classic example game for this chapter, this is a POWER TEXT slide. Text analysis: "Battle of the Sexes" is the formal name of the game, and presenting it this way signals a shift to a concrete example. The green highlight indicates this is a key concept. -->
+<section data-transition="slide">
+    <h2 class="r-fit-text">Let's prove it with a classic game our old tools can't solve:</h2>
+    <h1 class="r-fit-text fragment fade-in" style="color: #4CAF50;">The <mark>Battle of the Sexes</mark>.</h1>
+</section>
+
+<!-- Because this slide sets up the characters and their preferences for the game, this is an EDUCATIONAL slide. It uses a simple list format to clearly outline the motivations of Alex and Bailey, which is essential context for understanding the payoff matrix that follows. -->
+<section>
+    <h2>Imagine a couple, Alex and Bailey.</h2>
+    <div style="font-size: 1.4em; text-align: left; margin: 40px 0 0 15%; line-height: 1.8;">
+        <p>✓ Alex prefers they both go to a <strong style="color: #4CAF50;">Football</strong> game.</p>
+        <p class="fragment fade-in">✓ Bailey prefers they both go to the <strong style="color: #4CAF50;">Opera</strong>.</p>
+        <p class="fragment fade-in">✓ But their biggest priority is to be <strong style="color: #ff6b6b;">together</strong>.</p>
+        <p class="fragment fade-in" style="font-size: 0.9em;">(Going alone is the worst possible outcome for both.)</p>
+    </div>
+</section>
+
+<!-- Because this slide presents the formal game board for the "Battle of the Sexes," this is a TECHNICAL slide. CRITICAL: This payoff matrix is the persistent context for the entire analysis that follows. It must be perfectly clear and will be duplicated and modified across several upcoming slides. The key outcomes are bolded for emphasis. -->
+<section data-auto-animate data-transition="zoom">
+    <div style="padding: 20px;">
+        <div style="background-color: #333; padding: 15px; border-radius: 10px; margin-bottom: 30px;">
+            <h3 style="color: #4CAF50; margin: 0; font-size: 1.6em;">The Game: Battle of the Sexes</h3>
+            <p style="font-size: 1.2em; margin: 10px 0 0 0;">Payoff of 2 for favorite event, 1 for other event, 0 for being alone.</p>
+        </div>
+        <div data-id="bot-matrix">
+            <table style="margin: 0 auto; font-size: 1.2em; border-collapse: collapse;">
+                <thead>
+                    <tr>
+                        <th style="padding: 15px; border: 2px solid #fff;"></th>
+                        <th style="border: 2px solid #fff; padding: 15px;">Bailey: Football</th>
+                        <th style="border: 2px solid #fff; padding: 15px;">Bailey: Opera</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td style="border: 2px solid #fff; padding: 15px;"><strong>Alex: Football</strong></td>
+                        <td style="border: 2px solid #fff; padding: 15px; font-size: 1.5em;"><strong>2, 1</strong></td>
+                        <td style="border: 2px solid #fff; padding: 15px; font-size: 1.5em;">0, 0</td>
+                    </tr>
+                    <tr>
+                        <td style="border: 2px solid #fff; padding: 15px;"><strong>Alex: Opera</strong></td>
+                        <td style="border: 2px solid #fff; padding: 15px; font-size: 1.5em;">0, 0</td>
+                        <td style="border: 2px solid #fff; padding: 15px; font-size: 1.5em;"><strong>1, 2</strong></td>
+                    </tr>
+                </tbody>
+            </table>
+            <p style="margin-top: 15px;">(Alex's Payoff, Bailey's Payoff)</p>
+        </div>
+    </div>
+</section>
+
+<!-- Because this content demonstrates why the tools from previous chapters fail, this is a TECHNICAL slide. Problem context that must persist: the Battle of the Sexes payoff matrix. The slide uses fragments to walk through the logic for both dominant strategies and iterated deletion, proving neither can be used here. -->
+<section>
+    <h2 style="margin-bottom: 30px;">Now, let's try our old tools...</h2>
+    <table style="margin: 0 auto; font-size: 1em; border-collapse: collapse;">
+        <thead>
+            <tr><th style="padding: 10px; border: 2px solid #fff;"></th><th style="border: 2px solid #fff; padding: 10px;">Bailey: Football</th><th style="border: 2px solid #fff; padding: 10px;">Bailey: Opera</th></tr>
+        </thead>
+        <tbody>
+            <tr><td style="border: 2px solid #fff; padding: 10px;"><strong>Alex: Football</strong></td><td style="border: 2px solid #fff; padding: 10px; font-size: 1.3em;">2, 1</td><td style="border: 2px solid #fff; padding: 10px; font-size: 1.3em;">0, 0</td></tr>
+            <tr><td style="border: 2px solid #fff; padding: 10px;"><strong>Alex: Opera</strong></td><td style="border: 2px solid #fff; padding: 10px; font-size: 1.3em;">0, 0</td><td style="border: 2px solid #fff; padding: 10px; font-size: 1.3em;">1, 2</td></tr>
+        </tbody>
+    </table>
+    <div style="font-size: 1.2em; margin-top: 30px;">
+        <p class="fragment fade-in"><strong>Dominant strategy for Alex?</strong> No. His best move depends on Bailey.</p>
+        <p class="fragment fade-in"><strong>Can we delete anything?</strong> No. No move is always worse than another.</p>
+    </div>
+</section>
+
+<!-- Because this slide summarizes the failure of the old tools and sets up the need for a new one, this is a POWER TEXT slide. Text analysis: "Our first two tools are useless here" (36 characters) is a short, direct, and powerful statement that finalizes the problem setup. -->
+<section data-transition="fade">
+    <h1 class="r-fit-text" style="color: #ff6b6b;">Our first two tools are useless here.</h1>
+</section>
+
+<!-- Because this slide introduces the new technique with a promise of simplicity and power, this is a POWER TEXT slide sequence. This first slide poses the question that the new technique will answer. -->
+<section data-auto-animate>
+    <h1 class="r-fit-text">So how do we find the "no regrets" point?</h1>
+</section>
+
+<!-- Because this slide promises a "visual hack", it's a POWER TEXT slide using auto-animate to build excitement. The conversational tone ("I'm going to show you a simple trick") engages the viewer directly. -->
+<section data-auto-animate>
+    <h1 class="r-fit-text">So how do we find the "no regrets" point?</h1>
+    <h2 class="r-fit-text">I'm going to show you a simple trick. A <mark>visual hack</mark> that instantly reveals the Nash Equilibrium.</h2>
+</section>
+
+<!-- Because this slide gives the technique its formal and informal names, this is a POWER TEXT slide. Text analysis: It presents "Best Response analysis" as the formal term but immediately offers the much more memorable "'underlining trick'" in green, signaling this is the user-friendly approach we'll be taking. -->
+<section data-transition="zoom">
+    <h2 class="r-fit-text">It’s called the <strong>Best Response analysis</strong>...</h2>
+    <h1 class="fragment fade-in r-fit-text">...but we’ll just call it the <span style="color: #4CAF50;">"underlining trick."</mark></h1>
+</section>
+
+<!-- Because this slide begins the step-by-step walkthrough of the underlining trick, this is a TECHNICAL slide. CRITICAL: The payoff matrix is the persistent context. This slide sets up the first step: finding Alex's best responses by looking at Bailey's choices one by one (column by column). The clean matrix is presented before any underlines are added. -->
+<section data-auto-animate>
+    <h2 style="color: #4CAF50;">Step 1: Find Alex's Best Responses</h2>
+    <p>We go column by column. For each of Bailey's choices, we find Alex's best move.</p>
+    <div data-id="bot-matrix-underline">
+        <table style="margin: 20px auto; font-size: 1.2em; border-collapse: collapse;">
+            <thead>
+                <tr><th style="padding: 15px; border: 2px solid #fff;"></th><th style="border: 2px solid #fff; padding: 15px;">Bailey: Football</th><th style="border: 2px solid #fff; padding: 15px;">Bailey: Opera</th></tr>
+            </thead>
+            <tbody>
+                <tr><td style="border: 2px solid #fff; padding: 15px;"><strong>Alex: Football</strong></td><td style="border: 2px solid #fff; padding: 15px; font-size: 1.5em;">2, 1</td><td style="border: 2px solid #fff; padding: 15px; font-size: 1.5em;">0, 0</td></tr>
+                <tr><td style="border: 2px solid #fff; padding: 15px;"><strong>Alex: Opera</strong></td><td style="border: 2px solid #fff; padding: 15px; font-size: 1.5em;">0, 0</td><td style="border: 2px solid #fff; padding: 15px; font-size: 1.5em;">1, 2</td></tr>
+            </tbody>
+        </table>
+    </div>
+</section>
+
+<!-- Because this slide shows the first action of the underlining trick, this is a TECHNICAL slide. CRITICAL: The payoff matrix persists, and data-auto-animate is used to smoothly add the first underline. The first column is highlighted to focus the audience's attention on the specific choice being analyzed (Bailey chooses Football). The logic (2 > 0) is stated clearly. -->
+<section data-auto-animate>
+    <h2 style="color: #4CAF50;">Step 1: Find Alex's Best Responses</h2>
+    <p>If Bailey chooses <strong>Football</strong> (column 1), Alex's best move is Football (2 > 0).</p>
+    <div data-id="bot-matrix-underline">
+        <table style="margin: 20px auto; font-size: 1.2em; border-collapse: collapse;">
+            <thead>
+                <tr><th style="padding: 15px; border: 2px solid #fff;"></th><th style="border: 2px solid #4CAF50; padding: 15px; background-color: #2a3d2a;">Bailey: Football</th><th style="border: 2px solid #fff; padding: 15px;">Bailey: Opera</th></tr>
+            </thead>
+            <tbody>
+                <tr><td style="border: 2px solid #fff; padding: 15px;"><strong>Alex: Football</strong></td><td style="border: 2px solid #fff; padding: 15px; font-size: 1.5em; background-color: #2a3d2a;"><ins>2</ins>, 1</td><td style="border: 2px solid #fff; padding: 15px; font-size: 1.5em;">0, 0</td></tr>
+                <tr><td style="border: 2px solid #fff; padding: 15px;"><strong>Alex: Opera</strong></td><td style="border: 2px solid #fff; padding: 15px; font-size: 1.5em; background-color: #2a3d2a;">0, 0</td><td style="border: 2px solid #fff; padding: 15px; font-size: 1.5em;">1, 2</td></tr>
+            </tbody>
+        </table>
+    </div>
+</section>
+
+<!-- Because this slide shows the second action for Alex, this is a TECHNICAL slide. CRITICAL: The matrix persists via auto-animate, keeping the first underline. The highlight moves to the second column, and the second underline is added. This step-by-step visual progression is key to teaching the technique effectively. -->
+<section data-auto-animate>
+    <h2 style="color: #4CAF50;">Step 1: Find Alex's Best Responses</h2>
+    <p>If Bailey chooses <strong>Opera</strong> (column 2), Alex's best move is Opera (1 > 0).</p>
+    <div data-id="bot-matrix-underline">
+        <table style="margin: 20px auto; font-size: 1.2em; border-collapse: collapse;">
+            <thead>
+                <tr><th style="padding: 15px; border: 2px solid #fff;"></th><th style="border: 2px solid #fff; padding: 15px;">Bailey: Football</th><th style="border: 2px solid #4CAF50; padding: 15px; background-color: #2a3d2a;">Bailey: Opera</th></tr>
+            </thead>
+            <tbody>
+                <tr><td style="border: 2px solid #fff; padding: 15px;"><strong>Alex: Football</strong></td><td style="border: 2px solid #fff; padding: 15px; font-size: 1.5em;"><ins>2</ins>, 1</td><td style="border: 2px solid #fff; padding: 15px; font-size: 1.5em; background-color: #2a3d2a;">0, 0</td></tr>
+                <tr><td style="border: 2px solid #fff; padding: 15px;"><strong>Alex: Opera</strong></td><td style="border: 2px solid #fff; padding: 15px; font-size: 1.5em;">0, 0</td><td style="border: 2px solid #fff; padding: 15px; font-size: 1.5em; background-color: #2a3d2a;"><ins>1</ins>, 2</td></tr>
+            </tbody>
+        </table>
+    </div>
+</section>
+
+<!-- Because this slide begins the second major step of the analysis (Bailey's perspective), this is a TECHNICAL slide. CRITICAL: The matrix persists with Alex's underlines already in place. The slide clearly states the new objective and invites the audience to participate, a great engagement technique. -->
+<section data-auto-animate>
+    <h2 style="color: #4CAF50;">Step 2: Find Bailey's Best Responses</h2>
+    <p>Now we do the same for Bailey, but we go row by row. (Pause and try it yourself!)</p>
+    <div data-id="bot-matrix-underline">
+        <table style="margin: 20px auto; font-size: 1.2em; border-collapse: collapse;">
+            <thead>
+                <tr><th style="padding: 15px; border: 2px solid #fff;"></th><th style="border: 2px solid #fff; padding: 15px;">Bailey: Football</th><th style="border: 2px solid #fff; padding: 15px;">Bailey: Opera</th></tr>
+            </thead>
+            <tbody>
+                <tr><td style="border: 2px solid #fff; padding: 15px;"><strong>Alex: Football</strong></td><td style="border: 2px solid #fff; padding: 15px; font-size: 1.5em;"><ins>2</ins>, 1</td><td style="border: 2px solid #fff; padding: 15px; font-size: 1.5em;">0, 0</td></tr>
+                <tr><td style="border: 2px solid #fff; padding: 15px;"><strong>Alex: Opera</strong></td><td style="border: 2px solid #fff; padding: 15px; font-size: 1.5em;">0, 0</td><td style="border: 2px solid #fff; padding: 15px; font-size: 1.5em;"><ins>1</ins>, 2</td></tr>
+            </tbody>
+        </table>
+    </div>
+</section>
+
+<!-- Because this slide shows the first action from Bailey's perspective, this is a TECHNICAL slide. CRITICAL: The matrix persists via auto-animate. The first row is now highlighted, and Bailey's first underline is added. The progressive build-up of underlines is the key visual lesson here. -->
+<section data-auto-animate>
+    <h2 style="color: #4CAF50;">Step 2: Find Bailey's Best Responses</h2>
+    <p>If Alex chooses <strong>Football</strong> (row 1), Bailey's best move is Football (1 > 0).</p>
+    <div data-id="bot-matrix-underline">
+        <table style="margin: 20px auto; font-size: 1.2em; border-collapse: collapse;">
+            <thead>
+                <tr><th style="padding: 15px; border: 2px solid #fff;"></th><th style="border: 2px solid #fff; padding: 15px;">Bailey: Football</th><th style="border: 2px solid #fff; padding: 15px;">Bailey: Opera</th></tr>
+            </thead>
+            <tbody>
+                <tr style="background-color: #2a3d2a;"><td style="border: 2px solid #4CAF50; padding: 15px;"><strong>Alex: Football</strong></td><td style="border: 2px solid #fff; padding: 15px; font-size: 1.5em;"><ins>2</ins>, <ins>1</ins></td><td style="border: 2px solid #fff; padding: 15px; font-size: 1.5em;">0, 0</td></tr>
+                <tr><td style="border: 2px solid #fff; padding: 15px;"><strong>Alex: Opera</strong></td><td style="border: 2px solid #fff; padding: 15px; font-size: 1.5em;">0, 0</td><td style="border: 2px solid #fff; padding: 15px; font-size: 1.5em;"><ins>1</ins>, 2</td></tr>
+            </tbody>
+        </table>
+    </div>
+</section>
+
+<!-- Because this slide reveals the final, fully analyzed matrix, this is a TECHNICAL slide. CRITICAL: The matrix persists, and the final underline is added with auto-animate. This completes the "underlining trick" and presents the final data needed to identify the equilibria. -->
+<section data-auto-animate>
+    <h2 style="color: #4CAF50;">Step 2: Find Bailey's Best Responses</h2>
+    <p>If Alex chooses <strong>Opera</strong> (row 2), Bailey's best move is Opera (2 > 0).</p>
+    <div data-id="bot-matrix-underline">
+        <table style="margin: 20px auto; font-size: 1.2em; border-collapse: collapse;">
+            <thead>
+                <tr><th style="padding: 15px; border: 2px solid #fff;"></th><th style="border: 2px solid #fff; padding: 15px;">Bailey: Football</th><th style="border: 2px solid #fff; padding: 15px;">Bailey: Opera</th></tr>
+            </thead>
+            <tbody>
+                <tr><td style="border: 2px solid #fff; padding: 15px;"><strong>Alex: Football</strong></td><td style="border: 2px solid #fff; padding: 15px; font-size: 1.5em;"><ins>2</ins>, <ins>1</ins></td><td style="border: 2px solid #fff; padding: 15px; font-size: 1.5em;">0, 0</td></tr>
+                <tr style="background-color: #2a3d2a;"><td style="border: 2px solid #4CAF50; padding: 15px;"><strong>Alex: Opera</strong></td><td style="border: 2px solid #fff; padding: 15px; font-size: 1.5em;">0, 0</td><td style="border: 2px solid #fff; padding: 15px; font-size: 1.5em;"><ins>1</ins>, <ins>2</ins></td></tr>
+            </tbody>
+        </table>
+    </div>
+</section>
+
+<!-- Because this slide delivers the key rule for interpreting the final matrix, this is a POWER TEXT slide. Text analysis: "A Nash Equilibrium is any cell where BOTH payoffs are underlined" (66 characters) is the perfect length for r-fit-text. Highlighting "BOTH" is the critical emphasis needed to make the rule stick. -->
+<section data-transition="zoom">
+    <h2 class="r-fit-text">Step 3: The Final Reveal.</h2>
+    <h1 class="r-fit-text fragment fade-in">A <span style="color: #4CAF50;">Nash Equilibrium</mark> is any cell where <mark>BOTH</mark> payoffs are underlined.</h1>
+</section>
+
+<!-- Because this slide explains the "why" behind the rule, it's a POWER TEXT slide. It connects the visual "underlining" back to the core concept of "best choice" and "no regrets," reinforcing the chapter's main theme. -->
+<section data-transition="fade">
+    <h2 style="font-size: 8em;">Why?</h2>
+    <p class="fragment fade-in" style="font-size: 1.5em;">Because if a payoff is underlined, that player is making their best choice.</p>
+    <p class="fragment fade-in" style="font-size: 1.5em;">If *both* are underlined, *both* players are making their best choice.</p>
+    <h1 class="fragment fade-in r-fit-text" style="color: #4CAF50;">No one has any regrets.</h1>
+</section>
+
+<!-- Because this slide explicitly identifies the two Nash Equilibria found in the game, it is an EDUCATIONAL slide. It uses a simple list format and highlights the two stable outcomes in green, providing a clear and satisfying conclusion to the analysis. -->
+<section>
+    <h2>In this game, we have <strong style="color: #4CAF50;">TWO</strong> Nash Equilibria:</h2>
+    <div style="font-size: 2em; line-height: 2; margin-top: 50px;">
+        <p>1. <mark style="background-color: #4CAF50; color: #fff; padding: 5px 15px; border-radius: 8px;">(Football, Football)</mark></p>
+        <p class="fragment fade-in">2. <mark style="background-color: #4CAF50; color: #fff; padding: 5px 15px; border-radius: 8px;">(Opera, Opera)</mark></p>
+    </div>
+</section>
+
+<!-- Because this slide walks through the "No Regrets Test" for the first equilibrium, this is a TECHNICAL slide. Problem context that must persist: the final, underlined matrix. This slide makes the abstract concept concrete by asking the "no regrets" question from each player's perspective and showing the answer in the data. -->
+<section>
+    <h2>Let's test (Football, Football) for regrets:</h2>
+    <table style="margin: 20px auto; font-size: 1.1em; border-collapse: collapse;">
+        <thead>
+            <tr><th style="padding: 10px; border: 2px solid #fff;"></th><th style="border: 2px solid #fff; padding: 10px;">Bailey: Football</th><th style="border: 2px solid #fff; padding: 10px;">Bailey: Opera</th></tr>
+        </thead>
+        <tbody>
+            <tr><td style="border: 2px solid #fff; padding: 10px;"><strong>Alex: Football</strong></td><td style="border: 2px solid #fff; padding: 10px; font-size: 1.3em; background-color: #2a3d2a;"><ins>2</ins>, <ins>1</ins></td><td style="border: 2px solid #fff; padding: 10px; font-size: 1.3em;">0, 0</td></tr>
+            <tr><td style="border: 2px solid #fff; padding: 10px;"><strong>Alex: Opera</strong></td><td style="border: 2px solid #fff; padding: 10px; font-size: 1.3em;">0, 0</td><td style="border: 2px solid #fff; padding: 10px; font-size: 1.3em; background-color: #2a3d2a;"><ins>1</ins>, <ins>2</ins></td></tr>
+        </tbody>
+    </table>
+    <div style="margin-top: 30px; text-align: center;">
+        <p class="fragment fade-in r-fit-text"><strong>Alex asks:</strong> "Given Bailey went to Football, was Football my best move?" <br/>(Yes, 2 > 0. <strong style="color: #4CAF50;">No regrets.</strong>)</p>
+        <p class="fragment fade-in r-fit-text" style="margin-top: 20px;"><strong>Bailey asks:</strong> "Given Alex went to Football, was Football my best move?" <br/>(Yes, 1 > 0. <strong style="color: #4CAF50;">No regrets.</strong>)</p>
+    </div>
+</section>
+
+<!-- Because this content serves as the final, empowering takeaway for the entire chapter, it is a multi-slide POWER TEXT sequence. This first slide establishes the underlining trick as a "universal tool." Text analysis: This is an empowering statement that elevates the simple trick into a powerful strategic instrument. -->
+<section data-auto-animate data-transition="slide">
+    <h1 class="r-fit-text">This is your universal tool.</h1>
+</section>
+
+<!-- Because this slide specifies when to use this new tool, it's a POWER TEXT slide using auto-animate for a smooth reveal. It directly connects this chapter's lesson to the limitations of previous chapters' lessons, creating a cohesive learning path. -->
+<section data-auto-animate>
+    <h1 class="r-fit-text">This is your universal tool.</h1>
+    <h2 class="r-fit-text">When dominant strategies fail, the underlining trick finds you the <span style="color: #4CAF50;">stable points</mark> in any strategic game.</h2>
+</section>
+
+<!-- Because this slide delivers the final, powerful summary of what the tool accomplishes, it is a POWER TEXT slide. It emphasizes the tool's ability to simplify complexity and focus on what is truly possible, which is a key benefit of game theory thinking. -->
+<section data-transition="zoom">
+    <h1 class="r-fit-text">It narrows down the world of possibilities to only the <mark>rational outcomes</mark>.</h1>
+</section>
+
+<!-- Because this slide introduces a scenario that breaks our tools, this is a POWER TEXT slide. Text analysis: "But what happens when there are NO stable points at all?" creates tension by showing the limitations of what we just learned. -->
+<section data-transition="fade">
+    <h1 class="r-fit-text">But what happens when there are <span style="color: #ff6b6b;">NO stable points</span> at all?</h1>
+</section>
+
+<!-- Because this slide introduces a concrete example that will demonstrate the problem, it's a POWER TEXT slide. -->
+<section data-auto-animate>
+    <h2 class="r-fit-text">Let's look at a penalty kick game that <mark>breaks our tools</mark>.</h2>
+</section>
+
+<!-- Because this slide provides the game setup with realistic, asymmetrical data, it's an EDUCATIONAL slide. -->
+<section data-transition="slide">
+    <h2>When Nash Equilibrium Doesn't Exist: The Penalty Kick</h2>
+    <div style="margin-top: 40px;">
+        <table style="margin: 0 auto; font-size: 1.2em; border-collapse: collapse;">
+            <thead>
+                <tr>
+                    <th style="padding: 15px; border: 2px solid #fff;">Players</th>
+                    <th style="border: 2px solid #4CAF50; padding: 15px; color: #4CAF50;">Goalie: Dives Left</th>
+                    <th style="border: 2px solid #4CAF50; padding: 15px; color: #4CAF50;">Goalie: Dives Right</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td style="border: 2px solid #4CAF50; padding: 15px; color: #4CAF50;"><strong>Kicker: Left (Power)</strong></td>
+                    <td style="border: 2px solid #fff; padding: 15px;">0.3</td>
+                    <td style="border: 2px solid #fff; padding: 15px;">1</td>
+                </tr>
+                <tr>
+                    <td style="border: 2px solid #4CAF50; padding: 15px; color: #4CAF50;"><strong>Kicker: Right (Placement)</strong></td>
+                    <td style="border: 2px solid #fff; padding: 15px;">0.9</td>
+                    <td style="border: 2px solid #fff; padding: 15px;">0</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+    <p style="font-size: 1.1em; margin-top: 30px;">You're a right-footed Kicker. These are the probabilities of you scoring.</p>
+</section>
+
+<!-- Because this slide introduces the use of our learned technique on this new problem, it's a POWER TEXT slide. -->
+<section data-transition="fade">
+    <h2 class="r-fit-text">Let's use our underlining trick to see if there's a Nash Equilibrium.</h2>
+</section>
+
+<!-- Because this slide shows the step-by-step analysis, it's a TECHNICAL slide. I'll show the Kicker's best responses first. -->
+<section data-auto-animate data-transition="slide">
+    <h2 style="color: #4CAF50;">Step 1: Find the Kicker's Best Responses</h2>
+    <p>Go column by column to find when Kicker scores most.</p>
+    <div data-id="penalty-table" style="margin-top: 30px;">
+        <table style="margin: 20px auto; font-size: 1.2em; border-collapse: collapse;">
+            <thead>
+                <tr><th style="padding: 15px; border: 2px solid #fff;"></th><th style="border: 2px solid #fff; padding: 15px;">Goalie: Left</th><th style="border: 2px solid #fff; padding: 15px;">Goalie: Right</th></tr>
+            </thead>
+            <tbody>
+                <tr><td style="border: 2px solid #fff; padding: 15px;"><strong>Kicker: Left</strong></td><td style="border: 2px solid #fff; padding: 15px; font-size: 1.5em;">0.3, 0.7</td><td style="border: 2px solid #fff; padding: 15px; font-size: 1.5em;">1, 0</td></tr>
+                <tr><td style="border: 2px solid #fff; padding: 15px;"><strong>Kicker: Right</strong></td><td style="border: 2px solid #fff; padding: 15px; font-size: 1.5em;">0.9, 0.1</td><td style="border: 2px solid #fff; padding: 15px; font-size: 1.5em;">0, 1</td></tr>
+            </tbody>
+        </table>
+    </div>
+</section>
+
+<!-- Continue Step 1 with column 1 highlighted -->
+<section data-auto-animate>
+    <h2 style="color: #4CAF50;">Step 1: Find the Kicker's Best Responses</h2>
+    <p>If Goalie dives <strong>Left</strong>, which is better for Kicker?</p>
+    <div data-id="penalty-table" style="margin-top: 30px;">
+        <table style="margin: 20px auto; font-size: 1.2em; border-collapse: collapse;">
+            <thead>
+                <tr><th style="padding: 15px; border: 2px solid #fff;"></th><th style="border: 2px solid #fff; padding: 15px; background-color: #2a3d2a;">Goalie: Left</th><th style="border: 2px solid #fff; padding: 15px;">Goalie: Right</th></tr>
+            </thead>
+            <tbody>
+                <tr><td style="border: 2px solid #fff; padding: 15px;"><strong>Kicker: Left</strong></td><td style="border: 2px solid #fff; padding: 15px; background-color: #2a3d2a; font-size: 1.5em;">0.3, 0.7</td><td style="border: 2px solid #fff; padding: 15px; font-size: 1.5em;">1, 0</td></tr>
+                <tr><td style="border: 2px solid #fff; padding: 15px;"><strong>Kicker: Right</strong></td><td style="border: 2px solid #fff; padding: 15px; background-color: #2a3d2a; font-size: 1.5em;"><ins>0.9</ins>, 0.1</td><td style="border: 2px solid #fff; padding: 15px; font-size: 1.5em;">0, 1</td></tr>
+            </tbody>
+        </table>
+    </div>
+    <p class="fade-in" style="font-size: 1.2em; margin-top: 30px;">Kicker prefers Right (0.9 > 0.3)</p>
+</section>
+
+<!-- Continue Step 1 with column 2 highlighted -->
+<section data-auto-animate>
+    <h2 style="color: #4CAF50;">Step 1: Find the Kicker's Best Responses</h2>
+    <p>If Goalie dives <strong>Right</strong>, which is better for Kicker?</p>
+    <div data-id="penalty-table" style="margin-top: 30px;">
+        <table style="margin: 20px auto; font-size: 1.2em; border-collapse: collapse;">
+            <thead>
+                <tr><th style="padding: 15px; border: 2px solid #fff;"></th><th style="border: 2px solid #fff; padding: 15px;">Goalie: Left</th><th style="border: 2px solid #fff; padding: 15px; background-color: #2a3d2a;">Goalie: Right</th></tr>
+            </thead>
+            <tbody>
+                <tr><td style="border: 2px solid #fff; padding: 15px;"><strong>Kicker: Left</strong></td><td style="border: 2px solid #fff; padding: 15px; font-size: 1.5em;">0.3, 0.7</td><td style="border: 2px solid #fff; padding: 15px; background-color: #2a3d2a; font-size: 1.5em;"><ins>1</ins>, 0</td></tr>
+                <tr><td style="border: 2px solid #fff; padding: 15px;"><strong>Kicker: Right</strong></td><td style="border: 2px solid #fff; padding: 15px; font-size: 1.5em;"><ins>0.9</ins>, 0.1</td><td style="border: 2px solid #fff; padding: 15px; background-color: #2a3d2a; font-size: 1.5em;">0, 1</td></tr>
+            </tbody>
+        </table>
+    </div>
+    <p class="fade-in" style="font-size: 1.2em; margin-top: 30px;">Kicker prefers Left (1 > 0)</p>
+</section>
+
+<!-- Because this slide shows the Goalie's best responses, it's a TECHNICAL slide continuing the analysis. -->
+<section data-auto-animate>
+    <h2 style="color: #4CAF50;">Step 2: Find the Goalie's Best Responses</h2>
+    <p>Go row by row. Goalie wants to MAXIMIZE their own score (save rate).</p>
+    <div data-id="penalty-table" style="margin-top: 30px;">
+        <table style="margin: 20px auto; font-size: 1.2em; border-collapse: collapse;">
+            <thead>
+                <tr><th style="padding: 15px; border: 2px solid #fff;"></th><th style="border: 2px solid #fff; padding: 15px;">Goalie: Left</th><th style="border: 2px solid #fff; padding: 15px;">Goalie: Right</th></tr>
+            </thead>
+            <tbody>
+                <tr><td style="border: 2px solid #fff; padding: 15px;"><strong>Kicker: Left</strong></td><td style="border: 2px solid #fff; padding: 15px; font-size: 1.5em;">0.3, 0.7</td><td style="border: 2px solid #fff; padding: 15px; font-size: 1.5em;"><ins>1</ins>, 0</td></tr>
+                <tr><td style="border: 2px solid #fff; padding: 15px;"><strong>Kicker: Right</strong></td><td style="border: 2px solid #fff; padding: 15px; font-size: 1.5em;"><ins>0.9</ins>, 0.1</td><td style="border: 2px solid #fff; padding: 15px; font-size: 1.5em;">0, 1</td></tr>
+            </tbody>
+        </table>
+    </div>
+</section>
+
+<!-- Continue Step 2 with row 1 highlighted -->
+<section data-auto-animate>
+    <h2 style="color: #4CAF50;">Step 2: Find the Goalie's Best Responses</h2>
+    <p>If Kicker goes <strong>Left</strong>, which is better for Goalie?</p>
+    <div data-id="penalty-table" style="margin-top: 30px;">
+        <table style="margin: 20px auto; font-size: 1.2em; border-collapse: collapse;">
+            <thead>
+                <tr><th style="padding: 15px; border: 2px solid #fff;"></th><th style="border: 2px solid #fff; padding: 15px;">Goalie: Left</th><th style="border: 2px solid #fff; padding: 15px;">Goalie: Right</th></tr>
+            </thead>
+            <tbody>
+                <tr style="background-color: #2a3d2a;"><td style="border: 2px solid #fff; padding: 15px;"><strong>Kicker: Left</strong></td><td style="border: 2px solid #fff; padding: 15px; background-color: #2a3d2a; font-size: 1.5em;">0.3, <ins>0.7</ins></td><td style="border: 2px solid #fff; padding: 15px; background-color: #2a3d2a; font-size: 1.5em;"><ins>1</ins>, 0</td></tr>
+                <tr><td style="border: 2px solid #fff; padding: 15px;"><strong>Kicker: Right</strong></td><td style="border: 2px solid #fff; padding: 15px; font-size: 1.5em;"><ins>0.9</ins>, 0.1</td><td style="border: 2px solid #fff; padding: 15px; font-size: 1.5em;">0, 1</td></tr>
+            </tbody>
+        </table>
+    </div>
+    <p class="fade-in" style="font-size: 1.2em; margin-top: 30px;">Goalie prefers Left (0.7 > 0) - higher save rate</p>
+</section>
+
+<!-- Continue Step 2 with row 2 highlighted -->
+<section data-auto-animate>
+    <h2 style="color: #4CAF50;">Step 2: Find the Goalie's Best Responses</h2>
+    <p>If Kicker goes <strong>Right</strong>, which is better for Goalie?</p>
+    <div data-id="penalty-table" style="margin-top: 30px;">
+        <table style="margin: 20px auto; font-size: 1.2em; border-collapse: collapse;">
+            <thead>
+                <tr><th style="padding: 15px; border: 2px solid #fff;"></th><th style="border: 2px solid #fff; padding: 15px;">Goalie: Left</th><th style="border: 2px solid #fff; padding: 15px;">Goalie: Right</th></tr>
+            </thead>
+            <tbody>
+                <tr><td style="border: 2px solid #fff; padding: 15px;"><strong>Kicker: Left</strong></td><td style="border: 2px solid #fff; padding: 15px; font-size: 1.5em;">0.3, <ins>0.7</ins></td><td style="border: 2px solid #fff; padding: 15px; font-size: 1.5em;"><ins>1</ins>, 0</td></tr>
+                <tr style="background-color: #2a3d2a;"><td style="border: 2px solid #fff; padding: 15px;"><strong>Kicker: Right</strong></td><td style="border: 2px solid #fff; padding: 15px; background-color: #2a3d2a; font-size: 1.5em;"><ins>0.9</ins>, 0.1</td><td style="border: 2px solid #fff; padding: 15px; background-color: #2a3d2a; font-size: 1.5em;">0, <ins>1</ins></td></tr>
+            </tbody>
+        </table>
+    </div>
+    <p class="fade-in" style="font-size: 1.2em; margin-top: 30px;">Goalie prefers Right (1 > 0.1) - higher save rate</p>
+</section>
+
+<!-- Because this slide reveals the key insight that breaks the pattern, it's a TECHNICAL slide. -->
+<section data-auto-animate>
+    <h2 style="color: #4CAF50;">Step 3: The Final Reveal</h2>
+    <p>A Nash Equilibrium is where BOTH payoffs are underlined.</p>
+    <div data-id="penalty-table" style="margin-top: 30px;">
+        <table style="margin: 20px auto; font-size: 1.2em; border-collapse: collapse;">
+            <thead>
+                <tr><th style="padding: 15px; border: 2px solid #fff;"></th><th style="border: 2px solid #fff; padding: 15px;">Goalie: Left</th><th style="border: 2px solid #fff; padding: 15px;">Goalie: Right</th></tr>
+            </thead>
+            <tbody>
+                <tr><td style="border: 2px solid #fff; padding: 15px;"><strong>Kicker: Left</strong></td><td style="border: 2px solid #fff; padding: 15px; background-color: rgba(255, 107, 107, 0.1); font-size: 1.5em;">0.3, <ins>0.7</ins></td><td style="border: 2px solid #fff; padding: 15px; background-color: rgba(255, 107, 107, 0.1); font-size: 1.5em;"><ins>1</ins>, 0</td></tr>
+                <tr><td style="border: 2px solid #fff; padding: 15px;"><strong>Kicker: Right</strong></td><td style="border: 2px solid #fff; padding: 15px; background-color: rgba(255, 107, 107, 0.1); font-size: 1.5em;"><ins>0.9</ins>, 0.1</td><td style="border: 2px solid #fff; padding: 15px; background-color: rgba(255, 107, 107, 0.1); font-size: 1.5em;">0, <ins>1</ins></td></tr>
+            </tbody>
+        </table>
+    </div>
+    <div style="margin-top: 40px;">
+        <p class="fragment fade-in" style="font-size: 1.2em;"><span style="color: #ff6b6b;">✗</span> (Left, Left): Only Goalie's payoff underlined</p>
+        <p class="fragment fade-in" style="font-size: 1.2em;"><span style="color: #ff6b6b;">✗</span> (Left, Right): Both underlined but 0 payoff for Goalie</p>
+        <p class="fragment fade-in" style="font-size: 1.2em;"><span style="color: #ff6b6b;">✗</span> (Right, Left): Only Kicker's payoff underlined</p>
+        <p class="fragment fade-in" style="font-size: 1.2em;"><span style="color: #ff6b6b;">✗</span> (Right, Right): Only Goalie's payoff underlined</p>
+    </div>
+    <h1 class="fragment fade-in r-fit-text" style="margin-top: 30px;">There's <span style="color: #ff6b6b;">NO cell</span> where both players are making their best choice!</h1>
+</section>
+
+<!-- Because this slide draws the conclusion from the analysis, it's a POWER TEXT slide. -->
+<section data-auto-animate>
+    <h2 class="r-fit-text">This confirms there's no pure strategy Nash Equilibrium.</h2>
+</section>
+
+<!-- Because this slide explains the strategic problem with predictability, it's a POWER TEXT slide. -->
+<section data-auto-animate>
+    <h2 class="r-fit-text">This confirms there's no pure strategy Nash Equilibrium.</h2>
+    <p class="fade-in r-fit-text">If the Goalie knows you're kicking Left, they'll dive Left.</p>
+    <p class="fragment fade-in r-fit-text">If they know you're kicking Right, they'll dive Right.</p>
+</section>
+
+<!-- END CHAPTER 5 -->
+
+<!-- START CHAPTER 6 -->
+
+<!-- Because this slide delivers the punchline of the problem—the consequence of predictability—it's a POWER TEXT slide. Text analysis: "Where being predictable means instant defeat?" (43 characters) is a short, impactful statement that raises the stakes for the viewer. -->
+<section data-transition="fade">
+    <h1 class="r-fit-text">Being <mark>predictable</mark> means instant <span style="color: #ff6b6b;">defeat</mark>?</h1>
+</section>
+
+<!-- Because this slide signals a shift in the presentation's complexity and tone, it's a POWER TEXT slide. Text analysis: "This is where game theory gets really interesting" (47 characters) is a classic transition phrase that builds anticipation for the new, advanced content. -->
+<section data-transition="convex">
+    <h1 class="r-fit-text">This is where game theory gets <mark>really interesting</mark>.</h1>
+</section>
+
+<!-- Because this content draws a sharp contrast between the simple games discussed previously and the "messy" real world, this is a POWER TEXT slide. Text analysis: The two short sentences are broken into two fragments to create a conversational rhythm. Highlighting "messy" emphasizes the new challenge. -->
+<section>
+    <h2 class="r-fit-text">Pure strategies are for predictable games.</h2>
+    <h1 class="fragment fade-in r-fit-text">The real world is <mark>messy</mark>.</h1>
+</section>
+
+<!-- Because this slide states the core strategic requirement for these new games, this is a POWER TEXT slide. Text analysis: "To win, you must become unpredictable" (36 characters) is a concise, powerful statement that introduces the central theme of this chapter: mixed strategies. -->
+<section data-transition="zoom">
+    <h1 class="r-fit-text">To win, you must become <mark>unpredictable</mark>.</h1>
+</section>
+
+<!-- Because this slide introduces our concrete example, it's an EDUCATIONAL slide. -->
+<section data-transition="slide">
+    <h2>Let's use our penalty kick example to see how this works.</h2>
+    <div style="margin-top: 40px;">
+        <table style="margin: 0 auto; font-size: 1.2em; border-collapse: collapse;">
+            <thead>
+                <tr>
+                    <th style="padding: 15px; border: 2px solid #fff;">Players</th>
+                    <th style="border: 2px solid #4CAF50; padding: 15px; color: #4CAF50;">Goalie: Dives Left</th>
+                    <th style="border: 2px solid #4CAF50; padding: 15px; color: #4CAF50;">Goalie: Dives Right</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td style="border: 2px solid #4CAF50; padding: 15px; color: #4CAF50;"><strong>Kicker: Left (Power)</strong></td>
+                    <td style="border: 2px solid #fff; padding: 15px;">0.3</td>
+                    <td style="border: 2px solid #fff; padding: 15px;">1</td>
+                </tr>
+                <tr>
+                    <td style="border: 2px solid #4CAF50; padding: 15px; color: #4CAF50;"><strong>Kicker: Right (Placement)</strong></td>
+                    <td style="border: 2px solid #fff; padding: 15px;">0.9</td>
+                    <td style="border: 2px solid #fff; padding: 15px;">0</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+    <p style="font-size: 1.1em; margin-top: 30px;">Remember: No pure strategy Nash Equilibrium exists here.</p>
+</section>
+
+<!-- Because this slide introduces the first mathematical concept, it's a POWER TEXT slide. -->
+<section data-transition="fade">
+    <h1 class="r-fit-text">But <span style="color: #ff6b6b;">how unpredictable</span>?</h1>
+    <h2 class="fragment fade-in r-fit-text">We need the math to find the <mark>perfect</mark> answer.</h2>
+</section>
+
+<!-- Because this slide presents the mathematical foundation, it's a TECHNICAL slide. -->
+<section data-transition="slide">
+    <h2 style="color: #4CAF50;">Mathematical Foundation</h2>
+    <div style="font-size: 1.1em; line-height: 1.8; margin-top: 40px;">
+        <p>A mixed strategy \(\sigma_i\) for you as player \(i\) assigns probability \(\sigma_i(s_i)\) to each pure strategy \(s_i\), where:</p>
+        <div style="text-align: center; font-size: 1.4em; margin: 30px 0;">
+            \[ \sum_{s_i \in S_i} \sigma_i(s_i) = 1 \text{ and } \sigma_i(s_i) \geq 0 \quad \forall s_i \]
+        </div>
+        <p><strong>In plain English:</strong> You as player \(i\) assign a probability to each of your possible moves, and these probabilities must add up to 100% (you have to do something), and none can be negative.</p>
+    </div>
+</section>
+
+<!-- Because this slide shows a concrete example of mixed strategy, it's an EDUCATIONAL slide. -->
+<section data-transition="slide">
+    <h2 style="color: #4CAF50;">Example: Mixed Strategy for the Kicker</h2>
+    <div style="margin-top: 40px;">
+        <div style="display: flex; justify-content: space-around; gap: 40px; font-size: 1.4em;">
+            <div style="flex: 1; text-align: center; background-color: #333; padding: 30px; border-radius: 10px;">
+                <h3 style="color: #4CAF50;">Kick Left (Power)</h3>
+                <h2 style="color: #4CAF50;">60% probability</h2>
+                <p style="font-size: 0.8em; margin-top: 15px;">\(\sigma_{Kicker}(Left) = 0.6\)</p>
+            </div>
+            <div style="flex: 1; text-align: center; background-color: #333; padding: 30px; border-radius: 10px;">
+                <h3 style="color: #4CAF50;">Kick Right (Placement)</h3>
+                <h2 style="color: #4CAF50;">40% probability</h2>
+                <p style="font-size: 0.8em; margin-top: 15px;">\(\sigma_{Kicker}(Right) = 0.4\)</p>
+            </div>
+        </div>
+        <div style="text-align: center; margin-top: 30px; font-size: 1.2em;">
+            <p><strong>Check:</strong> \(0.6 + 0.4 = 1.0\) ✓ and both \(\geq 0\) ✓</p>
+            <p class="fragment fade-in"><em>But is this the RIGHT mix? We need more math to find out!</em></p>
+        </div>
+    </div>
+</section>
+
+<!-- Because this slide explains expected utility computation, it's a TECHNICAL slide. -->
+<section data-transition="slide">
+    <h2 style="color: #4CAF50;">Expected Utility Computation</h2>
+    <div style="font-size: 1.1em; line-height: 1.8; margin-top: 40px;">
+        <p>When players use mixed strategies, your expected utility as player \(i\) is \(u_i(\sigma_i, \sigma_{-i})\):</p>
+        <p style="font-size: 0.9em; font-style: italic;">Where you as player \(i\) have strategy \(\sigma_i\), opponents have strategies \(\sigma_{-i}\)</p>
+        <div style="text-align: center; font-size: 1.4em; margin: 30px 0;">
+            \[ u_i(\sigma_i, \sigma_{-i}) = \sum_{s \in S} u_i(s) \prod_{j \in N} \sigma_j(s_j) \]
+        </div>
+        <p><strong>In plain English:</strong> We sum \(\sum\) over all possible outcomes \(s\). For each outcome, we multiply \(\prod\) <strong>YOUR</strong> payoff \(u_i(s)\) by the probability that outcome happens. The probability is the product of each player \(j\)'s chance \(\sigma_j(s_j)\) of choosing their part of that outcome.</p>
+    </div>
+</section>
+
+<!-- Because this slide shows a concrete expected utility calculation, it's an EDUCATIONAL slide. -->
+<section data-transition="slide">
+    <h2 style="color: #4CAF50;">Example: Kicker's Expected Utility</h2>
+    <div style="font-size: 1.1em; line-height: 1.8; margin-top: 30px;">
+        <p><strong>If Kicker plays 60% Left, 40% Right and Goalie plays 50% Left, 50% Right:</strong></p>
+        <div style="display: flex; justify-content: space-between; align-items: center; gap: 30px; margin: 20px 0;">
+            <!-- Table on the left (40% width) -->
+            <div style="width: 40%;">
+                <table style="margin: 0 auto; font-size: 0.8em; border-collapse: collapse;">
+                    <thead>
+                        <tr>
+                            <th style="padding: 8px; border: 2px solid #fff;">Players</th>
+                            <th style="border: 2px solid #4CAF50; padding: 8px; color: #4CAF50;">Goalie: Left</th>
+                            <th style="border: 2px solid #4CAF50; padding: 8px; color: #4CAF50;">Goalie: Right</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td style="border: 2px solid #4CAF50; padding: 8px; color: #4CAF50;"><strong>Kicker: Left</strong></td>
+                            <td style="border: 2px solid #fff; padding: 8px;">0.3</td>
+                            <td style="border: 2px solid #fff; padding: 8px;">1.0</td>
+                        </tr>
+                        <tr>
+                            <td style="border: 2px solid #4CAF50; padding: 8px; color: #4CAF50;"><strong>Kicker: Right</strong></td>
+                            <td style="border: 2px solid #fff; padding: 8px;">0.9</td>
+                            <td style="border: 2px solid #fff; padding: 8px;">0.0</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <!-- Cases on the right (60% width) -->
+            <div style="width: 60%; background-color: #333; padding: 20px; border-radius: 10px;">
+                <p style="font-size: 0.9em;"><strong>Four possible outcomes for \(u_i(\sigma_i, \sigma_{-i})\):</strong></p>
+                <ul style="text-align: left; margin-left: 20px; line-height: 1.5; font-size: 0.75em;">
+                    <li><strong>Both Left:</strong> \(\sigma_i(L) \times \sigma_{-i}(L) = 0.6 \times 0.5 = 0.3\), \(u_i = 0.3\)</li>
+                    <li class="fragment fade-in"><strong>Kicker Left, Goalie Right:</strong> \(\sigma_i(L) \times \sigma_{-i}(R) = 0.6 \times 0.5 = 0.3\), \(u_i = 1.0\)</li>
+                    <li class="fragment fade-in"><strong>Kicker Right, Goalie Left:</strong> \(\sigma_i(R) \times \sigma_{-i}(L) = 0.4 \times 0.5 = 0.2\), \(u_i = 0.9\)</li>
+                    <li class="fragment fade-in"><strong>Both Right:</strong> \(\sigma_i(R) \times \sigma_{-i}(R) = 0.4 \times 0.5 = 0.2\), \(u_i = 0.0\)</li>
+                </ul>
+            </div>
+        </div>
+        <div class="fragment fade-in" style="font-size: 1.3em; text-align: center; background-color: #4CAF50; color: black; padding: 15px; border-radius: 10px;">
+            <p><strong>Expected Score = 0.3×0.3 + 0.3×1.0 + 0.2×0.9 + 0.2×0.0 = 0.57</strong></p>
+            <p class="fragment fade-in"><em>But is this the RIGHT mix? We need more math to find out!</em></p>
+        </div>
+    </div>
+</section>
+
+<!-- Because this slide reveals the counter-intuitive secret, it's a POWER TEXT slide. -->
+<section data-transition="zoom">
+    <h2 class="r-fit-text">Here's the secret, the core intuition:</h2>
+    <h1 class="fragment fade-in r-fit-text">To find <mark>your</mark> perfect mix, you calculate the probability that makes your <span style="color: #4CAF50;">opponent indifferent</span>.</h1>
+</section>
+
+<!-- Because this slide explains why this works, it's a POWER TEXT slide. -->
+<section>
+    <h2 class="r-fit-text">If your opponent gets the exact same expected payoff no matter what they do...</h2>
+    <h1 class="fragment fade-in r-fit-text">They have <span style="color: #ff6b6b;">no best response</span>.</h1>
+    <h1 class="fragment fade-in r-fit-text">They cannot exploit you. They are <span style="color: #ff6b6b;">stuck guessing</span>.</h1>
+</section>
+
+<!-- Because this slide gives the formal name to the concept, it's a POWER TEXT slide. -->
+<section data-transition="convex">
+    <h2 class="r-fit-text">That point of perfect balance is the...</h2>
+    <h1 class="fragment fade-in r-fit-text" style="color: #4CAF50;">Mixed Strategy Nash Equilibrium</h1>
+</section>
+
+<!-- Because this slide poses the central quantitative question that the chapter will answer, this is a POWER TEXT slide. Text analysis: The first question sets up the problem, and the subsequent examples (50/50, 70/30) are revealed as fragments to illustrate the complexity of the choice. -->
+<section>
+    <h1 class="r-fit-text">But how unpredictable?</h1>
+    <h2 class="fragment fade-in r-fit-text">A 50/50 split? 70/30?</h2>
+</section>
+
+<!-- Because this content explains why simple guessing is not a valid strategy, this is a POWER TEXT slide. Text analysis: "Just guessing isn't good enough" (29 characters) and "Your opponent will exploit any pattern" (37 characters) are perfect for r-fit-text. Revealing them sequentially emphasizes the high stakes. -->
+<section data-auto-animate>
+    <h1 class="r-fit-text">Just guessing isn't good enough.</h1>
+</section>
+
+<section data-auto-animate>
+    <h1 class="r-fit-text">Just guessing isn't good enough.</h1>
+    <h2 class="r-fit-text">Your opponent will <span style="color: #ff6b6b;">exploit any pattern</mark>.</h2>
+</section>
+
+<!-- Because this slide sets expectations for the advanced nature of the content, this is a POWER TEXT slide. It serves as a transition that signals to the audience that they are about to learn a powerful new technique. -->
+<section data-transition="concave">
+    <h1 class="r-fit-text">This is the most advanced technique we'll cover.</h1>
+</section>
+
+<!-- Because this slide makes a clear promise about what the viewer will learn to do, this is a POWER TEXT slide sequence. Text analysis: "We are going to use math to calculate the *perfect* bluff" (58 characters) is an exciting and ideal-length statement for r-fit-text. Highlighting "perfect bluff" in green frames it as a desirable skill. -->
+<section data-auto-animate>
+    <h1 class="r-fit-text">We are going to use math to calculate the <span style="color: #4CAF50;">perfect bluff</mark>.</h1>
+</section>
+
+<!-- Because this slide elaborates on the promise from the previous slide, it's a POWER TEXT slide using auto-animate for a smooth reveal. Text analysis: "A mathematically perfect mix... that makes you completely un-exploitable" (78 characters) is a powerful statement that clearly defines the goal of the technique. -->
+<section data-auto-animate>
+    <h1 class="r-fit-text">We are going to use math to calculate the <span style="color: #4CAF50;">perfect bluff</mark>.</h1>
+    <h2 class="r-fit-text">A mathematically perfect mix of strategies that makes you completely <mark>un-exploitable</mark>.</h2>
+</section>
+
+<!-- Because this content introduces the core, counter-intuitive insight of the entire chapter, it is a POWER TEXT slide sequence designed for a slow, dramatic reveal. This first slide acts as a setup, building anticipation for the "secret." -->
+<section data-auto-animate data-transition="zoom">
+    <h2 class="r-fit-text">And here's the secret...</h2>
+    <h2 class="r-fit-text">...the core intuition that makes it all click.</h2>
+</section>
+
+<!-- Because this slide adds to the suspense before the big reveal, it's a POWER TEXT slide using auto-animate. Text analysis: "It's completely counter-intuitive" (32 characters) is a perfect hook to make the audience lean in and pay close attention to what comes next. -->
+<section data-auto-animate>
+    <h2 class="r-fit-text">And here's the secret...</h2>
+    <h2 class="r-fit-text">...the core intuition that makes it all click.</h2>
+    <h1 class="r-fit-text" style="color: #ff6b6b;">It's completely counter-intuitive.</h1>
+</section>
+
+<!-- Because this slide delivers the single most important thesis of the chapter, it is a POWER TEXT slide designed for maximum impact. The quote format makes it stand out, and highlighting "opponent indifferent" emphasizes the core mechanism of mixed strategies. -->
+<section data-transition="fade">
+    <div style="background-color: #222; padding: 40px; border-radius: 15px; border-left: 8px solid #4CAF50;">
+        <h1 class="r-fit-text">To find <em>your</em> perfect mix, you calculate the probability that makes your <em>opponent</em> <mark>indifferent</mark>.</h1>
+    </div>
+</section>
+
+<!-- Because this slide explains the consequence of the core insight, it's a POWER TEXT slide. Text analysis: The logic is broken into three short, impactful fragments to explain why indifference is the goal. The progression from "no best response" to "can't exploit you" to "stuck" builds a clear chain of reasoning. -->
+<section>
+    <h2 class="r-fit-text">If your opponent gets the exact same expected payoff no matter what they do...</h2>
+    <h1 class="fragment fade-in r-fit-text">...they have <mark>no best response</mark>.</h1>
+    <h1 class="fragment fade-in r-fit-text">They can't exploit you. They are <span style="color: #ff6b6b;">stuck</span>.</h1>
+</section>
+
+<!-- Because this slide gives the formal name to the concept just described, it is a POWER TEXT slide. Highlighting "Mixed Strategy Nash Equilibrium" in green solidifies it as the key term for this chapter. -->
+<section data-transition="convex">
+    <h2 class="r-fit-text">That point of perfect balance is the...</h2>
+    <h1 class="r-fit-text fragment fade-in" style="color: #4CAF50;">Mixed Strategy Nash Equilibrium</h1>
+</section>
+
+<!-- Because this slide presents the indifference condition as the big mathematical secret, it's a TECHNICAL slide. -->
+<section data-transition="slide">
+    <h2 style="color: #4CAF50;">The Mathematical Secret: Indifference Condition</h2>
+    <div style="font-size: 1.1em; line-height: 1.8; margin-top: 40px;">
+        <p>In a Mixed Strategy Nash Equilibrium, you as player \(i\) must be indifferent between all strategies you play with positive probability:</p>
+        <p style="font-size: 0.9em; font-style: italic;">Where you as player \(i\) have different strategies \(s_i\) and \(s_i'\), opponents have strategies \(\sigma_{-i}\)</p>
+        <div style="text-align: center; font-size: 1.4em; margin: 30px 0;">
+            \[ u_i(s_i, \sigma_{-i}) = u_i(s_i', \sigma_{-i}) \quad \forall s_i, s_i' \text{ with } \sigma_i(s_i), \sigma_i(s_i') > 0 \]
+        </div>
+        <p><strong>In plain English:</strong> <strong>YOU</strong> must be equally happy with each of <strong>YOUR</strong> moves \(s_i\) and \(s_i'\). If you preferred one move over another, you'd just always choose the better one instead of randomizing.</p>
+    </div>
+</section>
+
+<!-- Because this slide shows the calculation proving our 60/40 example is NOT indifferent, it's an EDUCATIONAL slide. -->
+<section data-transition="slide">
+    <h2 style="color: #4CAF50;">Let's Test Our 60/40 Example: Is the Goalie Indifferent?</h2>
+    <div style="font-size: 1.1em; line-height: 1.8; margin-top: 30px;">
+        <div style="display: flex; justify-content: space-between; align-items: center; gap: 30px; margin: 20px 0;">
+            <!-- Table on the left (40% width) -->
+            <div style="width: 40%;">
+                <table style="margin: 0 auto; font-size: 0.8em; border-collapse: collapse;">
+                    <thead>
+                        <tr>
+                            <th style="padding: 8px; border: 2px solid #fff;">Players</th>
+                            <th style="border: 2px solid #4CAF50; padding: 8px; color: #4CAF50;">Goalie: Left</th>
+                            <th style="border: 2px solid #4CAF50; padding: 8px; color: #4CAF50;">Goalie: Right</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td style="border: 2px solid #4CAF50; padding: 8px; color: #4CAF50;"><strong>Kicker: Left</strong></td>
+                            <td style="border: 2px solid #fff; padding: 8px;">0.3</td>
+                            <td style="border: 2px solid #fff; padding: 8px;">1.0</td>
+                        </tr>
+                        <tr>
+                            <td style="border: 2px solid #4CAF50; padding: 8px; color: #4CAF50;"><strong>Kicker: Right</strong></td>
+                            <td style="border: 2px solid #fff; padding: 8px;">0.9</td>
+                            <td style="border: 2px solid #fff; padding: 8px;">0.0</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <!-- Calculation on the right (60% width) -->
+            <div style="width: 60%; background-color: #333; padding: 20px; border-radius: 10px; font-size: 0.85em;">
+                <p><strong>Goalie's expected payoff from diving Left:</strong></p>
+                <p>\( 0.6 \times 0.7 + 0.4 \times 0.1 = 0.42 + 0.04 = 0.46 \)</p>
+                <div class="fragment fade-in" style="margin-top: 20px;">
+                    <p><strong>Goalie's expected payoff from diving Right:</strong></p>
+                    <p>\( 0.6 \times 0.0 + 0.4 \times 1.0 = 0.0 + 0.4 = 0.4 \)</p>
+                </div>
+                <div class="fragment fade-in" style="margin-top: 20px; color: #ff6b6b;">
+                    <p><strong>0.46 ≠ 0.4</strong> - The Goalie is NOT indifferent!</p>
+                    <p><strong>The Goalie prefers diving Left and will exploit our 60/40 mix!</strong></p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Because this slide shows how the mathematical formulas apply to the concrete example, it's a TECHNICAL slide. -->
+<section data-transition="slide">
+    <h2 style="color: #4CAF50;">Now Let's Use Those Formulas</h2>
+    <div style="font-size: 1.1em; line-height: 1.8; margin-top: 40px;">
+        <p><strong>We'll use the Indifference Condition:</strong></p>
+        <div style="text-align: center; font-size: 1.2em; margin: 20px 0;">
+            \[ u_i(s_i, \sigma_{-i}) = u_i(s_i', \sigma_{-i}) \]
+        </div>
+        <p><strong>In plain English:</strong> Find probabilities that make each player equally happy with different strategies.</p>
+        <p><strong>The secret:</strong> To find <strong>your</strong> probabilities, we make your <strong>opponent</strong> indifferent.</p>
+    </div>
+</section>
+
+<!-- Because this slide is a call-to-action that transitions from theory to practice, it is a POWER TEXT slide. It directly engages the audience and signals that a hands-on example is about to begin. -->
+<section>
+    <h1 class="r-fit-text">Let's prove it.</h1>
+    <h2 class="fragment fade-in r-fit-text">Grab a pen and paper. We're going to solve this together.</h2>
+</section>
+
+
+<!-- Because this slide walks through the step-by-step calculation of the Kicker's optimal strategy, this is a TECHNICAL slide. -->
+<section data-auto-animate>
+    <div style="padding: 20px;">
+        <h3 style="color: #4CAF50; margin: 0 0 20px 0; font-size: 1.4em;">Finding the Kicker's Perfect Mix</h3>
+        <!-- Table at top -->
+        <div style="margin-bottom: 30px;">
+            <table style="margin: 0 auto; font-size: 1em; border-collapse: collapse;">
+                <thead>
+                    <tr>
+                        <th style="padding: 10px; border: 2px solid #fff;">Players</th>
+                        <th style="border: 2px solid #4CAF50; padding: 10px; color: #4CAF50;">Goalie: Left</th>
+                        <th style="border: 2px solid #4CAF50; padding: 10px; color: #4CAF50;">Goalie: Right</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td style="border: 2px solid #4CAF50; padding: 10px; color: #4CAF50;"><strong>Kicker: Left (p)</strong></td>
+                        <td style="border: 2px solid #fff; padding: 10px;">0.3</td>
+                        <td style="border: 2px solid #fff; padding: 10px;">1.0</td>
+                    </tr>
+                    <tr>
+                        <td style="border: 2px solid #4CAF50; padding: 10px; color: #4CAF50;"><strong>Kicker: Right (1-p)</strong></td>
+                        <td style="border: 2px solid #fff; padding: 10px;">0.9</td>
+                        <td style="border: 2px solid #fff; padding: 10px;">0.0</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        <!-- Calculation below -->
+        <div style="font-size: 1em; text-align: center; line-height: 1.4;">
+            <p><strong>Let p = probability kick Left.</strong> Make Goalie indifferent:</p>
+            <p style="margin: 10px 0; font-size: 0.9em;">\[ u_G(\text{Dive Left}, \sigma_K) = u_G(\text{Dive Right}, \sigma_K) \]</p>
+            <p style="margin: 15px 0;">\[ 0.3p + 0.9(1-p) = 1.0p + 0(1-p) \]</p>
+            <div class="fragment fade-in">
+                <p style="margin: 15px 0;">Solve: 0.3p + 0.9 - 0.9p = p → 0.9 = 1.6p → p = 0.5625</p>
+                <p style="font-size: 1.4em; margin-top: 25px;">
+                    <mark style="background-color: #4CAF50; color: #fff; padding: 10px 20px; border-radius: 8px;">Kick Left 56.25% of time</mark>
+                </p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Because this slide summarizes the result of the first calculation in plain English, this is a POWER TEXT slide. It serves as a satisfying conclusion to the math, reinforcing the meaning of the number that was just derived. -->
+<section data-transition="zoom">
+    <h1 class="r-fit-text">That's it! That's the perfect bluff.</h1>
+    <h2 class="fragment fade-in r-fit-text">The Kicker's optimal strategy is to kick <span style="color: #4CAF50;">Left 56.25%</mark> of the time, and kick <span style="color: #4CAF50;">Right 43.75%</mark> of the time.</h2>
+</section>
+
+<!-- Because this slide mirrors the previous calculation but for the Goalie, this is a TECHNICAL slide. -->
+<section data-auto-animate>
+    <div style="padding: 20px;">
+        <h3 style="color: #4CAF50; margin: 0 0 20px 0; font-size: 1.4em;">Finding the Goalie's Perfect Mix</h3>
+        <!-- Table at top -->
+        <div style="margin-bottom: 30px;">
+            <table style="margin: 0 auto; font-size: 1em; border-collapse: collapse;">
+                <thead>
+                    <tr>
+                        <th style="padding: 10px; border: 2px solid #fff;">Players</th>
+                        <th style="border: 2px solid #4CAF50; padding: 10px; color: #4CAF50;">Goalie: Left (q)</th>
+                        <th style="border: 2px solid #4CAF50; padding: 10px; color: #4CAF50;">Goalie: Right (1-q)</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td style="border: 2px solid #4CAF50; padding: 10px; color: #4CAF50;"><strong>Kicker: Left</strong></td>
+                        <td style="border: 2px solid #fff; padding: 10px;">0.3</td>
+                        <td style="border: 2px solid #fff; padding: 10px;">1.0</td>
+                    </tr>
+                    <tr>
+                        <td style="border: 2px solid #4CAF50; padding: 10px; color: #4CAF50;"><strong>Kicker: Right</strong></td>
+                        <td style="border: 2px solid #fff; padding: 10px;">0.9</td>
+                        <td style="border: 2px solid #fff; padding: 10px;">0.0</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        <!-- Calculation below -->
+        <div style="font-size: 1em; text-align: center; line-height: 1.4;">
+            <p><strong>Let q = probability dive Left.</strong> Make Kicker indifferent:</p>
+            <p style="margin: 10px 0; font-size: 0.9em;">\[ u_K(\text{Kick Left}, \sigma_G) = u_K(\text{Kick Right}, \sigma_G) \]</p>
+            <p style="margin: 15px 0;">\[ 0.3q + 1.0(1-q) = 0.9q + 0(1-q) \]</p>
+            <div class="fragment fade-in">
+                <p style="margin: 15px 0;">Solve: 0.3q + 1 - q = 0.9q → 1 = 1.6q → q = 0.625</p>
+                <p style="font-size: 1.4em; margin-top: 25px;">
+                    <mark style="background-color: #4CAF50; color: #fff; padding: 10px 20px; border-radius: 8px;">Dive Left 62.5% of time</mark>
+                </p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Because this slide serves as a transition to the final summary of the solution, this is a POWER TEXT slide. It uses dramatic language to build anticipation for the final reveal. -->
+<section data-transition="fade">
+    <h1 class="r-fit-text">The Grand Reveal:</h1>
+    <h2 class="fragment fade-in r-fit-text">The Calculated Solution</h2>
+</section>
+
+<!-- Because this slide presents the final, complete Mixed Strategy Nash Equilibrium, it is a key EDUCATIONAL slide. It clearly and concisely lists the optimal strategies for both players, providing a satisfying and definitive answer to the problem posed at the start of the chapter. -->
+<section>
+    <h2 style="color: #4CAF50;">The Mixed Strategy Nash Equilibrium is:</h2>
+    <div style="font-size: 1.8em; line-height: 2; margin-top: 50px;">
+        <p><strong>Kicker's Strategy:</strong> Kick Left with <mark>56.25%</mark> probability.</p>
+        <p class="fragment fade-in"><strong>Goalie's Strategy:</strong> Dive Left with <mark>62.5%</mark> probability.</p>
+    </div>
+</section>
+
+<!-- Because this content begins the final concluding remarks of the chapter, it is a POWER TEXT slide sequence. This first slide emphasizes that the solution is based on logic, not intuition, which is a core theme of game theory. -->
+<section data-auto-animate>
+    <h1 class="r-fit-text">This isn't a guess.</h1>
+    <h2 class="r-fit-text">It's not a gut feeling.</h2>
+</section>
+
+<!-- Because this slide builds on the previous one to deliver a powerful statement about the nature of the solution, it's a POWER TEXT slide using auto-animate for a smooth transition. Highlighting "definitive, calculated solution" reinforces the mathematical certainty. -->
+<section data-auto-animate>
+    <h1 class="r-fit-text">This isn't a guess.</h1>
+    <h2 class="r-fit-text">It's not a gut feeling.</h2>
+    <h1 class="r-fit-text" style="color: #4CAF50;">It is the <mark>definitive, calculated solution</mark>.</h1>
+</section>
+
+<!-- Because this slide provides a broader philosophical takeaway about rationality and strategy, this is a POWER TEXT slide. It connects the specific problem back to the general principles of game theory. -->
+<section data-transition="zoom">
+    <h1 class="r-fit-text">It's the only <mark>rational</mark> outcome when two players are trying to outsmart each other.</h1>
+</section>
+
+<!-- Because this slide summarizes the profound implication of the chapter's lesson, this is a POWER TEXT slide. It makes a grand statement about finding logic even in apparent chaos, which is a powerful final thought. -->
+<section data-transition="concave">
+    <h1 class="r-fit-text">We have proven that even in a world of bluffs and randomness...</h1>
+    <h1 class="fragment fade-in r-fit-text">...there is a <span style="color: #4CAF50;">perfect, logical answer</mark>.</h1>
+</section>
+
+<!-- Because this content empowers the viewer by acknowledging the significance of what they've just learned, this is a POWER TEXT slide. It serves to boost the viewer's confidence and sense of accomplishment. -->
+<section>
+    <h1 class="r-fit-text">You've just calculated the most advanced solution in basic game theory.</h1>
+</section>
+
+<!-- Because this slide serves as the chapter's concluding statement and a transition to the final outro, this is a POWER TEXT slide. It brings the entire learning journey of the video series to a satisfying close, stating that the viewer's "toolkit is now complete." -->
+<section data-transition="slide">
+    <h1 class="r-fit-text">With this final tool, your strategic toolkit is now <span style="color: #4CAF50;">complete</mark>.</h1>
+</section>
+
+<!-- END CHAPTER 6 -->
+
+<!-- START CHAPTER 7 -->
+
+<!-- Because this content serves as the empowering opening statement for the final chapter, this is a POWER TEXT slide. Text analysis: The original sentence "You came here wondering what Nash Equilibrium really was" (57 characters) is a perfect length for r-fit-text. It directly addresses the viewer's initial goal and sets the stage for revealing their progress. -->
+<section data-auto-animate data-transition="slide">
+    <h1 class="r-fit-text">You came here wondering what Nash Equilibrium really was.</h1>
+</section>
+
+<!-- Because this slide builds on the previous one to show the viewer's transformation, it's a POWER TEXT slide using auto-animate. Text analysis: The phrase "Now you don't just know the definition—" is a bit long to pair with the final punchline. I'll split it. This part, "Now you don't just know the definition..." creates a satisfying contrast with the opening slide. -->
+<section data-auto-animate>
+    <h1 class="r-fit-text">You came here wondering what Nash Equilibrium really was.</h1>
+    <h1 class="r-fit-text" style="color: #4CAF50;">Now you don't just know the definition—</h1>
+</section>
+
+<!-- Because this slide delivers the final, powerful punchline about the viewer's new capabilities, it's a POWER TEXT slide using auto-animate. Text analysis: "...you can find it, calculate it, and use it" is a strong, rhythmic phrase. Highlighting "use it" in green emphasizes the practical skills they've gained, providing a strong sense of accomplishment. -->
+<section data-auto-animate>
+    <h1 class="r-fit-text">You came here wondering what Nash Equilibrium really was.</h1>
+    <h1 class="r-fit-text" style="color: #4CAF50;">Now you don't just know the definition—</h1>
+    <h1 class="r-fit-text" style="color: #4CAF50;">...you can <mark>find</mark> it, <mark>calculate</mark> it, and <mark>use it</mark>.</h1>
+</section>
+
+<!-- Because this content broadens the application of game theory to everyday life, this is an EDUCATIONAL slide. It uses a simple list format with fragments to reveal each real-world "game" one by one, allowing the audience to connect the concepts to their own experiences. -->
+<section data-transition="convex">
+    <h2 class="r-fit-text">The world is filled with games.</h2>
+    <div style="font-size: 1.8em; margin-top: 50px; line-height: 1.8;">
+        <p class="fragment fade-in">A price war between two companies.</p>
+        <p class="fragment fade-in">A negotiation with your boss.</p>
+        <p class="fragment fade-in">Even deciding where to go for dinner.</p>
+    </div>
+</section>
+
+<!-- Because this slide sets up a powerful contrast about the viewer's identity, this is a POWER TEXT slide. Text analysis: "Before, you were just a player." (30 characters) is short and direct, perfect for r-fit-text. It establishes the "before" state prior to the transformation. -->
+<section data-auto-animate data-transition="zoom">
+    <h1 class="r-fit-text">Before, you were just a <span style="color: #ff6b6b;">player</mark>.</h1>
+</section>
+
+<!-- Because this slide completes the transformation started on the previous one, it's a POWER TEXT slide using auto-animate. The smooth transition from "player" to "analyst" visually represents the viewer's growth. Highlighting "analyst" in green signifies this new, empowered state. -->
+<section data-auto-animate>
+    <h1 class="r-fit-text">Now, you’re an <span style="color: #4CAF50;">analyst</mark>.</h1>
+</section>
+
+<!-- Because this slide introduces the final recap—the strategic toolkit—this is a POWER TEXT slide that serves as a transition. It frames the upcoming flowchart as a practical, usable tool. -->
+<section data-transition="fade">
+    <h2 class="r-fit-text">So, to recap your new toolkit...</h2>
+    <h1 class="fragment fade-in r-fit-text">...here's your strategic flowchart for <mark>ANY</mark> game you face.</h1>
+</section>
+
+<!-- Because this slide presents the first step of the strategic flowchart, this is an EDUCATIONAL slide. It introduces the visual mermaid diagram which will persist across the next few slides. This first slide highlights "Dominant Strategies" to visually connect the diagram to the explanatory text below. -->
+<section data-auto-animate>
+    <h2 style="color: #4CAF50;">Your Strategic Flowchart</h2>
+    <div style="display: flex; align-items: center; justify-content: space-around; gap: 20px;">
+        <div style="flex: 1;">
+            <div class="mermaid" style="zoom: 2.0;">
+                %%{init: {'theme': 'dark'}}%%
+                graph TD
+                    A(Look for Dominant Strategies) --> B(Try Iterated Deletion)
+                    B --> C(Find Nash Equilibrium)
+                    style A fill:#4CAF50,stroke:#fff,stroke-width:4px
+            </div>
+        </div>
+        <div style="flex: 1; text-align: left; font-size: 1.1em;">
+            <h3><strong>Number 1: Look for Dominant Strategies.</strong></h3>
+            <p>Find your "master move" → Game solved.</p>
+        </div>
+    </div>
+</section>
+
+<!-- Because this slide explains the second step of the flowchart, this is an EDUCATIONAL slide. CRITICAL: It uses data-auto-animate to persist the mermaid diagram from the previous slide. The visual highlight smoothly shifts from the first step to the second, creating a seamless progression that is easy for the audience to follow. -->
+<section data-auto-animate>
+    <h2 style="color: #4CAF50;">Your Strategic Flowchart</h2>
+    <div style="display: flex; align-items: center; justify-content: space-around; gap: 20px;">
+        <div style="flex: 1;">
+            <div class="mermaid" style="zoom: 2.0;">
+                %%{init: {'theme': 'dark'}}%%
+                graph TD
+                    A(Look for Dominant Strategies) --> B(Try Iterated Deletion)
+                    B --> C(Find Nash Equilibrium)
+                    style B fill:#4CAF50,stroke:#fff,stroke-width:4px
+            </div>
+        </div>
+        <div style="flex: 1; text-align: left; font-size: 1.1em;">
+            <h3><strong>Number 2: Try Iterated Deletion.</strong></h3>
+            <p>Eliminate irrational threats → Simplify game.</p>
+        </div>
+    </div>
+</section>
+
+<!-- Because this slide explains the final and most universal step of the flowchart, this is an EDUCATIONAL slide. CRITICAL: The mermaid diagram persists again with data-auto-animate, and the highlight shifts to the final step. This visual consistency is key to reinforcing the logical flow of the strategic toolkit. -->
+<section data-auto-animate>
+    <h2 style="color: #4CAF50;">Your Strategic Flowchart</h2>
+    <div style="display: flex; align-items: center; justify-content: space-around; gap: 20px;">
+        <div style="flex: 1;">
+            <div class="mermaid" style="zoom: 2.0;">
+                %%{init: {'theme': 'dark'}}%%
+                graph TD
+                    A(Look for Dominant Strategies) --> B(Try Iterated Deletion)
+                    B --> C(Find Nash Equilibrium)
+                    style C fill:#4CAF50,stroke:#fff,stroke-width:4px
+            </div>
+        </div>
+        <div style="flex: 1; text-align: left; font-size: 1.1em;">
+            <h3><strong>Number 3: Find the Nash Equilibrium.</strong></h3>
+            <p>Universal tool → Stable points or perfect bluff.</p>
+        </div>
+    </div>
+</section>
+
+<!-- Because this content serves as a transition from what has been learned to what comes next, this is a POWER TEXT slide. It clearly defines the scope of the current video ("static games") to set up the introduction of a new concept. -->
+<section data-transition="slide">
+    <h1 class="r-fit-text">You've mastered <mark>static games</mark>, where everyone moves at the same time.</h1>
+</section>
+
+<!-- Because this slide poses a question to introduce the topic of the next video, this is a POWER TEXT slide. The examples (chess, business negotiation) are relatable and effectively illustrate the concept of sequential moves. -->
+<section data-transition="fade">
+    <h1 class="r-fit-text">But what about games like chess, or a business negotiation?</h1>
+    <h2 class="fragment fade-in r-fit-text">When you can <mark>see</mark> your opponent's move and <mark>react</mark> to it?</h2>
+</section>
+
+<!-- Because this slide formally names the new concept and teases the next video, this is a POWER TEXT slide. Text analysis: The content is broken into a two-slide sequence for dramatic pacing. This first slide introduces "Sequential Game" as the key term, highlighted in green. -->
+<section data-auto-animate>
+    <h2 class="r-fit-text">That's called a <span style="color: #4CAF50;">Sequential Game</mark>...</h2>
+</section>
+
+<!-- Because this slide completes the thought and delivers the hook for the next video, it's a POWER TEXT slide using auto-animate. This makes a clear promise to the viewer about the content of "Part 2," encouraging them to return. -->
+<section data-auto-animate>
+    <h2 class="r-fit-text">That's called a <span style="color: #4CAF50;">Sequential Game</mark>...</h2>
+    <h1 class="r-fit-text">...and it’s a whole new level of strategic thinking.</h1>
+    <h2 class="fragment fade-in r-fit-text">It's exactly what we're breaking down in <mark>Part 2</mark>.</h2>
+</section>
+
+<!-- Because this content is the final call-to-action, this is a POWER TEXT slide. It's a standard, direct request to the audience that clearly states the benefit (mastering the next topic). -->
+<section data-transition="concave">
+    <h1 class="r-fit-text">If you want to master that, make sure you're <mark>subscribed</mark> and have notifications on.</h1>
+</section>
+
+<!-- Because this is the final, empowering send-off for the entire video, this is a POWER TEXT slide designed for maximum impact. It's a short, inspiring command that encourages the viewer to apply what they've learned to their own life. -->
+<section data-transition="zoom">
+    <h1 class="r-fit-text">Now go out there and start seeing the <span style="color: #4CAF50;">strategy</mark> in everything.</h1>
+</section>
+
+<!-- END CHAPTER 7 -->
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/5.2.1/reveal.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/5.2.1/plugin/highlight/highlight.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/5.2.1/plugin/math/math.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/reveal.js-mermaid-plugin@2.1.0/plugin/mermaid/mermaid.js"></script>
+    <script>
+        Reveal.initialize({
+            katex: {
+                version: 'latest',
+                delimiters: [
+                { left: '\\(', right: '\\)', display: false },
+                { left: '\\[', right: '\\]', display: true },
+                ],
+                ignoredTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code'],
+            },
+            plugins: [ RevealHighlight, RevealMath.KaTeX, RevealMermaid ],
+            width: 1920,
+            height: 1080,
+            controls: false,
+        });
+    </script>
+</body>
+</html>
