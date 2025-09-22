@@ -1,0 +1,1525 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Supervised Fine-Tuning Explained: Turn Your LLM From Parrot to Assistant</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/5.2.1/reveal.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/5.2.1/theme/black.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/monokai.min.css">
+    <script src="https://unpkg.com/function-plot/dist/function-plot.js"></script>
+    <style>
+        .function-plot .tick text {
+            fill: white !important;
+            font-size: 18px !important;
+        }
+        .function-plot .axis-label {
+            fill: white !important;
+            font-size: 20px !important;
+        }
+        .function-plot .axis path,
+        .function-plot .axis line {
+            stroke: white !important;
+        }
+        .function-plot .grid line {
+            stroke: #444 !important;
+            stroke-opacity: 0.7 !important;
+        }
+        code, pre, pre code, [class*="language-"] {
+            max-height: 100vh !important;
+        }
+    </style>
+</head>
+<body>
+    <div class="reveal">
+        <div class="slides">
+<!-- START CHAPTER 1 -->
+
+<!-- Because this content is the opening hook and needs to establish a familiar context before challenging it, this is a POWER TEXT slide. Text analysis: The first sentence "You've used models like ChatGPT or Claude" (39 characters) is a good length for r-fit-text. The second sentence "This feels natural, but it's a carefully engineered illusion" is a bit long (66 characters) but still works well. I'll break this into a two-slide sequence using data-auto-animate for a smooth reveal of the provocative second half. -->
+<section data-auto-animate data-transition="fade">
+    <h1 class="r-fit-text">You've used models like ChatGPT or Claude.</h1>
+    <h2 class="r-fit-text">This feels natural...</h2>
+</section>
+
+<!-- Because this slide completes the opening hook with a dramatic punchline, it's a POWER TEXT slide. It builds directly from the previous slide using data-auto-animate. The new text "...but it's a carefully engineered illusion" is added, and the key word 'illusion' is highlighted. This creates a smooth transition that feels like a single thought unfolding, maximizing the impact of the reveal. -->
+<section data-auto-animate data-transition="fade">
+    <h1 class="r-fit-text">You've used models like ChatGPT or Claude.</h1>
+    <h2 class="r-fit-text">This feels natural...</h2>
+    <h1 class="r-fit-text">...but it's a carefully engineered <mark>illusion</mark>.</h1>
+</section>
+
+<!-- Because this slide reframes the audience's understanding of an LLM, it's a POWER TEXT slide. Text analysis: "The underlying base model is not an assistant" (44 characters) is a strong, concise statement perfect for r-fit-text. The word 'not' is highlighted in red for emphasis, immediately signaling a correction to a common misconception. -->
+<section data-transition="zoom">
+    <h1 class="r-fit-text">The underlying base model is <span style="color: #ff6b6b;">not</span> an assistant.</h1>
+</section>
+
+<!-- Because this slide defines what a base model truly is, it's a POWER TEXT slide. It's broken into two parts for dramatic effect. Text analysis: "It's a powerful, almost alien-like" (36 characters) sets the stage with evocative language. The follow-up slide will deliver the core concept. -->
+<section data-transition="slide">
+    <h1 class="r-fit-text">It's a powerful, almost alien-like...</h1>
+</section>
+
+<!-- Because this slide delivers the core definition of a base LLM, it's a POWER TEXT slide. Text analysis: "text-completion engine" (23 characters) is the key takeaway. This completes the thought from the previous slide, making the concept land with force. Highlighting 'text-completion engine' solidifies the term in the audience's mind. -->
+<section data-transition="slide">
+    <h1 class="r-fit-text"><mark>text-completion engine</mark>.</h1>
+</section>
+
+<!-- Because this slide explains the model's singular goal, it's a POWER TEXT slide. Text analysis: "Its one and only goal:" (21 characters) is a simple setup statement, perfect for r-fit-text to create a moment of pause before the reveal. This builds anticipation for the core problem. -->
+<section data-auto-animate data-transition="convex">
+    <h1 class="r-fit-text">Its one and only goal:</h1>
+</section>
+
+<!-- Because this slide reveals the model's core function, it's a POWER TEXT slide that builds on the previous one with data-auto-animate. Text analysis: "to predict the next word in a sequence" (37 characters) is the critical mechanism. Adding this below the previous line clarifies the model's objective in simple terms. -->
+<section data-auto-animate data-transition="convex">
+    <h1 class="r-fit-text">Its one and only goal:</h1>
+    <h2 class="r-fit-text">to predict the <mark>next word</mark> in a sequence.</h2>
+</section>
+
+<!-- Because this slide formally names the core problem of the chapter, it's a POWER TEXT slide. Text analysis: "This singular focus creates..." (27 characters) is a transitional phrase. The key term "The Parrot Problem" will be revealed next for maximum impact. -->
+<section data-auto-animate data-transition="concave">
+    <h2 class="r-fit-text">This singular focus creates...</h2>
+</section>
+
+<!-- Because this slide introduces the central concept of the chapter, it's a POWER TEXT slide. It uses data-auto-animate to seamlessly add the main term. Text analysis: "The Parrot Problem" is the key phrase, styled in red to emphasize it as a negative or problematic concept. This gives the problem a memorable name. -->
+<section data-auto-animate data-transition="concave">
+    <h2 class="r-fit-text">This singular focus creates...</h2>
+    <h1 class="r-fit-text" style="color: #ff6b6b;">The Parrot Problem</h1>
+</section>
+
+<!-- Because this slide explains the consequence of the Parrot Problem, it's a POWER TEXT slide. Text analysis: The content is broken into two impactful phrases for a two-beat rhythm. "A master of mimicry," is the setup, followed by the punchline "...without any concept of what you actually want." highlighting 'want' to emphasize the disconnect with user intent. -->
+<section data-transition="fade">
+    <h1 class="r-fit-text">The model becomes a master of mimicry...</h1>
+    <h2 class="r-fit-text fragment fade-in">...without any concept of what <span style="color: #4CAF50;">you</span> actually want.</h2>
+</section>
+
+<!-- Because this slide sets up a concrete example to illustrate the problem, this is a TECHNICAL slide. It establishes the problem context—the user's prompt—which MUST persist across the following slides. This context box is critical for the audience to understand the comparison between the expected and actual model responses. -->
+<section data-auto-animate data-transition="slide">
+    <div style="padding: 20px;">
+        <div style="background-color: #333; padding: 15px; border-radius: 10px; margin-bottom: 30px;">
+            <h3 style="color: #4CAF50; margin: 0; font-size: 1.8em;">The Prompt</h3>
+            <p style="font-size: 1.4em; margin: 10px 0 0 0;">You ask a raw, pre-trained LLM:</p>
+        </div>
+        <div style="text-align: center;">
+            <pre><code class="language-plaintext" style="font-size: 1.5em;">What is the primary cause of Earth's seasons?</code></pre>
+        </div>
+    </div>
+</section>
+
+<!-- Because this slide shows the two contrasting outcomes side-by-side, this is a TECHNICAL slide. It uses a two-column layout for direct comparison. Problem context that must persist: The prompt from the previous slide is implicitly understood, allowing the slide to focus on the responses. The left side (Assistant) is revealed first with green styling to represent the 'correct' or desired behavior. The right side (Base Model) will be fragmented in on the next slide. -->
+<section data-auto-animate>
+    <h2 style="margin-bottom: 40px;">Expected vs. Actual Response</h2>
+    <div style="display: flex; justify-content: space-around; gap: 40px; font-size: 1.2em;">
+        <div style="flex: 1; text-align: left; background-color: #333; padding: 20px; border-radius: 10px; display: flex; flex-direction: column; justify-content: center;">
+            <h3 style="font-size: 0.9em; color: #4CAF50;">✅ An Assistant's Expected Response</h3>
+            <p style="font-size: 0.8em;">"The primary cause of Earth's seasons is the tilt of the Earth's axis, which is about 23.5 degrees..."</p>
+        </div>
+        <div style="flex: 1; text-align: left; background-color: #333; padding: 20px; border-radius: 10px; display: flex; flex-direction: column; justify-content: center;" class="fragment fade-in">
+            <h3 style="font-size: 0.9em; color: #ff6b6b;">❌ The Base Model's Likely Response</h3>
+            <p style="font-size: 0.8em;">"What is the primary cause of Earth's seasons?"<br> A) The Earth's distance from the sun.<br> B) The tilt of the Earth's axis...<br> C) The speed of the Earth's rotation..."</p>
+        </div>
+    </div>
+</section>
+
+<!-- Because this slide explains the "why" behind the base model's strange behavior, it's a POWER TEXT slide. Text analysis: "It didn't answer your question" (29 characters) and "It turned it into a quiz" (25 characters) are short, punchy statements. This sequence sets up the core reason for the failure. -->
+<section data-transition="zoom">
+    <h1 class="r-fit-text">It didn't answer your question.</h1>
+    <h1 class="r-fit-text fragment fade-in">It turned it into a quiz.</h1>
+</section>
+
+<!-- Because this slide reveals the core reason for the Parrot Problem, it's a POWER TEXT slide. Text analysis: "Why?" is a powerful one-word slide. The next slide, "Because it saw a pattern," (26 characters) provides the simple, direct answer, with 'pattern' highlighted to drive the point home. This creates a quick question-and-answer rhythm. -->
+<section data-auto-animate data-transition="fade">
+    <h1 style="font-size: 12em;">Why?</h1>
+</section>
+
+<section data-auto-animate data-transition="fade">
+    <h1 style="font-size: 12em;">Why?</h1>
+    <h2 class="r-fit-text">Because in its training data, it saw a <mark>pattern</mark>.</h2>
+</section>
+
+<!-- Because this slide clarifies the model's true objective, it's a POWER TEXT slide. Text analysis: "The model isn't being unhelpful" (31 characters) is a clarifying statement. The next line, "It is perfectly executing its objective," reinforces that the model is working as designed, just not as the user expects. -->
+<section data-transition="convex">
+    <h1 class="r-fit-text">The model isn't being unhelpful.</h1>
+    <h2 class="r-fit-text fragment fade-in">It is perfectly executing its objective:</h2>
+</section>
+
+<!-- Because this slide explicitly states the model's objective, it's a POWER TEXT slide. Text analysis: "Completing a Pattern" is the key concept, highlighted in green to signify this is the model's 'correct' behavior from its perspective. The supporting text clarifies the model's lack of user-centric concepts. -->
+<section data-transition="convex">
+    <h1 class="r-fit-text" style="color: #4CAF50;">Completing a Pattern</h1>
+    <div class="fragment fade-in">
+        <p style="font-size: 2em;">It has no concept of a "user" or an "instruction."</p>
+        <p style="font-size: 2em;">It only sees text.</p>
+    </div>
+</section>
+
+<!-- Because this slide introduces the solution by name, it's a POWER TEXT slide. It bridges the gap between the 'Parrot' and 'Assistant' states. The use of contrasting colors for the two states makes the transformation visually clear. -->
+<section data-transition="zoom">
+    <h1 class="r-fit-text">This gap—from <span style="color: #ff6b6b;">Parrot</span> to <span style="color: #4CAF50;">Assistant</span>—</h1>
+    <h2 class="r-fit-text fragment fade-in">is closed by...</h2>
+</section>
+
+<!-- Because this slide is the grand reveal of the presentation's topic, it's a POWER TEXT slide. Text analysis: "Supervised Fine-Tuning (SFT)" is the star of the show. Displaying it alone on a slide with high-impact text and positive green color gives it the prominence it deserves. -->
+<section>
+    <h1 class="r-fit-text" style="color: #4CAF50;">Supervised Fine-Tuning<br>(SFT)</h1>
+</section>
+
+<!-- Because this slide demystifies SFT, it's a POWER TEXT slide. It contrasts the perceived complexity with the actual simplicity. Text analysis: "It sounds complex" (17 characters) sets up the expectation, which is then subverted by "But the entire challenge boils down to one function." to make the solution feel accessible. -->
+<section data-auto-animate>
+    <h1 class="r-fit-text">It sounds complex.</h1>
+</section>
+
+<section data-auto-animate>
+    <h1 class="r-fit-text">It sounds complex.</h1>
+    <h1 class="r-fit-text">But the entire challenge boils down to <mark>one function</mark>.</h1>
+</section>
+
+<!-- Because this slide makes a direct promise to the audience, it's a POWER TEXT slide. Text analysis: "And here's my promise:" (21 characters) is a personal and engaging setup. This creates a contract with the viewer, increasing their investment in the upcoming content. -->
+<section data-transition="slide">
+    <h1 class="r-fit-text">And here's my promise:</h1>
+</section>
+
+<!-- Because this slide details the promise, it's a POWER TEXT slide. Text analysis: "In the next 30 minutes, you will learn to write this exact function from scratch." is too long (86 characters but clunky). I'll break it into two parts: "In the next 30 minutes..." and "...you will write this function from scratch." This pacing makes the promise more dramatic and digestible. -->
+<section data-auto-animate>
+    <h1 class="r-fit-text">In the next 30 minutes...</h1>
+</section>
+
+<section data-auto-animate>
+    <h1 class="r-fit-text">In the next 30 minutes...</h1>
+    <h2 class="r-fit-text">you will write this function <mark>from scratch</mark>.</h2>
+</section>
+
+<!-- Because this slide reveals the core code, it's a TECHNICAL slide. This is the "one function" promised. The full code is displayed with syntax highlighting and line numbers. This slide is designed for a slower pace, allowing the audience to see the complete solution at once before it's broken down. -->
+<section data-auto-animate data-transition="zoom">
+    <h2 style="color: #4CAF50;">The Core Logic of SFT</h2>
+    <pre style="font-size: 0.6em;"><code class="language-python" data-trim data-line-numbers>
+import torch
+
+def prepare_sft_batch(prompt: str, response: str, tokenizer):
+    """
+    This is the core engineering of SFT. It takes a prompt/response pair
+    and creates the input_ids and the strategically masked labels.
+    """
+    # 1. Format the text with special tokens for conversation structure.
+    prompt_part = f"&lt;|user|&gt; {prompt} &lt;|end|&gt; &lt;|assistant|&gt;"
+    full_text = f"{prompt_part} {response} &lt;|end|&gt;"
+
+    # 2. Tokenize to find the boundary for loss masking.
+    # We only want to train the model on the assistant's response.
+    prompt_ids = tokenizer.encode(prompt_part)
+    mask_until_idx = len(prompt_ids)
+
+    # 3. Tokenize the full conversation for model input.
+    input_ids = tokenizer.encode(full_text)
+
+    # 4. Create the labels tensor by cloning the input_ids.
+    labels = torch.tensor(input_ids).clone()
+
+    # 5. Apply the mask. This is the critical step.
+    # We replace the prompt tokens in the labels with -100.
+    labels[:mask_until_idx] = -100
+
+    return {
+        "input_ids": torch.tensor(input_ids),
+        "labels": labels
+    }
+    </code></pre>
+</section>
+
+<!-- Because this slide explains the most critical part of the code, it is a TECHNICAL slide. It uses the persistent code pattern: the EXACT same code block from the previous slide is shown, but now with a specific line highlighted (line 25). This focuses audience attention on the key mechanism—loss masking—while keeping the full context visible. Data-auto-animate ensures a smooth transition. -->
+<section data-auto-animate data-background-color="#1a1a1a">
+    <h2 style="color: #4CAF50;">The Entire Trick is Here:</h2>
+    <pre style="font-size: 0.6em;"><code class="language-python" data-trim data-line-numbers="25">
+import torch
+
+def prepare_sft_batch(prompt: str, response: str, tokenizer):
+    """
+    This is the core engineering of SFT. It takes a prompt/response pair
+    and creates the input_ids and the strategically masked labels.
+    """
+    # 1. Format the text with special tokens for conversation structure.
+    prompt_part = f"&lt;|user|&gt; {prompt} &lt;|end|&gt; &lt;|assistant|&gt;"
+    full_text = f"{prompt_part} {response} &lt;|end|&gt;"
+
+    # 2. Tokenize to find the boundary for loss masking.
+    # We only want to train the model on the assistant's response.
+    prompt_ids = tokenizer.encode(prompt_part)
+    mask_until_idx = len(prompt_ids)
+
+    # 3. Tokenize the full conversation for model input.
+    input_ids = tokenizer.encode(full_text)
+
+    # 4. Create the labels tensor by cloning the input_ids.
+    labels = torch.tensor(input_ids).clone()
+
+    # 5. Apply the mask. This is the critical step.
+    # We replace the prompt tokens in the labels with -100.
+    labels[:mask_until_idx] = -100
+
+    return {
+        "input_ids": torch.tensor(input_ids),
+        "labels": labels
+    }
+    </code></pre>
+</section>
+
+<!-- Because this slide explains the consequence of the highlighted code, it's a POWER TEXT slide. Text analysis: "By setting the prompt labels to -100..." is a direct explanation. Highlighting '-100' links this concept directly to the code the audience just saw, reinforcing the connection. -->
+<section data-transition="slide">
+    <h1 class="r-fit-text">By setting the prompt labels to <mark>-100</mark>...</h1>
+</section>
+
+<!-- Because this slide simplifies the technical explanation into a clear outcome, it's a POWER TEXT slide. Text analysis: "...we tell PyTorch's loss function to IGNORE them." is too conversational. "We tell the model to IGNORE the user's prompt" is more direct and powerful. Highlighting 'IGNORE' is crucial. -->
+<section>
+    <h1 class="r-fit-text">...we tell the model to <mark>IGNORE</mark> the user's prompt.</h1>
+</section>
+
+<!-- Because this slide states the final learning objective, it's a POWER TEXT slide. Text analysis: It describes what the model DOES learn: to generate the expert response. This positive framing contrasts with the previous slide's negative framing ('ignore'). -->
+<section>
+    <h1 class="r-fit-text">We force it to learn one thing only:</h1>
+    <h2 class="r-fit-text fragment fade-in" style="color: #4CAF50;">Generate the expert response.</h2>
+</section>
+
+<!-- Because this slide summarizes the importance of the function, it's a POWER TEXT slide. Text analysis: "Mastering this function is mastering SFT" (39 characters) is a strong, memorable takeaway that elevates the significance of the code just shown. -->
+<section data-transition="zoom">
+    <h1 class="r-fit-text">Mastering this function is mastering SFT.</h1>
+</section>
+
+<!-- Because this slide provides a roadmap for the entire presentation, it's a TECHNICAL slide featuring a mermaid diagram. The diagram visually summarizes the journey from problem to solution. CRITICAL MERMAID REQUIREMENTS are followed: dark theme, zoom for visibility, and using `[]` for nodes. -->
+<section data-transition="fade">
+    <h1 style="margin-bottom: 50px;">Here's our journey.</h1>
+    <div class="mermaid" style="zoom: 2;">
+        %%{init: {'theme': 'dark'}}%%
+        graph TD
+            A[Pre-trained LLM] -- "Objective: Next-token prediction" --> B(The Parrot Problem);
+            B -- "Solution: Imitate expert examples via Loss Masking" --> C[Supervised Fine-Tuning];
+            C -- "Result: Instruction-following" --> D[Aligned Assistant Model];
+    </div>
+</section>
+
+<!-- END CHAPTER 1 -->
+
+<!-- START CHAPTER 2 -->
+
+<!-- Because this slide transitions from the previous chapter's conclusion about SFT to the underlying mechanics of a base model, this is a POWER TEXT slide. Text analysis: "The vast knowledge of a base LLM is forged during its pre-training phase" is a bit long (81 characters). I'll break it into two parts for better rhythm and impact, using data-auto-animate. The first part sets the stage by introducing "pre-training". -->
+<section data-auto-animate data-transition="fade">
+    <h1 class="r-fit-text">A base LLM's vast knowledge is forged during <mark>pre-training</mark>.</h1>
+</section>
+
+<!-- Because this slide builds on the previous one to reveal the core objective, it's a POWER TEXT slide using data-auto-animate. It adds the second part of the sentence, "...on a single, brutally simple objective," creating a sense of focus and anticipation for what that objective is. The highlighting on "brutally simple" emphasizes the surprising simplicity of the mechanism. -->
+<section data-auto-animate data-transition="fade">
+    <h1 class="r-fit-text">A base LLM's vast knowledge is forged during <mark>pre-training</mark>.</h1>
+    <h2 class="r-fit-text">on a single, <mark>brutally simple</mark> objective:</h2>
+</section>
+
+<!-- Because this slide reveals the core objective with maximum impact, it's a POWER TEXT slide. Text analysis: "Next-Token Prediction" (22 characters) is the key concept of this entire section. Displaying it alone in large, impactful text ensures the audience grasps this fundamental idea before moving on to the math. -->
+<section data-transition="zoom">
+    <h1 class="r-fit-text" style="color: #4CAF50;">Next-Token Prediction</h1>
+</section>
+
+<!-- Because this slide explains the rule in simple terms, this is a POWER TEXT slide. It presents the rule as a simple, two-part statement to make it easily digestible. The first part establishes the premise, and the fragment reveals the simple conclusion, reinforcing the "brutally simple" idea from before. -->
+<section data-transition="slide">
+    <h1 class="r-fit-text">Given a sequence of text...</h1>
+    <h1 class="r-fit-text fragment fade-in">...predict the <mark>very next token</mark>. That's it.</h1>
+</section>
+
+<!-- Because this slide introduces the technical term for the learning mechanism, it's a POWER TEXT slide. Text analysis: "Cross-Entropy Loss" is the central technical term of the chapter. By presenting it alone and in a bold, positive color, it's framed as a powerful tool rather than an intimidating concept. -->
+<section data-transition="convex">
+    <h2 class="r-fit-text">To teach it this skill, we use...</h2>
+    <h1 class="r-fit-text" style="color: #4CAF50;">Cross-Entropy Loss</h1>
+</section>
+
+<!-- Because this slide aims to reduce the intimidation factor of the technical term, it's a POWER TEXT slide. Text analysis: "I know that sounds intimidating..." acknowledges the audience's potential apprehension, building rapport before simplifying the concept on the next slide. This two-step approach is more effective than just stating the simple definition. -->
+<section data-auto-animate data-transition="fade">
+    <h1 class="r-fit-text">I know that sounds intimidating...</h1>
+</section>
+
+<!-- Because this slide provides the core intuition for Cross-Entropy Loss, it's a POWER TEXT slide building on the previous one with data-auto-animate. It replaces the complex term with a simple, memorable analogy: measuring "surprise." The word 'surprised' is highlighted to cement this intuition. -->
+<section data-auto-animate data-transition="fade">
+    <h1 class="r-fit-text">I know that sounds intimidating...</h1>
+    <h2 class="r-fit-text">but it's just a way to measure how "<mark>surprised</mark>" a model is by the correct answer.</h2>
+</section>
+
+<!-- Because this slide explains the "Low Surprise" case first, matching the transcript flow -->
+<section data-transition="concave">
+    <div style="text-align: center; background-color: #333; padding: 40px; border-radius: 10px; max-width: 600px; margin: 0 auto;">
+        <h2 style="color: #4CAF50;">Low Surprise</h2>
+        <p>When the model is <strong>not very surprised</strong>, it means the model assigned a <strong style="color: #4CAF50;">high probability</strong> to the correct token.</p>
+        <p class="fragment fade-in" style="font-size: 1.5em; margin-top: 30px;">➔ <strong style="color: #4CAF50;">Low Loss Score</strong></p>
+        <p class="fragment fade-in" style="font-size: 1.2em; margin-top: 20px; color: #4CAF50;">Good job, model!</p>
+    </div>
+</section>
+
+<!-- Because this slide explains the "High Surprise" case second, matching the transcript flow -->
+<section data-transition="concave">
+    <div style="text-align: center; background-color: #333; padding: 40px; border-radius: 10px; max-width: 600px; margin: 0 auto;">
+        <h2 style="color: #ff6b6b;">High Surprise</h2>
+        <p>When the model is <strong>very surprised</strong>, it means the model assigned a <strong style="color: #ff6b6b;">very low probability</strong> to the correct token.</p>
+        <p class="fragment fade-in" style="font-size: 1.5em; margin-top: 30px;">➔ <strong style="color: #ff6b6b;">High Loss Score</strong></p>
+        <p class="fragment fade-in" style="font-size: 1.2em; margin-top: 20px; color: #ff6b6b;">Bad job, model! Try again.</p>
+    </div>
+</section>
+
+<!-- Because this slide introduces the mathematical formula, it's a POWER TEXT slide. It simplifies the concept to its mathematical core: the negative log-probability. This prepares the audience for the manual calculation walkthrough that follows. -->
+<section data-transition="zoom">
+    <h1 class="r-fit-text">Mathematically, this simplifies to the...</h1>
+    <h1 class="r-fit-text fragment fade-in" style="color: #4CAF50;">negative log-probability</h1>
+    <h2 class="r-fit-text fragment fade-in">of the correct token.</h2>
+</section>
+
+<!-- Because this slide sets up the context for a multi-slide manual calculation, it is a CRITICAL TECHNICAL slide. The problem setup box contains the vocabulary and sequences. This context MUST persist across all subsequent calculation slides, as it provides the ground truth for every step. Without this persistent context, the numbers in the calculation would be meaningless. -->
+<section data-auto-animate data-transition="slide">
+    <div style="padding: 20px;">
+        <div style="background-color: #333; padding: 15px; border-radius: 10px; margin-bottom: 30px;">
+            <h3 style="color: #4CAF50; margin: 0; font-size: 1.8em;">Problem: Manual Loss Calculation</h3>
+            <p style="font-size: 1.2em; margin: 10px 0 0 0;">Let's calculate the loss for one example by hand.</p>
+        </div>
+        <div style="font-size: 1em; text-align: left; line-height: 1.8;">
+            <p><strong>Vocabulary:</strong> <code>{"&lt;pad&gt;": 0, "The": 1, "cat": 2, "sat": 3, "on": 4, "mat": 5}</code></p>
+            <p><strong>Input Sequence:</strong> "The cat sat" ➔ <code>[1, 2, 3]</code></p>
+            <p><strong>Target Sequence:</strong> "cat sat on" ➔ <code>[2, 3, 4]</code></p>
+        </div>
+    </div>
+</section>
+
+<!-- Because this slide introduces the model's raw output (logits), it is a TECHNICAL slide. It maintains the same header from the previous slide for continuity. The table of logits is the raw data we will use for the calculation, so it's essential to present it clearly before breaking down the steps. This slide establishes the starting point for the calculation. -->
+<section data-auto-animate data-transition="slide">
+    <div style="padding: 20px;">
+        <div style="background-color: #333; padding: 15px; border-radius: 10px; margin-bottom: 30px;">
+            <h3 style="color: #4CAF50; margin: 0; font-size: 1.8em;">Problem: Manual Loss Calculation</h3>
+            <p style="font-size: 1.2em; margin: 10px 0 0 0;">The model processes the input and produces raw scores, called <strong>logits</strong>:</p>
+        </div>
+        <table style="margin: 30px auto; font-size: 1.1em;">
+            <thead>
+                <tr>
+                    <th style="padding: 10px;">Position</th>
+                    <th style="padding: 10px;">Input Context</th>
+                    <th style="padding: 10px;">Model's Output Logits (for the *next* token)</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td style="padding: 10px;">1</td>
+                    <td style="padding: 10px;">"The" <code>[1]</code></td>
+                    <td style="padding: 10px;"><code>[0.1, 0.2, <mark>2.0</mark>, 0.5, 0.3, 0.1]</code></td>
+                </tr>
+                <tr>
+                    <td style="padding: 10px;">2</td>
+                    <td style="padding: 10px;">"The cat" <code>[1, 2]</code></td>
+                    <td style="padding: 10px;"><code>[0.1, 0.1, 0.2, <mark>2.5</mark>, 0.4, 0.2]</code></td>
+                </tr>
+                <tr>
+                    <td style="padding: 10px;">3</td>
+                    <td style="padding: 10px;">"The cat sat" <code>[1, 2, 3]</code></td>
+                    <td style="padding: 10px;"><code>[0.2, 0.1, 0.1, 0.3, <mark>3.0</mark>, 0.5]</code></td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</section>
+
+<!-- Because this slide outlines the three-step process for calculating loss, it's an Educational slide. It uses fragments to reveal each step sequentially, preventing information overload and creating a clear mental roadmap for the audience before they see the full calculation table. The formulas are included for technical accuracy. -->
+<section data-transition="fade">
+    <h2 style="color: #4CAF50;">Three Simple Steps (For Each Position)</h2>
+    <div style="font-size: 1.5em; ">
+        <p>1. <strong style="color: #4CAF50;">Softmax:</strong> Convert logits to probabilities.</p>
+        <p style="text-align: center; font-size: 0.9em;">\[ \text{softmax}(z_i) = \frac{e^{z_i}}{\sum_j e^{z_j}} \]</p>
+        <div class="fragment fade-in">
+            <p>2. <strong style="color: #4CAF50;">Get Target Probability:</strong> Pick the probability of the correct token.</p>
+        </div>
+        <div class="fragment fade-in">
+            <p>3. <strong style="color: #4CAF50;">Calculate Loss:</strong> Take its negative log.</p>
+            <p style="text-align: center; font-size: 0.9em;">\[ \text{Loss} = -\log(P_{\text{target}}) \]</p>
+        </div>
+    </div>
+</section>
+
+<!-- Because this is the first step of a detailed calculation walkthrough, this is a TECHNICAL slide. This slide introduces the full calculation table but only shows the first row completed. This allows the presenter to focus the audience's attention on the first position's calculation without distraction. Using data-auto-animate ensures a smooth transition as we build out the rest of the table. -->
+<section data-auto-animate>
+    <h2 style="margin-bottom: 20px;">Let's walk through the math step-by-step.</h2>
+    <table style="margin: 0 auto; font-size: 0.9em;">
+        <thead>
+            <tr>
+                <th style="padding: 8px;">Step</th>
+                <th style="padding: 8px;">Input Context</th>
+                <th style="padding: 8px;">Target Token</th>
+                <th style="padding: 8px;">Model's Logits</th>
+                <th style="padding: 8px;">Softmax Probs</th>
+                <th style="padding: 8px;">Prob. of Target</th>
+                <th style="padding: 8px;">Loss (-log P)</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr data-id="row1">
+                <td style="padding: 8px;"><strong>1</strong></td>
+                <td style="padding: 8px;">"The"</td>
+                <td style="padding: 8px;"><code>cat</code> (idx 2)</td>
+                <td style="padding: 8px;"><code>[.., <strong style="color: #ff6b6b;">2.0</strong>, ..]</code></td>
+                <td style="padding: 8px;"><code>[.., <strong style="color: #4CAF50;">0.593</strong>, ..]</code></td>
+                <td style="padding: 8px;"><code>0.593</code></td>
+                <td style="padding: 8px;"><code>0.522</code></td>
+            </tr>
+        </tbody>
+    </table>
+</section>
+
+<!-- Because this slide continues the step-by-step calculation, it's a TECHNICAL slide that builds directly on the previous one. Using data-auto-animate, it adds the second row to the table. This progressive reveal allows the audience to follow the logic for each position one at a time, making a complex process easy to digest. -->
+<section data-auto-animate>
+    <h2 style="margin-bottom: 20px;">Let's walk through the math step-by-step.</h2>
+    <table style="margin: 0 auto; font-size: 0.9em;">
+        <thead>
+            <tr>
+                <th style="padding: 8px;">Step</th>
+                <th style="padding: 8px;">Input Context</th>
+                <th style="padding: 8px;">Target Token</th>
+                <th style="padding: 8px;">Model's Logits</th>
+                <th style="padding: 8px;">Softmax Probs</th>
+                <th style="padding: 8px;">Prob. of Target</th>
+                <th style="padding: 8px;">Loss (-log P)</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr data-id="row1">
+                <td style="padding: 8px;"><strong>1</strong></td>
+                <td style="padding: 8px;">"The"</td>
+                <td style="padding: 8px;"><code>cat</code> (idx 2)</td>
+                <td style="padding: 8px;"><code>[.., <strong style="color: #ff6b6b;">2.0</strong>, ..]</code></td>
+                <td style="padding: 8px;"><code>[.., <strong style="color: #4CAF50;">0.593</strong>, ..]</code></td>
+                <td style="padding: 8px;"><code>0.593</code></td>
+                <td style="padding: 8px;"><code>0.522</code></td>
+            </tr>
+            <tr data-id="row2">
+                <td style="padding: 8px;"><strong>2</strong></td>
+                <td style="padding: 8px;">"The cat"</td>
+                <td style="padding: 8px;"><code>sat</code> (idx 3)</td>
+                <td style="padding: 8px;"><code>[.., <strong style="color: #ff6b6b;">2.5</strong>, ..]</code></td>
+                <td style="padding: 8px;"><code>[.., <strong style="color: #4CAF50;">0.793</strong>, ..]</code></td>
+                <td style="padding: 8px;"><code>0.793</code></td>
+                <td style="padding: 8px;"><code>0.232</code></td>
+            </tr>
+        </tbody>
+    </table>
+</section>
+
+<!-- Because this slide completes the individual token calculations, it's a TECHNICAL slide using data-auto-animate. It adds the third row, completing the per-token loss calculations. This consistent, step-by-step build-up is critical for maintaining clarity and preventing the audience from getting lost in the numbers. -->
+<section data-auto-animate>
+    <h2 style="margin-bottom: 20px;">Let's walk through the math step-by-step.</h2>
+    <table style="margin: 0 auto; font-size: 0.9em;">
+        <thead>
+            <tr>
+                <th style="padding: 8px;">Step</th>
+                <th style="padding: 8px;">Input Context</th>
+                <th style="padding: 8px;">Target Token</th>
+                <th style="padding: 8px;">Model's Logits</th>
+                <th style="padding: 8px;">Softmax Probs</th>
+                <th style="padding: 8px;">Prob. of Target</th>
+                <th style="padding: 8px;">Loss (-log P)</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr data-id="row1">
+                <td style="padding: 8px;"><strong>1</strong></td>
+                <td style="padding: 8px;">"The"</td>
+                <td style="padding: 8px;"><code>cat</code> (idx 2)</td>
+                <td style="padding: 8px;"><code>[.., <strong style="color: #ff6b6b;">2.0</strong>, ..]</code></td>
+                <td style="padding: 8px;"><code>[.., <strong style="color: #4CAF50;">0.593</strong>, ..]</code></td>
+                <td style="padding: 8px;"><code>0.593</code></td>
+                <td style="padding: 8px;"><code>0.522</code></td>
+            </tr>
+            <tr data-id="row2">
+                <td style="padding: 8px;"><strong>2</strong></td>
+                <td style="padding: 8px;">"The cat"</td>
+                <td style="padding: 8px;"><code>sat</code> (idx 3)</td>
+                <td style="padding: 8px;"><code>[.., <strong style="color: #ff6b6b;">2.5</strong>, ..]</code></td>
+                <td style="padding: 8px;"><code>[.., <strong style="color: #4CAF50;">0.793</strong>, ..]</code></td>
+                <td style="padding: 8px;"><code>0.793</code></td>
+                <td style="padding: 8px;"><code>0.232</code></td>
+            </tr>
+            <tr data-id="row3">
+                <td style="padding: 8px;"><strong>3</strong></td>
+                <td style="padding: 8px;">"The cat sat"</td>
+                <td style="padding: 8px;"><code>on</code> (idx 4)</td>
+                <td style="padding: 8px;"><code>[.., <strong style="color: #ff6b6b;">3.0</strong>, ..]</code></td>
+                <td style="padding: 8px;"><code>[.., <strong style="color: #4CAF50;">0.773</strong>, ..]</code></td>
+                <td style="padding: 8px;"><code>0.773</code></td>
+                <td style="padding: 8px;"><code>0.257</code></td>
+            </tr>
+        </tbody>
+    </table>
+</section>
+
+<!-- Because this slide reveals the final result of the manual calculation, it's a TECHNICAL slide. Using data-auto-animate, it adds the final "Total Loss" row. This is the punchline of the entire calculation walkthrough. Highlighting the final average loss (0.337) ensures it stands out as the key takeaway. -->
+<section data-auto-animate>
+    <h2 style="margin-bottom: 20px;">Let's walk through the math step-by-step.</h2>
+    <table style="margin: 0 auto; font-size: 0.9em;">
+        <thead>
+            <tr>
+                <th style="padding: 8px;">Step</th>
+                <th style="padding: 8px;">Input Context</th>
+                <th style="padding: 8px;">Target Token</th>
+                <th style="padding: 8px;">Model's Logits</th>
+                <th style="padding: 8px;">Softmax Probs</th>
+                <th style="padding: 8px;">Prob. of Target</th>
+                <th style="padding: 8px;">Loss (-log P)</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr data-id="row1">
+                <td style="padding: 8px;"><strong>1</strong></td>
+                <td style="padding: 8px;">"The"</td>
+                <td style="padding: 8px;"><code>cat</code> (idx 2)</td>
+                <td style="padding: 8px;"><code>[..,2.0,..]</code></td>
+                <td style="padding: 8px;"><code>[..,0.593,..]</code></td>
+                <td style="padding: 8px;"><code>0.593</code></td>
+                <td style="padding: 8px;"><code>0.522</code></td>
+            </tr>
+            <tr data-id="row2">
+                <td style="padding: 8px;"><strong>2</strong></td>
+                <td style="padding: 8px;">"The cat"</td>
+                <td style="padding: 8px;"><code>sat</code> (idx 3)</td>
+                <td style="padding: 8px;"><code>[..,2.5,..]</code></td>
+                <td style="padding: 8px;"><code>[..,0.793,..]</code></td>
+                <td style="padding: 8px;"><code>0.793</code></td>
+                <td style="padding: 8px;"><code>0.232</code></td>
+            </tr>
+            <tr data-id="row3">
+                <td style="padding: 8px;"><strong>3</strong></td>
+                <td style="padding: 8px;">"The cat sat"</td>
+                <td style="padding: 8px;"><code>on</code> (idx 4)</td>
+                <td style="padding: 8px;"><code>[..,3.0,..]</code></td>
+                <td style="padding: 8px;"><code>[..,0.773,..]</code></td>
+                <td style="padding: 8px;"><code>0.773</code></td>
+                <td style="padding: 8px;"><code>0.257</code></td>
+            </tr>
+            <tr style="border-top: 2px solid #fff;">
+                <td colspan="5" style="text-align: right; padding: 8px;"><strong>Total Loss (Average):</strong></td>
+                <td colspan="2" style="text-align: center; padding: 8px;"><strong style="color: white; background-color: #4CAF50; padding: 5px 10px; border-radius: 5px;">0.337</strong></td>
+            </tr>
+        </tbody>
+    </table>
+</section>
+
+<!-- Because this slide transitions from the tedious manual calculation to the elegant automated solution, it is a POWER TEXT slide. It uses phrases like "Now, here's the magic" to build excitement and contrast with the previous dense slides, preparing the audience for a much simpler approach. -->
+<section data-transition="zoom">
+    <h1 class="r-fit-text">Now, here's the magic.</h1>
+    <h2 class="r-fit-text fragment fade-in">In PyTorch, this entire process is handled by...</h2>
+    <h1 class="r-fit-text fragment fade-in"><mark>one, single function.</mark></h1>
+</section>
+
+<!-- Because this slide presents the PyTorch code that automates the calculation, it's a TECHNICAL slide. It is critical that the logits and targets tensors use the EXACT same numbers from the manual calculation table. This direct link proves that the function is doing the same work. Comments explain the tensor shapes and the necessary flattening step, which are common points of confusion. -->
+<section data-transition="slide">
+    <h2 style="color: #4CAF50;">Let's prove it.</h2>
+    <pre style="width: 100%; font-size: 0.6em;"><code class="language-python" data-trim data-line-numbers>
+import torch
+import torch.nn.functional as F
+
+# Our model's output logits. These are the *exact same numbers* from the table.
+# Shape: (Batch, Sequence_Length, Vocab_size) -> (1, 3, 6)
+logits = torch.tensor([[
+    [0.1, 0.2, 2.0, 0.5, 0.3, 0.1],  # After "The"
+    [0.1, 0.1, 0.2, 2.5, 0.4, 0.2],  # After "The cat"
+    [0.2, 0.1, 0.1, 0.3, 3.0, 0.5]   # After "The cat sat"
+]])
+
+# The correct next tokens (our labels)
+# Shape: (Batch, Sequence_Length) -> (1, 3)
+targets = torch.tensor([[2, 3, 4]]) # "cat", "sat", "on"
+
+# PyTorch's function needs a 2D input for logits and 1D for targets,
+# so we just flatten the batch and sequence dimensions together.
+logits_flat = logits.view(-1, logits.size(-1)) # Shape becomes (3, 6)
+targets_flat = targets.view(-1)               # Shape becomes (3)
+
+loss = F.cross_entropy(logits_flat, targets_flat)
+
+print(f"Calculated Loss: {loss.item():.3f}")
+    </code></pre>
+</section>
+
+<!-- Because this slide reveals the output of the code, confirming the match with the manual calculation, it's a TECHNICAL slide. Displaying the code's output in a console-style box provides a satisfying payoff. The final number, "0.337", is highlighted in green to emphasize that it's the correct, successful result we were expecting. This is the "aha!" moment. -->
+<section data-transition="fade">
+    <h2>And the output...</h2>
+    <pre style="width: 80%; margin: 20px auto;"><code class="language-bash" style="font-size: 1.5em; text-align: left;">
+$ python calculate_loss.py
+
+Logits shape (original): torch.Size([1, 3, 6])
+Logits shape (flattened): torch.Size([3, 6])
+Targets shape (flattened): torch.Size([3])
+Calculated Loss: 0.337
+    </code></pre>
+</section>
+
+<!-- Because this slide celebrates the successful match between the manual and automated calculations, it's a POWER TEXT slide. It isolates the key number "0.337" for maximum impact, followed by a confirmation statement. This reinforces the core message: the complex math is handled by a simple, reliable function. -->
+<section data-auto-animate data-transition="zoom">
+    <h1 style="font-size: 12em;" style="color: #4CAF50;">0.337</h1>
+</section>
+
+<section data-auto-animate data-transition="zoom">
+    <h1 style="font-size: 12em;" style="color: #4CAF50;">0.337</h1>
+    <h2 class="r-fit-text">It perfectly matches our manual calculation.</h2>
+</section>
+
+<!-- Because this slide zooms out to state the broader significance of the calculation, it's a POWER TEXT slide. It elevates the Cross-Entropy Loss from a simple function to the "powerful engine" behind all large-scale pre-training, giving the audience a sense of the concept's importance. -->
+<section data-transition="fade">
+    <h1 class="r-fit-text">This is the simple, powerful engine that drives large-scale pre-training.</h1>
+</section>
+
+<!-- Because this slide connects the mathematical understanding of loss back to the chapter's core theme, the Parrot Problem, it's a POWER TEXT slide. It acts as a bridge, signaling a return from the deep-dive on math to the higher-level conceptual problem. -->
+<section data-transition="convex">
+    <h1 class="r-fit-text">Now we can see the source of the Parrot Problem with <mark>mathematical clarity</mark>.</h1>
+</section>
+
+<!-- Because this slide re-states the model's objective using the new terminology, it's a POWER TEXT slide. It frames the model's behavior not as a flaw, but as a logical consequence of its optimization goal: minimizing "surprise" (cross-entropy loss). -->
+<section>
+    <h1 class="r-fit-text">The model's sole objective is to minimize this cross-entropy loss.</h1>
+    <h2 class="r-fit-text fragment fade-in">It will do whatever it takes to reduce its "<mark>surprise</mark>".</h2>
+</section>
+
+<!-- Because this slide brings back the concrete example from Chapter 1 to analyze it with our new knowledge, it is a TECHNICAL slide. The persistent problem context box is crucial here. It reminds the audience of the specific scenario, which is essential for understanding why the model responds the way it does. -->
+<section data-auto-animate data-transition="slide">
+    <div style="padding: 20px;">
+        <div style="background-color: #333; padding: 15px; border-radius: 10px; margin-bottom: 30px;">
+            <h3 style="color: #4CAF50; margin: 0; font-size: 1.8em;">The Prompt (Revisited)</h3>
+            <p style="font-size: 1.4em; margin: 10px 0 0 0;">When you prompt it with:</p>
+        </div>
+        <div style="text-align: center;">
+            <pre><code class="language-plaintext" style="font-size: 1.5em;">What is the primary cause of Earth's seasons?</code></pre>
+        </div>
+    </div>
+</section>
+
+<!-- Because this slide explains the model's "internal monologue," it's a POWER TEXT slide. It anthropomorphizes the model to make its objective relatable, framing its pattern-matching behavior as a question it asks itself. This makes the abstract concept of loss minimization more intuitive. -->
+<section data-transition="fade">
+    <h1 class="r-fit-text">It's not trying to be helpful.</h1>
+    <h2 class="r-fit-text fragment fade-in">It's asking itself:</h2>
+</section>
+
+<!-- Because this slide reveals the model's core "question," it's a POWER TEXT slide. This is the punchline to the previous slide's setup. The text clearly states the objective in terms of the new concepts learned: find the tokens that lead to the "lowest possible loss." -->
+<section>
+    <h1 class="r-fit-text">"Across the trillions of tokens I have seen, what tokens are most likely to follow this sequence to give me the <mark>lowest possible loss</mark>?"</h1>
+</section>
+
+<!-- Because this slide provides the final piece of the puzzle, explaining *why* a quiz format results in low loss, it's a POWER TEXT slide. It explicitly connects the model's behavior to the patterns in its training data, closing the loop on the Parrot Problem. -->
+<section data-transition="zoom">
+    <h1 class="r-fit-text">And since its data is full of quizzes formatted like `Q:...A:...Q:...`</h1>
+    <h2 class="r-fit-text fragment fade-in">...completing that pattern is the path of <mark>least surprise</mark>.</h2>
+</section>
+
+<!-- Because this is the final, definitive statement of the chapter, it's a POWER TEXT slide. It provides a concise, memorable summary that encapsulates the entire chapter's lesson. Highlighting "parrot" and "mimicry" in contrasting colors drives the point home with maximum visual impact. -->
+<section data-background-color="#000">
+    <h1 class="r-fit-text">The model is a <span style="color: #ff6b6b;">parrot</span>...</h1>
+    <h1 class="r-fit-text fragment fade-in">...because its training objective is <span style="color: #4CAF50;">mimicry</span>.</h1>
+</section>
+
+<!-- END CHAPTER 2 -->
+
+<!-- START CHAPTER 3 -->
+
+<!-- Because this slide transitions from the previous chapter's focus on the problem ('the engine') to the solution ('the fuel'), this is a POWER TEXT slide. It uses a metaphor to create a clear conceptual shift. The statement is broken into two parts with data-auto-animate for a smooth, two-beat rhythm. Highlighting 'engine' and 'fuel' emphasizes the core components of the metaphor. -->
+<section data-auto-animate data-transition="fade">
+    <h1 class="r-fit-text">To fix this, we don't change the <mark>engine</mark>.</h1>
+</section>
+
+<!-- Because this slide completes the opening metaphor, it's a POWER TEXT slide building on the previous one with data-auto-animate. The second part of the metaphor, "...We change the fuel," is revealed, providing a satisfying and memorable conclusion to the opening statement. The contrast between 'engine' and 'fuel' is the key takeaway. -->
+<section data-auto-animate data-transition="fade">
+    <h1 class="r-fit-text">To fix this, we don't change the <mark>engine</mark>.</h1>
+    <h1 class="r-fit-text">We change the <mark>fuel</mark>.</h1>
+</section>
+
+<!-- Because this slide introduces the core concept of the chapter, it's a POWER TEXT slide. It presents Supervised Fine-Tuning as a 'beautifully simple' idea, reducing potential intimidation. The slide sets up the core principle which will be revealed in the next slide. -->
+<section data-transition="slide">
+    <h2 class="r-fit-text">This is the core idea of Supervised Fine-Tuning (SFT).</h2>
+    <h1 class="r-fit-text fragment fade-in">It's beautifully simple:</h1>
+</section>
+
+<!-- Because this slide delivers the central rule of SFT, it is a POWER TEXT slide. It presents the rule in a conditional "if you want X, you must do Y" format for clarity. Breaking the long sentence into two progressively revealed parts maintains readability and impact with r-fit-text. -->
+<section data-auto-animate>
+    <h1 class="r-fit-text">If you want a model that follows instructions...</h1>
+</section>
+
+<!-- Because this slide completes the central rule of SFT, it's a POWER TEXT slide that uses data-auto-animate for a seamless reveal. The second half of the rule appears, with "show it" highlighted to emphasize the 'supervision' aspect of SFT. -->
+<section data-auto-animate>
+    <h1 class="r-fit-text">If you want a model that follows instructions...</h1>
+    <h2 class="r-fit-text" style="color: #4CAF50;">...you must <mark>show it</mark> a large, high-quality dataset of instructions being followed correctly.</h2>
+</section>
+
+<!-- Because this slide introduces an analogy to explain a complex concept, this is a POWER TEXT slide. It sets up the first half of the analogy (pre-training = library) to create a mental model for the audience before introducing the SFT counterpart. -->
+<section data-transition="convex">
+    <h2 class="r-fit-text">Think of it like this.</h2>
+    <p class="fragment fade-in" style="font-size: 2em;">Pre-training is like locking the model in a library with every book ever written and telling it to learn the patterns of language.</p>
+</section>
+
+<!-- Because this slide completes the analogy, this is a POWER TEXT slide. It presents the second half (SFT = flashcards), creating a powerful contrast with the previous slide's "library" metaphor. Highlighting 'expert-written flashcards' solidifies this simple, intuitive concept. -->
+<section data-transition="convex">
+    <h1 class="r-fit-text">Supervised Fine-Tuning is like taking that model out of the library and handing it curated, <mark>expert-written flashcards</mark>.</h1>
+</section>
+
+<!-- Because this slide provides a direct, side-by-side comparison of the two data types, this is a TECHNICAL slide. It uses a two-column layout for clarity, allowing the audience to quickly contrast the properties of pre-training data versus SFT data. Each point is concise to facilitate easy comparison. -->
+<section data-transition="zoom">
+    <div style="display: flex; justify-content: space-around; gap: 40px; font-size: 1.2em;">
+        <div style="flex: 1; text-align: center; background-color: #333; padding: 20px; border-radius: 10px; display: flex; flex-direction: column; justify-content: center;">
+            <h2 style="color: #ff6b6b;">Pre-training Data</h2>
+            <p>Unstructured web text</p>
+            <p>Massive, noisy, unfiltered</p>
+            <p>Goal: Mimic patterns</p>
+        </div>
+        <div style="flex: 1; text-align: center; background-color: #333; padding: 20px; border-radius: 10px; display: flex; flex-direction: column; justify-content: center;">
+            <h2 style="color: #4CAF50;">SFT Data</h2>
+            <p>Structured `(prompt, response)` pairs</p>
+            <p>Small, clean, high-quality</p>
+            <p>Goal: Imitate expert behavior</p>
+        </div>
+    </div>
+</section>
+
+<!-- Because this slide provides a concrete example of an SFT "flashcard", this is an EDUCATIONAL slide. It clearly labels the 'Prompt' and 'Response' sections, making the structure of the data explicit and easy to understand. The example is simple and intuitive. -->
+<section data-transition="slide">
+    <h2 class="r-fit-text">Each "flashcard" is a high-quality `(prompt, response)` pair.</h2>
+    <div style="font-size: 1em; line-height: 1.6;">
+        <p><strong style="color: #4CAF50;">Prompt:</strong> "Explain the concept of gravity to a 6-year-old in a short paragraph."</p>
+        <p class="fragment fade-in"><strong style="color: #4CAF50;">Response:</strong> "Imagine the Earth is a giant magnet, but for everything! It's always gently pulling you and your toys down. That's why when you jump, you always come back down. This special pulling power is called gravity!"</p>
+    </div>
+</section>
+
+<!-- Because this slide introduces a technical problem that needs to be solved, it's a POWER TEXT slide. It breaks down the problem into two key points, revealed sequentially, to build understanding of the constraints of language models. -->
+<section data-transition="concave">
+    <h1 class="r-fit-text">But we can't just feed these in separately.</h1>
+    <div class="fragment fade-in" style="font-size: 2em; margin-top: 40px;">
+        <p class="r-fit-text">An LLM only understands a <mark>single, continuous sequence</mark> of tokens.</p>
+        <p class="r-fit-text">More importantly, it needs to learn the <mark>structure</mark> of a conversation.</p>
+    </div>
+</section>
+
+<!-- Because this slide introduces the solution to the previously stated problem, it is a POWER TEXT slide. It clearly names the two tools—Special Tokens and a Chat Template—that will be used, providing a clear roadmap for the next few slides. -->
+<section data-transition="concave">
+    <h1 class="r-fit-text">To solve this, we introduce two key tools:</h1>
+    <h2 class="fragment fade-in r-fit-text" style="color: #4CAF50;">Special Tokens & a Chat Template</h2>
+</section>
+
+<!-- Because this slide shows the specific implementation of the chat template, this is a TECHNICAL slide. The code block clearly visualizes the structure, with placeholders for the prompt and response. This template is a critical piece of context for understanding how SFT data is formatted. -->
+<section data-transition="zoom">
+    <h2>We format the data like this:</h2>
+    <pre style="font-size: 1em; width: 80%;"><code class="language-plaintext" data-trim>
+&lt;|user|&gt;
+{prompt}
+&lt;|end|&gt;
+&lt;|assistant|&gt;
+{response}
+&lt;|end|&gt;
+    </code></pre>
+    <p class="fragment fade-in" style="font-size: 1.5em;">This teaches the model the turn-taking rhythm of a conversation.</p>
+</section>
+
+<!-- Because this slide applies the template to our running example, this is an EDUCATIONAL slide. It makes the abstract template concrete by showing the final formatted string for the gravity example, reinforcing the concept. -->
+<section data-transition="fade">
+    <h2>For our gravity example, it becomes:</h2>
+    <pre style="width: 100%;"><code class="language-plaintext" style="font-size: 1.1em;">
+"&lt;|user|&gt; Explain the concept of gravity... &lt;|end|&gt; &lt;|assistant|&gt; Imagine the Earth is a giant magnet... &lt;|end|&gt;"
+    </code></pre>
+</section>
+
+<!-- Because this slide introduces the central, critical problem that loss masking solves, this is a POWER TEXT slide. It uses dramatic, high-impact language ("critical problem") to signal a major turning point in the explanation. -->
+<section data-auto-animate data-transition="fade">
+    <h1 class="r-fit-text">But now we face a <mark>critical problem</mark>.</h1>
+</section>
+
+<!-- Because this slide explains the consequence of the problem, it's a POWER TEXT slide that builds on the previous one with data-auto-animate. The text is broken into two parts to emphasize the flaw in the naive approach. The phrase "completely wrong" is styled in red for maximum emphasis on the error. -->
+<section data-auto-animate data-transition="fade">
+    <h1 class="r-fit-text">But now we face a <mark>critical problem</mark>.</h1>
+    <h2 class="r-fit-text">If we train on this entire sequence... we would be training the model to predict the <span style="color: #ff6b6b;">user's prompt</span> as much as the assistant's response.</h2>
+    <h1 class="r-fit-text fragment fade-in" style="color: #ff6b6b;">This is completely wrong.</h1>
+</section>
+
+<!-- Because this slide states the desired goal, it's a POWER TEXT slide. It clarifies what we *actually* want to achieve, setting the stage for the solution. Using "only" emphasizes the precise nature of the training objective. -->
+<section data-transition="slide">
+    <h1 class="r-fit-text">We <mark>only</mark> want to penalize the model for mistakes it makes when it's the assistant's turn to speak.</h1>
+</section>
+
+<!-- Because this slide introduces the solution by name, it's a POWER TEXT slide. It frames "Loss Masking" as an "elegant engineering trick," making it sound clever and accessible before diving into the technical details. -->
+<section data-transition="zoom">
+    <h2 class="r-fit-text">The solution is an elegant engineering trick called...</h2>
+    <h1 class="r-fit-text fragment fade-in" style="color: #4CAF50;">Loss Masking</h1>
+</section>
+
+<!-- Because this slide explains the core mechanism of loss masking, this is an EDUCATIONAL slide. It progressively reveals the steps: creating `input_ids`, creating `labels`, and then the key action of replacing tokens with -100. Highlighting "-100" is crucial as it's the magic number. -->
+<section data-transition="fade">
+    <h2 style="color: #4CAF50;">Here's the "Aha!" moment.</h2>
+    <div style="font-size: 1.5em; line-height: 1.8;">
+        <p>We create our `input_ids` tensor with the full conversation.</p>
+        <p class="fragment fade-in">Then, we create a second tensor called `labels`.</p>
+        <p class="fragment fade-in">For every token we want the loss function to <span style="color: #ff6b6b;">ignore</span>, we replace its ID with a special value: <mark style="font-size: 1.2em;">-100</mark>.</p>
+    </div>
+</section>
+
+<!-- Because this slide explains *why* the magic number works, this is an EDUCATIONAL slide. It provides the technical justification for using -100, connecting it directly to the behavior of PyTorch's loss function. This adds credibility and demystifies the trick. -->
+<section data-transition="slide">
+    <h1 class="r-fit-text">Why -100?</h1>
+    <h2 class="r-fit-text fragment fade-in">Because PyTorch's `CrossEntropyLoss` function is hard-coded to <mark>completely ignore</mark> any target with this value.</h2>
+    <p class="fragment fade-in" style="font-size: 2em;">It's a built-in "skip" instruction.</p>
+</section>
+
+<!-- Because this slide provides the context for the detailed loss masking table, this is a TECHNICAL slide. It establishes the vocabulary and token IDs that will be used in the table on the next slide. This setup is critical for the audience to be able to follow the numbers in the example. -->
+<section data-auto-animate>
+    <div style="padding: 20px;">
+        <div style="background-color: #333; padding: 15px; border-radius: 10px; margin-bottom: 30px;">
+            <h3 style="color: #4CAF50; margin: 0; font-size: 1.8em;">Loss Masking In Action</h3>
+            <p style="font-size: 1.2em; margin: 10px 0 0 0;">Assume this simple tokenization:</p>
+        </div>
+        <div style="font-size: 1.2em; line-height: 1.8;">
+            <p><code>&lt;|user|&gt;</code> → 6</p>
+            <p><code>Explain</code> → 7</p>
+            <p><code>gravity</code> → 8</p>
+            <p><code>&lt;|end|&gt;</code> → 9</p>
+            <p><code>&lt;|assistant|&gt;</code> → 10</p>
+            <p><code>Gravity</code> → 11</p>
+            <p><code>is</code> → 12</p>
+            <p><code>a</code> → 13</p>
+            <p><code>force</code> → 14</p>
+        </div>
+    </div>
+</section>
+
+<!-- Because this slide is the centerpiece visual explaining loss masking, it is a CRITICAL TECHNICAL slide. The table clearly contrasts `input_ids` with the masked `labels`. The `data-auto-animate` with fragments will be used to build this table step-by-step for clarity, revealing the masked values and the final "Loss Calculated?" column last. The Yes/No is heavily emphasized with color. -->
+<section data-auto-animate>
+    <h2 style="margin-bottom: 20px;">The `input_ids` contain the full conversation. But the `labels` are masked.</h2>
+    <table style="margin: 0 auto; font-size: 0.9em;">
+        <thead>
+            <tr>
+                <th style="padding: 8px;">Token Text</th>
+                <th style="padding: 8px;">`input_ids`</th>
+                <th style="padding: 8px;">`labels`</th>
+                <th style="padding: 8px;">Loss Calculated?</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr><td><code>&lt;|user|&gt;</code></td><td>6</td><td><span style="color: #ff6b6b;">-100</span></td><td style="color: #ff6b6b;"><strong>No</strong></td></tr>
+            <tr><td><code>Explain</code></td><td>7</td><td><span style="color: #ff6b6b;">-100</span></td><td style="color: #ff6b6b;"><strong>No</strong></td></tr>
+            <tr><td><code>gravity</code></td><td>8</td><td><span style="color: #ff6b6b;">-100</span></td><td style="color: #ff6b6b;"><strong>No</strong></td></tr>
+            <tr><td><code>&lt;|end|&gt;</code></td><td>9</td><td><span style="color: #ff6b6b;">-100</span></td><td style="color: #ff6b6b;"><strong>No</strong></td></tr>
+            <tr><td><code>&lt;|assistant|&gt;</code></td><td>10</td><td><span style="color: #ff6b6b;">-100</span></td><td style="color: #ff6b6b;"><strong>No</strong></td></tr>
+            <tr><td style="color: #4CAF50;"><strong><code>Gravity</code></strong></td><td style="color: #4CAF50;">11</td><td style="color: #4CAF50;">11</td><td style="color: #4CAF50;"><strong>Yes</strong></td></tr>
+            <tr><td style="color: #4CAF50;"><strong><code>is</code></strong></td><td style="color: #4CAF50;">12</td><td style="color: #4CAF50;">12</td><td style="color: #4CAF50;"><strong>Yes</strong></td></tr>
+            <tr><td style="color: #4CAF50;"><strong><code>a</code></strong></td><td style="color: #4CAF50;">13</td><td style="color: #4CAF50;">13</td><td style="color: #4CAF50;"><strong>Yes</strong></td></tr>
+            <tr><td style="color: #4CAF50;"><strong><code>force</code></strong></td><td style="color: #4CAF50;">14</td><td style="color: #4CAF50;">14</td><td style="color: #4CAF50;"><strong>Yes</strong></td></tr>
+            <tr><td style="color: #4CAF50;"><strong><code>&lt;|end|&gt;</code></strong></td><td style="color: #4CAF50;">9</td><td style="color: #4CAF50;">9</td><td style="color: #4CAF50;"><strong>Yes</strong></td></tr>
+        </tbody>
+    </table>
+</section>
+
+<!-- Because this slide summarizes the key takeaway from the loss masking table, this is a POWER TEXT slide. It states the goal achieved: the model sees full context, but learns only from the response. This reinforces the core concept in simple terms. -->
+<section data-transition="fade">
+    <h1 class="r-fit-text">This achieves our goal perfectly.</h1>
+    <h2 class="r-fit-text fragment fade-in">The model sees the full context, but the gradients—the learning signals—are <mark>only</mark> calculated on its ability to generate the expert response.</h2>
+</section>
+
+<!-- Because this slide states the single, critical rule the model learns, this is a POWER TEXT slide. It presents the rule as a simple, clear instruction, making the model's new behavior easy to understand. -->
+<section data-transition="zoom">
+    <h2 class="r-fit-text">It learns the one, critical rule:</h2>
+    <h1 class="r-fit-text fragment fade-in" style="font-size: 0.8em; background-color: #333; padding: 20px; border-radius: 10px; margin-top: 40px;">"When you see `<|user|>...<|assistant|>` your goal is to generate the following sequence."</h1>
+</section>
+
+<!-- Because this slide provides the final, satisfying conclusion of the transformation, it's a POWER TEXT slide. It uses the presentation's central metaphor, contrasting the 'parrot' with the 'apprentice assistant' and using colors to reinforce the positive change. -->
+<section data-transition="slide">
+    <h1 class="r-fit-text">This is what turns the <span style="color: #ff6b6b;">parrot</span> into an <span style="color: #4CAF50;">apprentice assistant</span>.</h1>
+</section>
+
+<!-- Because this slide introduces the formal mathematical objective and manages audience expectation, this is a POWER TEXT slide. It acknowledges that the formula might look "scary" and immediately reassures the audience that it's just a formal version of the simple table they just saw. This lowers the cognitive barrier before showing the math. -->
+<section data-transition="convex">
+    <h1 class="r-fit-text">This entire process can be summarized with a formal mathematical objective.</h1>
+    <h2 class="r-fit-text fragment fade-in">I know it looks a bit scary, but it's just a precise way of describing the table we just made.</h2>
+</section>
+
+<!-- Because this slide displays the formal SFT loss function, it is a TECHNICAL slide. The LaTeX formula is the centerpiece, displayed large and clear. This slide is designed for a slower pace, allowing the presenter to explain the components of the formula while it remains visible. -->
+<section data-auto-animate>
+    <div data-id="sft-formula" style="font-size: 1.8em;">
+        \[ \mathcal{L}_{\text{SFT}}(\theta) = - \mathbb{E}_{(x, y) \sim \mathcal{D}_{\text{SFT}}} \left[ \sum_{t=1}^{|y|} \log P_{\theta}(y_t | x, y_{&lt;t}) \right] \]
+    </div>
+</section>
+
+<!-- Because this slide decodes the complex math formula into simple terms, this is an EDUCATIONAL slide. It directly connects the mathematical symbols (like the summation over `|y|`) to the concepts the audience already understands (loss masking on the response `y`, not the prompt `x`). -->
+<section data-auto-animate>
+    <div data-id="sft-formula" style="font-size: 1.8em;">
+        \[ \mathcal{L}_{\text{SFT}}(\theta) = - \mathbb{E}_{(x, y) \sim \mathcal{D}_{\text{SFT}}} \left[ \sum_{t=1}^{|y|} \log P_{\theta}(y_t | x, y_{&lt;t}) \right] \]
+    </div>
+    <h2 class="r-fit-text">All this says is:</h2>
+    <div class="fragment fade-in" style="font-size: 1em; margin-top: 40px;">
+        <p>We minimize the average negative log-probability...but the summation part, \( \sum_{t=1}^{|y|} \) happens <mark>only</mark> over the tokens in the target response `y`, not the prompt `x`.</p>
+    </div>
+</section>
+
+<!-- Because this slide confirms the connection between the math and the practical trick, it's a POWER TEXT slide. It provides a simple, satisfying conclusion to the mathematical interlude, reinforcing that the core idea is simple. -->
+<section data-auto-animate data-transition="zoom">
+    <h1 class="r-fit-text">That's it.</h1>
+    <h2 class="r-fit-text fragment fade-in">That's the formal math behind our simple loss masking trick.</h2>
+</section>
+
+<!-- Because this slide serves as the chapter's conclusion and summarizes the key takeaways, it is a POWER TEXT slide. It provides a sense of accomplishment and signals that the theoretical foundation is now complete, preparing for the next chapter on implementation. -->
+<section data-transition="slide">
+    <h1 class="r-fit-text">We now have the complete theory of Supervised Fine-Tuning.</h1>
+    <div class="fragment fade-in" style="font-size: 1.8em; margin-top: 50px;">
+        <p>We know <span style="color: #4CAF50;">why</span> we need chat templates.</p>
+        <p>And most importantly, we understand the critical role of <span style="color: #4CAF50;">loss masking</span>.</p>
+    </div>
+</section>
+
+<!-- END CHAPTER 3 -->
+
+<!-- START CHAPTER 4 -->
+
+<!-- Because this slide transitions from theory to practice, it's a POWER TEXT slide. Text analysis: "Time to implement the prepare_sft_batch function" is broken into two impactful parts. "Time to implement" (18 chars) sets the stage with a sense of action. The follow-up slide will name the specific function, creating a focused goal. -->
+<section data-auto-animate data-transition="fade">
+    <h1 class="r-fit-text">Time to implement.</h1>
+</section>
+
+<!-- Because this slide builds on the previous one to state the chapter's objective, it's a POWER TEXT slide using data-auto-animate. It reveals the name of the function, `prepare_sft_batch`, making it the central target of the chapter. Highlighting the function name in green frames it as our primary goal. -->
+<section data-auto-animate data-transition="fade">
+    <h1 class="r-fit-text">Time to implement.</h1>
+    <h2 class="r-fit-text">The <code style="color: #4CAF50;">prepare_sft_batch</code> function.</h2>
+</section>
+
+<!-- Because this slide presents a key insight about where the real work lies in SFT, this is a POWER TEXT slide. It contrasts the 'training loop' with 'data collation' to manage audience expectations and focus their attention on the most important part of the implementation. Highlighting 'data collation' solidifies this as the core concept. -->
+<section data-transition="slide">
+    <h2 class="r-fit-text">The main engineering task in SFT isn't the training loop.</h2>
+    <h1 class="r-fit-text fragment fade-in">The real craft is in the <mark>data collation</mark>.</h1>
+</section>
+
+<!-- Because this slide sets up the simplified environment for our code example, it is a TECHNICAL slide. It introduces the `SimpleTokenizer` class and the sample `sft_batch`. This context is CRITICAL and must be understood by the audience before they can follow the logic of the main `sft_data_collator` function that follows. It's a foundational setup slide. -->
+<section data-transition="zoom">
+    <h2 style="color: #4CAF50;">Setup: A Toy Tokenizer & Sample Data</h2>
+    <p>To keep our focus laser-sharp, we'll use a minimal tokenizer and a simple batch of data.</p>
+    <pre style="width: 100%; font-size: 0.6em;"><code class="language-python" data-trim data-line-numbers>
+import torch
+
+# A minimal tokenizer for our example. No magic, just a simple dictionary.
+class SimpleTokenizer:
+    def __init__(self):
+        self.vocab = {
+            '&lt;pad&gt;': 0, 'The': 1, 'quick': 2, 'brown': 3, 'fox': 4, 'jumps': 5, 'over': 6, 'lazy': 7, 'dog': 8,
+            '&lt;|user|&gt;': 9, '&lt;|assistant|&gt;': 10, '&lt;|end|&gt;': 11, 'What': 12, 'is': 13, 'a': 14, '?': 15
+        }
+        self.inv_vocab = {v: k for k, v in self.vocab.items()}
+
+    def encode(self, text):
+        tokens = text.replace('?', ' ?').split()
+        return [self.vocab[t] for t in tokens]
+
+    def decode(self, tensor):
+        return " ".join([self.inv_vocab[i] for i in tensor.tolist()])
+
+# Instantiate our tokenizer
+tokenizer = SimpleTokenizer()
+
+# A sample batch of data (just a list of Python dictionaries)
+sft_batch = [
+    {"prompt": "The quick brown fox", "response": "jumps over the lazy dog"},
+    {"prompt": "What is a dog ?", "response": "a lazy brown fox"},
+]</code></pre>
+</section>
+
+<!-- Because this slide marks the beginning of the core implementation, this is a POWER TEXT slide. It acts as a clear signpost, telling the audience, "Okay, now we're building the main function." This simple transition helps to structure the chapter's flow. -->
+<section data-transition="convex">
+    <h1 class="r-fit-text">Now let's build the <code style="color: #4CAF50;">sft_data_collator</code>.</h1>
+</section>
+
+<!-- Because this slide begins the multi-step code walkthrough, it is a TECHNICAL slide. CRITICAL: This exact code block MUST persist across the next several slides. This persistence is essential for viewers to see how each step fits into the whole function. Here, we highlight step 1 (lines 7-8), focusing on formatting the text with the chat template. -->
+<section data-auto-animate data-background-color="#1a1a1a">
+    <h2 style="color: #4CAF50">Step 1: Format with Chat Template</h2>
+    <pre style="width: 100%; font-size: 0.6em;"><code class="language-python" data-trim data-line-numbers="7-8">
+def sft_data_collator(batch, tokenizer):
+    all_input_ids = []
+    all_labels = []
+
+    for example in batch:
+        # 1. Format the text with the chat template.
+        prompt_part = f"&lt;|user|&gt; {example['prompt']} &lt;|end|&gt; &lt;|assistant|&gt;"
+        full_text = f"{prompt_part} {example['response']} &lt;|end|&gt;"
+
+        # 2. Tokenize the prompt part to find the masking boundary.
+        prompt_ids = tokenizer.encode(prompt_part)
+        mask_until_idx = len(prompt_ids)
+
+        # 3. Tokenize the full text for the model's input.
+        input_ids = tokenizer.encode(full_text)
+
+        # 4. Create labels by cloning the input_ids.
+        labels = torch.tensor(input_ids).clone()
+
+        # 5. Apply the mask. This is the core SFT trick.
+        labels[:mask_until_idx] = -100
+
+        all_input_ids.append(torch.tensor(input_ids))
+        all_labels.append(labels)
+
+    # In a real implementation, you'd pad all sequences to the same length here.
+    return {
+        "input_ids": torch.stack(all_input_ids),
+        "labels": torch.stack(all_labels)
+    }
+    </code></pre>
+</section>
+
+<!-- Because this slide continues the code walkthrough, it is a TECHNICAL slide. CRITICAL: It uses the EXACT SAME code as the previous slide for context persistence. The only change is the line highlight, which now moves to step 2 (lines 11-12). This focuses attention on calculating the masking boundary, a key preparatory step for loss masking. -->
+<section data-auto-animate data-background-color="#1a1a1a">
+    <h2 style="color: #4CAF50">Step 2: Find the Masking Boundary</h2>
+    <pre style="width: 100%; font-size: 0.6em;"><code class="language-python" data-trim data-line-numbers="11-12">
+def sft_data_collator(batch, tokenizer):
+    all_input_ids = []
+    all_labels = []
+
+    for example in batch:
+        # 1. Format the text with the chat template.
+        prompt_part = f"&lt;|user|&gt; {example['prompt']} &lt;|end|&gt; &lt;|assistant|&gt;"
+        full_text = f"{prompt_part} {example['response']} &lt;|end|&gt;"
+
+        # 2. Tokenize the prompt part to find the masking boundary.
+        prompt_ids = tokenizer.encode(prompt_part)
+        mask_until_idx = len(prompt_ids)
+
+        # 3. Tokenize the full text for the model's input.
+        input_ids = tokenizer.encode(full_text)
+
+        # 4. Create labels by cloning the input_ids.
+        labels = torch.tensor(input_ids).clone()
+
+        # 5. Apply the mask. This is the core SFT trick.
+        labels[:mask_until_idx] = -100
+
+        all_input_ids.append(torch.tensor(input_ids))
+        all_labels.append(labels)
+
+    # In a real implementation, you'd pad all sequences to the same length here.
+    return {
+        "input_ids": torch.stack(all_input_ids),
+        "labels": torch.stack(all_labels)
+    }
+    </code></pre>
+</section>
+
+<!-- Because this slide is the third step in the code walkthrough, it is a TECHNICAL slide. CRITICAL: The persistent code block remains unchanged. The highlight shifts to step 3 (line 15), explaining the tokenization of the full text to create the model's primary input. This step-by-step focus makes the logic easy to follow. -->
+<section data-auto-animate data-background-color="#1a1a1a">
+    <h2 style="color: #4CAF50">Step 3: Tokenize Full Text for Input</h2>
+    <pre style="width: 100%; font-size: 0.6em;"><code class="language-python" data-trim data-line-numbers="15">
+def sft_data_collator(batch, tokenizer):
+    all_input_ids = []
+    all_labels = []
+
+    for example in batch:
+        # 1. Format the text with the chat template.
+        prompt_part = f"&lt;|user|&gt; {example['prompt']} &lt;|end|&gt; &lt;|assistant|&gt;"
+        full_text = f"{prompt_part} {example['response']} &lt;|end|&gt;"
+
+        # 2. Tokenize the prompt part to find the masking boundary.
+        prompt_ids = tokenizer.encode(prompt_part)
+        mask_until_idx = len(prompt_ids)
+
+        # 3. Tokenize the full text for the model's input.
+        input_ids = tokenizer.encode(full_text)
+
+        # 4. Create labels by cloning the input_ids.
+        labels = torch.tensor(input_ids).clone()
+
+        # 5. Apply the mask. This is the core SFT trick.
+        labels[:mask_until_idx] = -100
+
+        all_input_ids.append(torch.tensor(input_ids))
+        all_labels.append(labels)
+
+    # In a real implementation, you'd pad all sequences to the same length here.
+    return {
+        "input_ids": torch.stack(all_input_ids),
+        "labels": torch.stack(all_labels)
+    }
+    </code></pre>
+</section>
+
+<!-- Because this slide is step four of the walkthrough, it is a TECHNICAL slide. CRITICAL: The exact same code block persists. The highlight moves to step 4 (line 18), showing how the `labels` tensor is initially created as a direct copy of the `input_ids` before the masking is applied. -->
+<section data-auto-animate data-background-color="#1a1a1a">
+    <h2 style="color: #4CAF50">Step 4: Create Labels from Inputs</h2>
+    <pre style="width: 100%; font-size: 0.6em;"><code class="language-python" data-trim data-line-numbers="18">
+def sft_data_collator(batch, tokenizer):
+    all_input_ids = []
+    all_labels = []
+
+    for example in batch:
+        # 1. Format the text with the chat template.
+        prompt_part = f"&lt;|user|&gt; {example['prompt']} &lt;|end|&gt; &lt;|assistant|&gt;"
+        full_text = f"{prompt_part} {example['response']} &lt;|end|&gt;"
+
+        # 2. Tokenize the prompt part to find the masking boundary.
+        prompt_ids = tokenizer.encode(prompt_part)
+        mask_until_idx = len(prompt_ids)
+
+        # 3. Tokenize the full text for the model's input.
+        input_ids = tokenizer.encode(full_text)
+
+        # 4. Create labels by cloning the input_ids.
+        labels = torch.tensor(input_ids).clone()
+
+        # 5. Apply the mask. This is the core SFT trick.
+        labels[:mask_until_idx] = -100
+
+        all_input_ids.append(torch.tensor(input_ids))
+        all_labels.append(labels)
+
+    # In a real implementation, you'd pad all sequences to the same length here.
+    return {
+        "input_ids": torch.stack(all_input_ids),
+        "labels": torch.stack(all_labels)
+    }
+    </code></pre>
+</section>
+
+<!-- Because this is the most critical step of the SFT process, this is a TECHNICAL slide. CRITICAL: The code block remains identical for context. The highlight is on step 5 (lines 21-22), which is the "aha!" moment of the entire function. The title emphasizes that this is the core SFT trick, ensuring the audience pays close attention. -->
+<section data-auto-animate data-background-color="#1a1a1a">
+    <h2 style="color: #ff6b6b">Step 5: Apply The Mask! (The SFT Trick)</h2>
+    <pre style="width: 100%; font-size: 0.6em;"><code class="language-python" data-trim data-line-numbers="21-22">
+def sft_data_collator(batch, tokenizer):
+    all_input_ids = []
+    all_labels = []
+
+    for example in batch:
+        # 1. Format the text with the chat template.
+        prompt_part = f"&lt;|user|&gt; {example['prompt']} &lt;|end|&gt; &lt;|assistant|&gt;"
+        full_text = f"{prompt_part} {example['response']} &lt;|end|&gt;"
+
+        # 2. Tokenize the prompt part to find the masking boundary.
+        prompt_ids = tokenizer.encode(prompt_part)
+        mask_until_idx = len(prompt_ids)
+
+        # 3. Tokenize the full text for the model's input.
+        input_ids = tokenizer.encode(full_text)
+
+        # 4. Create labels by cloning the input_ids.
+        labels = torch.tensor(input_ids).clone()
+
+        # 5. Apply the mask. This is the core SFT trick.
+        labels[:mask_until_idx] = -100
+
+        all_input_ids.append(torch.tensor(input_ids))
+        all_labels.append(labels)
+
+    # In a real implementation, you'd pad all sequences to the same length here.
+    return {
+        "input_ids": torch.stack(all_input_ids),
+        "labels": torch.stack(all_labels)
+    }
+    </code></pre>
+</section>
+
+<!-- Because this slide visually demonstrates the effect of the code, it is a TECHNICAL slide. It presents a table that clearly shows the difference between `input_ids` and the masked `labels`. Building the table with fragments (first the masked part, then the unmasked part) makes the logic of "what to ignore" vs. "what to train on" extremely clear. This visual proof is crucial for understanding. -->
+<section data-transition="fade">
+    <h2 style="color: #4CAF50;">Let's verify the loss masking.</h2>
+    <p>The table below shows the first example from our batch.</p>
+    <table style="margin: 0 auto; font-size: 0.9em;">
+        <thead>
+            <tr>
+                <th style="padding: 8px;">Token Text</th>
+                <th style="padding: 8px;">`input_ids`</th>
+                <th style="padding: 8px;">`labels`</th>
+                <th style="padding: 8px;">Loss Calculated?</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr><td><code>&lt;|user|&gt;</code></td><td>9</td><td><span style="color: #ff6b6b;">-100</span></td><td style="color: #ff6b6b;"><strong>No</strong></td></tr>
+            <tr><td><code>The</code></td><td>1</td><td><span style="color: #ff6b6b;">-100</span></td><td style="color: #ff6b6b;"><strong>No</strong></td></tr>
+            <tr><td><code>quick</code></td><td>2</td><td><span style="color: #ff6b6b;">-100</span></td><td style="color: #ff6b6b;"><strong>No</strong></td></tr>
+            <tr><td><code>brown</code></td><td>3</td><td><span style="color: #ff6b6b;">-100</span></td><td style="color: #ff6b6b;"><strong>No</strong></td></tr>
+            <tr><td><code>fox</code></td><td>4</td><td><span style="color: #ff6b6b;">-100</span></td><td style="color: #ff6b6b;"><strong>No</strong></td></tr>
+            <tr><td><code>&lt;|end|&gt;</code></td><td>11</td><td><span style="color: #ff6b6b;">-100</span></td><td style="color: #ff6b6b;"><strong>No</strong></td></tr>
+            <tr><td><code>&lt;|assistant|&gt;</code></td><td>10</td><td><span style="color: #ff6b6b;">-100</span></td><td style="color: #ff6b6b;"><strong>No</strong></td></tr>
+            <tr><td style="color: #4CAF50;"><strong><code>jumps</code></strong></td><td>5</td><td>5</td><td style="color: #4CAF50;"><strong>Yes</strong></td></tr>
+            <tr><td style="color: #4CAF50;"><strong><code>over</code></strong></td><td>6</td><td>6</td><td style="color: #4CAF50;"><strong>Yes</strong></td></tr>
+            <tr><td style="color: #4CAF50;"><strong><code>The</code></strong></td><td>1</td><td>1</td><td style="color: #4CAF50;"><strong>Yes</strong></td></tr>
+            <tr><td style="color: #4CAF50;"><strong><code>lazy</code></strong></td><td>7</td><td>7</td><td style="color: #4CAF50;"><strong>Yes</strong></td></tr>
+            <tr><td style="color: #4CAF50;"><strong><code>dog</code></strong></td><td>8</td><td>8</td><td style="color: #4CAF50;"><strong>Yes</strong></td></tr>
+            <tr><td style="color: #4CAF50;"><strong><code>&lt;|end|&gt;</code></strong></td><td>11</td><td>11</td><td style="color: #4CAF50;"><strong>Yes</strong></td></tr>
+        </tbody>
+    </table>
+</section>
+
+<!-- Because this slide shows the concrete output of our function, it's a TECHNICAL slide. It first shows the Python code used to generate the output, then transitions to a slide showing the actual console output. This two-step process separates the "how" from the "what," making it easier to digest. -->
+<section data-auto-animate data-transition="slide">
+    <h2 style="color: #4CAF50;">Let's process our batch and see the tensors!</h2>
+    <pre style="width: 100%; font-size: 0.6em;"><code class="language-python" data-trim data-line-numbers>
+# Let's process our batch and see what we get!
+prepared_batch = sft_data_collator(sft_batch, tokenizer)
+
+print("--- Prepared Batch (First Example) ---")
+print("Input IDs:", prepared_batch["input_ids"][0])
+print("Labels:   ", prepared_batch["labels"][0])
+
+# Let's decode to be absolutely sure
+print("\n--- Decoded Labels (non-masked part) ---")
+response_part = prepared_batch["labels"][0][prepared_batch["labels"][0] != -100]
+print(f"Decoded: '{tokenizer.decode(response_part)}'")
+    </code></pre>
+</section>
+
+<!-- Because this slide displays the result from the previous code execution, it is a TECHNICAL slide. The console-style output provides definitive proof that the masking worked correctly. Highlighting the `-100` values in the `Labels` tensor and the correctly decoded response provides the "aha!" moment and confirms the success of our data preparation. -->
+<section data-auto-animate data-transition="slide">
+    <h2>And the output:</h2>
+    <pre style="width: 100%;"><code class="language-bash" style="font-size: 1.1em; text-align: left;">
+--- Prepared Batch (First Example) ---
+Input IDs: tensor([ 9,  1,  2,  3,  4, 11, 10,  5,  6,  1,  7,  8, 11])
+Labels:    tensor([<mark style="color:#ff6b6b;">-100, -100, -100, -100, -100, -100, -100</mark>,    5,    6,    1,    7,    8,   11])
+
+--- Decoded Labels (non-masked part) ---
+Decoded: <mark style="background-color: #4CAF50; color: white;">'jumps over The lazy dog &lt;|end|&gt;'</mark>
+    </code></pre>
+</section>
+
+<!-- Because this slide summarizes the key success from the previous output slide, it's a POWER TEXT slide. Text analysis: "The mask is working perfectly" (29 characters) is a strong, declarative statement that reinforces the success. The slide breaks down the key outcome into two simple points for maximum clarity. -->
+<section data-transition="zoom">
+    <h1 class="r-fit-text">The mask is working <mark>perfectly</mark>.</h1>
+    <div class="fragment fade-in" style="font-size: 1.8em; margin-top: 40px;">
+        <p>The `input_ids` see the full context.</p>
+        <p>The `labels` learn from the <span style="color: #4CAF50;">expert response only</span>.</p>
+    </div>
+</section>
+
+<!-- Because this slide shows how the prepared data is used in a training loop, this is a TECHNICAL slide. It presents a conceptual training step, highlighting that PyTorch's cross-entropy loss function handles the -100 masking automatically. This demystifies the training process and shows how the hard work in data prep pays off. -->
+<section data-transition="concave">
+    <h2 style="color: #4CAF50;">The Training Step is Now Trivial</h2>
+    <p>Any standard transformer using `cross_entropy` automatically handles `-100` masking.</p>
+    <pre style="width: 100%; font-size: 0.8em;"><code class="language-python" data-trim data-line-numbers="8-11">
+# Assume 'policy_model' is our LLM and 'optimizer' is an AdamW optimizer.
+def sft_training_step(policy_model, optimizer, batch):
+    policy_model.train()
+    optimizer.zero_grad()
+
+    # The model's forward pass automatically calculates the masked loss
+    # because PyTorch's cross_entropy ignores labels with value -100.
+    outputs = policy_model(
+        input_ids=batch["input_ids"],
+        labels=batch["labels"]
+    )
+    loss = outputs.loss
+
+    loss.backward()
+    optimizer.step()
+    return loss.item()
+    </code></pre>
+</section>
+
+<!-- Because this slide marks the successful completion of the chapter's main goal, it's a POWER TEXT slide. It provides a sense of accomplishment and summarizes the transformation from parrot to assistant. Text analysis: Breaking the conclusion into two parts ("And that's it." and the summary) creates a satisfying final beat. -->
+<section data-transition="fade">
+    <h1 class="r-fit-text">And that's it.</h1>
+    <h2 class="r-fit-text fragment fade-in">We have successfully implemented the full SFT pipeline from scratch.</h2>
+</section>
+
+<!-- Because this slide recaps the core achievement of SFT, it's a POWER TEXT slide. It uses the presentation's central metaphor to clearly state what has been accomplished, reinforcing the transition from 'parrot' to 'assistant'. -->
+<section data-transition="zoom">
+    <h1 class="r-fit-text">The <span style="color: #ff6b6b;">parrot</span> is learning to become an <span style="color: #4CAF50;">assistant</span>.</h1>
+</section>
+
+<!-- Because this slide introduces the critical limitation of SFT and sets up the next chapter, it's a POWER TEXT slide. Text analysis: "But this powerful method... has a crucial weakness" (54 characters) is a perfect hook that creates suspense and transitions the audience's mindset from a solved problem to a new one. -->
+<section data-transition="convex">
+    <h1 class="r-fit-text">But this powerful method of direct imitation has a <mark>crucial weakness</mark>.</h1>
+</section>
+
+<!-- Because this slide explicitly states the weakness of SFT, it's a POWER TEXT slide. Highlighting "equally good" in red emphasizes the lack of nuance, which is the core problem that the next chapter will address. This makes the limitation crystal clear. -->
+<section data-transition="slide">
+    <h1 class="r-fit-text">It treats all "good" responses as <span style="color: #ff6b6b;">equally</span> good.</h1>
+</section>
+
+<!-- Because this is the final, thought-provoking statement of the chapter, it is a POWER TEXT slide. It creates a powerful dichotomy between 'what to say' (which SFT solves) and 'how to judge' (the next challenge). This serves as a perfect cliffhanger for Chapter 5. -->
+<section data-transition="zoom">
+    <h1 class="r-fit-text">We've taught the model <span style="color: #4CAF50;">what to say</span>...</h1>
+    <h2 class="r-fit-text fragment fade-in">...but not how to <span style="color: #ff6b6b;">judge</span>.</h2>
+</section>
+
+<!-- END CHAPTER 4 -->
+
+<!-- START CHAPTER 5 -->
+
+<!-- Because this slide marks the beginning of the final chapter and recaps the journey, this is a POWER TEXT slide. Text analysis: The content is a celebratory summary. I'll split it into a two-part reveal. The first part announces the completion of the journey, setting a triumphant tone. -->
+<section data-auto-animate data-transition="fade">
+    <h1 class="r-fit-text">We've completed the journey.</h1>
+</section>
+
+<!-- Because this slide completes the opening recap, it's a POWER TEXT slide that builds on the previous one with data-auto-animate. It visually represents the core transformation of the entire presentation, using contrasting colors for 'Parrot' and 'Assistant' to make the achievement clear and memorable. -->
+<section data-auto-animate data-transition="fade">
+    <h1 class="r-fit-text">We've completed the journey.</h1>
+    <h2 class="r-fit-text">From useless <span style="color: #ff6b6b;">Parrot</span> to functional <span style="color: #4CAF50;">Assistant</span>.</h2>
+</section>
+
+<!-- Because this slide summarizes the key achievements of SFT, it is an EDUCATIONAL slide. It uses a list format to clearly present the three main outcomes. The list items are revealed with fragments to allow the presenter to elaborate on each point individually, preventing information overload. -->
+<section data-transition="slide">
+    <h2 style="color: #4CAF50;">What SFT Actually Achieved</h2>
+    <div style="font-size: 1.2em; line-height: 1.8;">
+        <p class="fragment fade-in"><strong>1. Understands Structure:</strong> It now recognizes the roles of <code>&lt;|user|&gt;</code> and <code>&lt;|assistant|&gt;</code>.</p>
+        <p class="fragment fade-in"><strong>2. Adopts a Persona:</strong> It has learned to imitate the style and tone of your expert data.</p>
+        <p class="fragment fade-in"><strong>3. Follows Instructions:</strong> It can reliably perform tasks covered in its training.</p>
+    </div>
+</section>
+
+<!-- Because this slide provides a powerful, summary analogy for the model's current state, this is a POWER TEXT slide. It introduces the term 'apprentice assistant' to give a memorable name to the result of SFT, framing it as a successful but incomplete step. -->
+<section data-transition="convex">
+    <h1 class="r-fit-text">You have successfully built an...</h1>
+    <h1 class="r-fit-text fragment fade-in" style="color: #4CAF50;">apprentice assistant.</h1>
+</section>
+
+<!-- Because this slide states the importance of SFT in the broader context of AI alignment, it is a POWER TEXT slide. Text analysis: "SFT is the bedrock upon which all modern alignment is built" (59 characters) is a strong, foundational statement perfect for r-fit-text. Highlighting 'bedrock' emphasizes its fundamental role. -->
+<section data-transition="convex">
+    <h1 class="r-fit-text">SFT is the <mark>bedrock</mark> upon which all modern alignment is built.</h1>
+</section>
+
+<!-- Because this slide introduces the central problem of the chapter, it's a POWER TEXT slide designed for a dramatic reveal. Using data-auto-animate, it first presents the positive setup ("However...") before revealing the critical limitation on the next slide. -->
+<section data-auto-animate data-transition="zoom">
+    <h1 class="r-fit-text">However...</h1>
+    <h2 class="r-fit-text">SFT has a profound, built-in limitation.</h2>
+</section>
+
+<!-- Because this slide reveals the specific limitation of SFT, it is a POWER TEXT slide that completes the thought from the previous one using data-auto-animate. The key phrase "equally and perfectly good" is highlighted in red to emphasize this flawed, binary worldview of the SFT model. -->
+<section data-auto-animate data-transition="zoom">
+    <h1 class="r-fit-text">However...</h1>
+    <h2 class="r-fit-text">SFT has a profound, built-in limitation.</h2>
+    <h1 class="r-fit-text">It treats all "good" answers as <span style="color: #ff6b6b;">equally and perfectly good</span>.</h1>
+</section>
+
+<!-- Because this slide sets up a concrete example to illustrate SFT's limitation, this is a TECHNICAL slide. It establishes the problem context—the user's prompt—in a header box. This context is CRITICAL and MUST persist across the following slides to ensure the audience understands the comparison between the two responses. -->
+<section data-auto-animate data-transition="slide">
+    <div style="padding: 20px;">
+        <div style="background-color: #333; padding: 15px; border-radius: 10px; margin-bottom: 30px;">
+            <h3 style="color: #4CAF50; margin: 0; font-size: 1.8em;">The Problem: Nuance</h3>
+            <p style="font-size: 1.4em; margin: 10px 0 0 0;">A user asks: "Summarize the impact of the printing press."</p>
+        </div>
+        <h2 class="fragment fade-in">You have two expert-written answers.</h2>
+    </div>
+</section>
+
+<!-- Because this slide presents the two competing answers for direct comparison, it is a TECHNICAL slide. CRITICAL: The problem context box from the previous slide persists at the top. The side-by-side layout allows for easy comparison. Response A (Good) appears first, and Response B (BETTER) is revealed via fragment, creating a narrative of improvement. -->
+<section data-auto-animate>
+    <div style="padding: 20px;">
+        <div style="background-color: #333; padding: 15px; border-radius: 10px; margin-bottom: 30px;">
+            <h3 style="color: #4CAF50; margin: 0; font-size: 1.8em;">The Problem: Nuance</h3>
+            <p style="font-size: 1.4em; margin: 10px 0 0 0;">A user asks: "Summarize the impact of the printing press."</p>
+        </div>
+        <div style="display: flex; justify-content: space-around; gap: 40px; font-size: 1em;">
+            <div style="flex: 1; text-align: left; background-color: #2a2a2a; padding: 20px; border-radius: 10px;">
+                <h3 style="color: #4CAF50;">Response A (Good)</h3>
+                <p>"The printing press allowed mass production of books, making information more accessible."</p>
+            </div>
+            <div class="fragment fade-in" style="flex: 1; text-align: left; background-color: #2a2a2a; padding: 20px; border-radius: 10px;">
+                <h3 style="color: #4CAF50;">Response B (BETTER)</h3>
+                <p>"The printing press democratized knowledge, fueling the Renaissance and Scientific Revolution by enabling rapid spread of ideas."</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Because this slide states the human intuition about the two responses, it's a POWER TEXT slide. It makes a simple, relatable point that highlights the core issue: humans can perceive quality differences that the model cannot. Highlighting "BETTER" in green emphasizes this qualitative judgment. -->
+<section data-transition="fade">
+    <h2 class="r-fit-text">As humans, we can immediately tell:</h2>
+    <h1 class="r-fit-text fragment fade-in">Response B is <span style="color: #4CAF50;">BETTER</span>.</h1>
+</section>
+
+<!-- Because this slide explicitly states the core failure of SFT, it is a POWER TEXT slide. Text analysis: "An SFT model cannot learn this relative preference" (49 characters) is a strong, declarative sentence. Using red for "cannot" emphasizes the model's inability. -->
+<section data-transition="zoom">
+    <h1 class="r-fit-text">An SFT model <span style="color: #ff6b6b;">cannot</span> learn this relative preference.</h1>
+</section>
+
+<!-- Because this slide summarizes the core problem in a memorable way, this is a POWER TEXT slide. It contrasts what SFT *can* do (teach 'what to say') with what it *cannot* do (teach 'how to judge'). The use of contrasting green and red colors makes this distinction visually powerful and easy to remember. -->
+<section data-transition="slide">
+    <h1 class="r-fit-text">SFT teaches a model <span style="color: #4CAF50;">what to say</span>...</h1>
+    <h2 class="r-fit-text">...but not how to <span style="color: #ff6b6b;">judge</span> or <span style="color: #ff6b6b;">choose</span>.</h2>
+</section>
+
+<!-- Because this slide introduces the name of the solution, it is a POWER TEXT slide. It serves as a major transition from the problem (SFT's limits) to the next stage of alignment. The term "Preference Tuning" is highlighted in green as the positive solution. -->
+<section data-transition="convex">
+    <h2 class="r-fit-text">To overcome this, we must move beyond simple imitation.</h2>
+    <h1 class="r-fit-text fragment fade-in">This is where we need <span style="color: #4CAF50;">Preference Tuning</span>.</h1>
+</section>
+
+<!-- Because this slide explains the new data format required for preference tuning, it's an EDUCATIONAL slide. It clearly presents the `(prompt, chosen, rejected)` triplet structure. Using code formatting for the triplet makes it stand out as a structured data type. -->
+<section data-transition="concave">
+    <h2 style="margin-bottom: 40px;">Preference tuning requires a new kind of dataset:</h2>
+    <div style="font-size: 1.5em; background-color: #333; padding: 20px; border-radius: 10px;">
+        <p>A triplet of:</p>
+        <code>(prompt, <span style="color: #4CAF50;">chosen_response</span>, <span style="color: #ff6b6b;">rejected_response</span>)</code>
+    </div>
+</section>
+
+<!-- Because this slide visually explains the preference tuning data structure, it is a TECHNICAL slide featuring a mermaid diagram. CRITICAL MERMAID REQUIREMENTS are met: dark theme, zoom, and `()` nodes. The diagram makes the relationship between the prompt and the two responses immediately intuitive. -->
+<section data-transition="zoom">
+    <h2 class="r-fit-text" style="margin-bottom: 50px;">We show it two options and tell it which one we prefer.</h2>
+    <div class="mermaid" style="zoom: 2.5;">
+        %%{init: {'theme': 'dark'}}%%
+        graph TD
+            A(Prompt) --> B(Chosen Response ✅);
+            A --> C(Rejected Response ❌);
+    </div>
+</section>
+
+<!-- Because this slide explains the mechanism of preference tuning, it is an EDUCATIONAL slide. It uses a side-by-side comparison to clearly show how the model's probabilities are adjusted for chosen vs. rejected responses, making the learning goal easy to understand. -->
+<section data-transition="fade">
+    <h2>The Goal of Preference Tuning</h2>
+    <div style="display: flex; justify-content: space-around; gap: 40px; font-size: 1.2em;">
+        <div style="flex: 1; text-align: center; background-color: #333; padding: 20px; border-radius: 10px; display: flex; flex-direction: column; justify-content: center;">
+            <h3 style="color: #4CAF50;">For Chosen Responses</h3>
+            <p>Teach the model to assign a <strong style="color: #4CAF50;">HIGHER</strong> probability to this sequence.</p>
+        </div>
+        <div style="flex: 1; text-align: center; background-color: #333; padding: 20px; border-radius: 10px; display: flex; flex-direction: column; justify-content: center;">
+            <h3 style="color: #ff6b6b;">For Rejected Responses</h3>
+            <p>Teach the model to assign a <strong style="color: #ff6b6b;">LOWER</strong> probability to this sequence.</p>
+        </div>
+    </div>
+    <p class="fragment fade-in" style="font-size: 1.2em; margin-top: 40px;">Algorithms like <strong style="color: #4CAF50;">DPO</strong> and <strong style="color: #4CAF50;">RLHF</strong> achieve this.</p>
+</section>
+
+<!-- Because this slide reframes the role of SFT as a foundational step, this is a POWER TEXT slide. Text analysis: "SFT is not the end of the alignment story" (42 characters) is a strong statement. The follow-up, "...it is the essential first chapter," provides a powerful, memorable conclusion. Highlighting 'first chapter' solidifies its role. -->
+<section data-transition="slide">
+    <h1 class="r-fit-text">SFT is not the end of the alignment story...</h1>
+    <h1 class="r-fit-text fragment fade-in">...it is the essential <mark>first chapter</mark>.</h1>
+</section>
+
+<!-- Because this slide summarizes the entire SFT process and its outcome, it's a POWER TEXT slide. It uses evocative language ('raw, chaotic base model', 'coherent and controllable') to describe the transformation, providing a satisfying summary of what the audience has learned to do. -->
+<section data-transition="zoom">
+    <h1 class="r-fit-text">SFT transforms the raw, chaotic base model into something coherent and controllable.</h1>
+    <h2 class="r-fit-text fragment fade-in">It creates the perfect starting point for preference tuning.</h2>
+</section>
+
+<!-- Because this slide serves as a final, empowering statement to the audience, this is a POWER TEXT slide. It's broken into a two-part sequence for impact. The first part states the core achievement. -->
+<section data-auto-animate data-transition="fade">
+    <h1 class="r-fit-text">You now understand the fundamental technique...</h1>
+</section>
+
+<!-- Because this slide completes the final empowering statement, it's a POWER TEXT slide using data-auto-animate. It adds the "Parrot to Assistant" tagline, bringing the presentation full circle and reinforcing the main promise from the title. -->
+<section data-auto-animate data-transition="fade">
+    <h1 class="r-fit-text">You now understand the fundamental technique...</h1>
+    <h2 class="r-fit-text">...that turns a <span style="color: #ff6b6b;">parrot</span> into an <span style="color: #4CAF50;">assistant</span>.</h2>
+</section>
+
+<!-- Because this slide is the final congratulatory message, it is a POWER TEXT slide. It lists the three areas of mastery—theory, math, and code—to give the audience a concrete sense of their accomplishment and learning journey. -->
+<section data-transition="convex">
+    <h1 class="r-fit-text">You've mastered the theory.</h1>
+    <h1 class="r-fit-text">You've mastered the math.</h1>
+    <h1 class="r-fit-text">You've mastered the code.</h1>
+</section>
+
+<!-- Because this is the final, epic concluding statement of the entire presentation, it is a POWER TEXT slide. It is presented alone on a dark background for maximum dramatic effect, leaving the audience with a sense of the topic's profound importance. -->
+<section data-background-color="#000" data-transition="zoom">
+    <h1 class="r-fit-text">The entire landscape of LLM alignment starts right here.</h1>
+</section>
+
+<!-- END CHAPTER 5 -->
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/5.2.1/reveal.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/5.2.1/plugin/highlight/highlight.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/5.2.1/plugin/math/math.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/reveal.js-mermaid-plugin@2.1.0/plugin/mermaid/mermaid.js"></script>
+    <script>
+        Reveal.initialize({
+            katex: {
+                version: 'latest',
+                delimiters: [
+                { left: '\\(', right: '\\)', display: false },
+                { left: '\\[', right: '\\]', display: true },
+                ],
+                ignoredTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code'],
+            },
+            plugins: [ RevealHighlight, RevealMath.KaTeX, RevealMermaid ],
+            width: 1920,
+            height: 1080,
+            controls: false,
+        });
+    </script>
+</body>
+</html>
